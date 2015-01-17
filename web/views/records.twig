@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <form action="/records" method="get">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+  <table>
+  	<tr>
+  	  <th>Date</th><th>Segment</th>
+      <th>Distance ({{ format }})</th><th>Time</th>
+      <th>Avg Grade</th><th>Max Grade</th>
+      <th>Location</th>
+      <th>PR</th><th>KOM Rank</th>
+  	</tr>
+	  {% for effort in efforts %}
+      <tr>
+        <td>{{ effort.date }}</td>
+	  	  <td><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.effort_id }}">{{ effort.name }}</a></td>
+        <td>{{ effort.distance }}</td>
+        <td>{{ effort.time }}</td>
+        <td>{{ effort.average_grade }}%</td>
+        <td>{{ effort.maximum_grade }}%</td>
+        <td>{{ effort.city }}, {{ effort.state }}</td>
+        <td>{{ effort.pr_rank }}</td>
+        <td>{{ effort.kom_rank }}</td>
+      </tr>
+	  {% endfor %}
+  </table>
+{% endblock %}

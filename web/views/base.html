@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <title>{% block title %}Barrett's Strava App{% endblock %}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    {% block head %}
+      <link rel="stylesheet" href="../css/uniform.default.css" media="screen" />
+      <link rel="stylesheet" href="../css/strava.css" media="screen" />
+      <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+      <script type="text/javascript" src="http://code.highcharts.com/highcharts.js"></script>
+      <script src="../js/jquery.uniform.min.js"></script>
+      <script src="../js/strava.js"></script>
+    {% endblock %}
+  </head>
+  <body>
+    {% block header %}
+      <div class="header">
+        <h1><a href="/">Barrett's Strava App</a></h1>
+        {% if login is not defined or login == false %}
+          <ul>
+            <li><a href="/activities">My Activities</a></li>
+            <li><a href="/records">KOMs and PRs</a></li>
+            <li><a href="/data">General Graphs</a></li>
+            <li><a href="/column">Column Charts</a></li>
+            <li><a href="/jon">Jon Score Graph</a></li>
+            <li><a href="/import">Import/Update</a></li>
+            <li><a href="/logout">Logout</a></li>
+          </ul>
+        {% endif %}
+      </div>
+    {% endblock %}
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>

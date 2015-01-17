@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <form action="/data" method="get">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+  <div id="chart1"></div>
+  <div id="chart2"></div>
+  <div id="chart3"></div>
+  <div id="chart4"></div>
+  <script type="text/javascript">
+    {% autoescape false %} {{ chart }} {% endautoescape %}
+  </script>
+  <script type="text/javascript">
+    {% autoescape false %} {{ chart2 }} {% endautoescape %}
+  </script>
+  <script type="text/javascript">
+    {% autoescape false %} {{ chart3 }} {% endautoescape %}
+  </script>
+  <script type="text/javascript">
+    {% autoescape false %} {{ chart4 }} {% endautoescape %}
+  </script>
+{% endblock %}

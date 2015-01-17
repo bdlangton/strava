@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <form action="/column" method="get">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+  <div id="running_chart"></div>
+  <div id="treadmill_chart"></div>
+  <div id="cycling_chart"></div>
+  <script type="text/javascript">
+    {% autoescape false %} {{ running_chart }} {% endautoescape %}
+    {% autoescape false %} {{ treadmill_chart }} {% endautoescape %}
+    {% autoescape false %} {{ cycling_chart }} {% endautoescape %}
+  </script>
+{% endblock %}

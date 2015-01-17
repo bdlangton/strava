@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <p>Jon Score is a complex calculation that takes into consideration your heart rate, pace, and elevation gain and spits out a score. Typically, over 100 is considered good.</p>
+  <form action="/jon" method="get">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+  <div id="chart1"></div>
+  <script type="text/javascript">
+    {% autoescape false %} {{ chart }} {% endautoescape %}
+  </script>
+{% endblock %}

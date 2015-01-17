@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% if login %}
+    <div>Click the button below to login using Strava.</div>
+    <div><a href="https://www.strava.com/oauth/authorize?client_id=4369&scope=view_private&response_type=code&redirect_uri=http://strava.barrettlangton.com/token_exchange&scope=view_private"><img src="ConnectWithStrava.png"></a></div>
+  {% else %}
+    <div class="updates">
+      <h2>Important Update</h2>
+      <p>If you are not seeing data correctly on the charts and graphs, then go to the Import page to update all data. There has been an update to the dates used in the database that need updated.</p>
+      <h2>Update Strava Data</h2>
+      <a href="/import">Import/Update Data</a><br/>
+    </div>
+    {% if running %}
+      <div class="running">
+        <h2>Running Stats</h2>
+        Max distance: {{ running.max_distance }} miles<br/>
+        Max moving time: {{ running.max_moving_time }} hours<br/>
+      </div>
+    {% endif %}
+    {% if riding %}
+      <div class="biking">
+        <h2>Riding Stats</h2>
+        Max distance: {{ riding.max_distance }} miles<br/>
+        Max moving time: {{ riding.max_moving_time }} hours<br/>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

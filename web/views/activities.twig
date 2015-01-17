@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <form action="/activities" method="get">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+  <table>
+    <tr>
+      <th>Date</th><th>Activity</th>
+      <th>Distance ({{ format }})</th><th>Elapsed Time</th>
+      <th>Elevation Gain ({{ gain_format }})</th>
+    </tr>
+    {% for activity in activities %}
+      <tr>
+        <td>{{ activity.date }}</td>
+        <td><a href="https://www.strava.com/activities/{{ activity.id }}">{{ activity.name }}</a></td>
+        <td>{{ activity.distance }}</td>
+        <td>{{ activity.elapsed_time }}</td>
+        <td>{{ activity.total_elevation_gain }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

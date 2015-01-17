@@ -1,0 +1,74 @@
+div.header {
+  clear: both;
+  background-color: #fc4c02;
+  color: #fff;
+  margin: 0;
+  padding: 0 10px 10px 10px;
+}
+
+div.header h1 {
+  padding-top: 10px;
+}
+
+div.header a {
+  text-decoration: none;
+  color: #fff;
+}
+
+div#form div.form-group {
+  float: left;
+  position: relative;
+}
+
+div.selector {
+  position: relative;
+  float: left;
+}
+
+.workout {
+  clear: left;
+}
+
+.button {
+  clear: left;
+  display: block;
+  position: relative;
+  width: 100%;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+div.content {
+  clear: both;
+  padding: 10px;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+li {
+  display: inline;
+  float: left;
+  padding-right: 20px;
+}
+
+ul a {
+  display: block;
+  font-weight: bold;
+  background-color: #fc4c02;
+  color: #fff;
+  text-decoration: none;
+}
+
+table th,
+table td {
+  padding-right: 10px;
+  text-align: left;
+}
