@@ -18,7 +18,6 @@ define("DISTANCE_TO_KM", 0.001);
 define("GAIN_TO_FEET", 3.28084);
 
 $app = new Silex\Application();
-$app['debug'] = FALSE;
 unset($app['exception_handler']);
 
 // Register the session provider.
@@ -40,6 +39,7 @@ $app->register(new Silex\Provider\TranslationServiceProvider());
 $app['twig.form.templates'] = ['form.html'];
 
 // Register the config service provider.
+// Get the app environment from the Apache config.
 $env = getenv('APP_ENV') ?: 'prod';
 $app->register(new ConfigServiceProvider(__DIR__."/../config/$env.json"));
 
