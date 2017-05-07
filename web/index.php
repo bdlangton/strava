@@ -22,7 +22,9 @@ unset($app['exception_handler']);
 
 // Register the session provider.
 $app->register(new Silex\Provider\SessionServiceProvider(), [
-  'session.storage.options' => ['cookie_lifetime' => 0],
+  'session.storage.options' => [
+    'cookie_lifetime' => 0,
+  ],
 ]);
 
 // Register the twig service provider.
