@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
 use Igorw\Silex\ConfigServiceProvider;
+use Kilte\Silex\Pagination\PaginationServiceProvider;
 use Silex\Provider\DoctrineServiceProvider;
 use Silex\Provider\FormServiceProvider;
 use Silex\Provider\TwigServiceProvider;
@@ -26,6 +27,9 @@ $app->register(new Silex\Provider\SessionServiceProvider(), [
     'cookie_lifetime' => 0,
   ],
 ]);
+
+// Register the pagination provider.
+$app->register(new PaginationServiceProvider, array('pagination.per_page' => 20));
 
 // Register the twig service provider.
 $app->register(new TwigServiceProvider(), [
@@ -471,6 +475,15 @@ $app->get('/activities', function(Request $request) use ($app) {
     ]);
   }
 
+  // Get the current page and build the pagination.
+  $page = $request->query->get('page') ?: 1;
+  $pagination = $app['pagination']($datapoints->rowCount(), $page);
+  $pages = $pagination->build();
+
+  // Trim the datapoints to just the results we want for this page.
+  $datapoints = $datapoints->fetchAll();
+  $datapoints = array_slice($datapoints, ($page - 1) * $app['pagination.per_page'], $app['pagination.per_page']);
+
   $activities = [];
   foreach ($datapoints as $point) {
     $point['distance'] = convert_distance($point['distance'], $params['format']);
@@ -485,8 +498,17 @@ $app->get('/activities', function(Request $request) use ($app) {
     'activities' => $activities,
     'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
     'gain_format' => ($params['format'] == 'imperial') ? 'ft' : 'm',
+    'pages' => $pages,
+    'current' => $pagination->currentPage(),
   ]);
-});
+})
+->value('page', 1)
+->convert(
+  'page',
+  function ($page) {
+    return (int) $page;
+  }
+);
 
 // General graphs.
 $app->get('/data', function(Request $request) use ($app) {

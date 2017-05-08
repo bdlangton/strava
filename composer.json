@@ -1,5 +1,6 @@
 {
     "require": {
+        "clippings/silex-pagination": "2.0",
         "doctrine/dbal": ">=2.2.0,<2.4.0-dev",
         "ghunti/highcharts-php": "~3.0",
         "reva2/config-service-provider": "~2.0",
