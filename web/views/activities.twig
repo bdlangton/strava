@@ -21,7 +21,7 @@
       </tr>
     {% endfor %}
   </table>
-  <ul>
+  <ul class="pagination">
     {% for number, position in pages %}
       {% if position == 'first' %}
         <li><a href="/activities?page={{ number }}">&laquo;</a></li>

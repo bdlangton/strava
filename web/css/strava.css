@@ -67,6 +67,16 @@ ul a {
   text-decoration: none;
 }
 
+ul.pagination a {
+  background-color: #fff;
+  color: #fc4c02;
+  font-weight: normal;
+}
+
+ul.pagination a:hover {
+  font-weight: bold;
+}
+
 table th,
 table td {
   padding-right: 10px;
