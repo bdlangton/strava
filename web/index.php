@@ -1040,6 +1040,15 @@ $app->get('/records', function(Request $request) use ($app) {
     $params['end_date']->format('Y-m-d'),
   ]);
 
+  // Get the current page and build the pagination.
+  $page = $request->query->get('page') ?: 1;
+  $pagination = $app['pagination']($datapoints->rowCount(), $page);
+  $pages = $pagination->build();
+
+  // Trim the datapoints to just the results we want for this page.
+  $datapoints = $datapoints->fetchAll();
+  $datapoints = array_slice($datapoints, ($page - 1) * $app['pagination.per_page'], $app['pagination.per_page']);
+
   // Add the segments to the array.
   $efforts = [];
   foreach ($datapoints as $point) {
@@ -1055,8 +1064,17 @@ $app->get('/records', function(Request $request) use ($app) {
     'form' => $form->createView(),
     'efforts' => $efforts,
     'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
+    'pages' => $pages,
+    'current' => $pagination->currentPage(),
   ]);
-});
+})
+->value('page', 1)
+->convert(
+  'page',
+  function ($page) {
+    return (int) $page;
+  }
+);
 
 // Display the Jon score chart.
 $app->get('/jon', function(Request $request) use ($app) {
