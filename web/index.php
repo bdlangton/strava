@@ -153,12 +153,11 @@ $app->get('/import', function(Request $request) use ($app) {
 
   // Build the form.
   $params = $request->query->all();
-  $params = isset($params['form']) ? $params['form'] : $params;
   $import_type = !empty($params['type']) ? $params['type'] : NULL;
   $params += [
     'type' => 'new',
   ];
-  $form = $app['form.factory']->createBuilder('form', $params)
+  $form = $app['form.factory']->createNamedBuilder(NULL, 'form', $params)
     ->add('type', 'choice', [
       'choices' => [
         'new' => 'New Activities',
@@ -412,13 +411,12 @@ $app->get('/activities', function(Request $request) use ($app) {
 
   // Build the form.
   $params = $request->query->all();
-  $params = isset($params['form']) ? $params['form'] : $params;
   $params += [
     'type' => 'Run',
     'format' => 'imperial',
     'workout' => [0, 1, 2, 3],
   ];
-  $form = $app['form.factory']->createBuilder('form', $params)
+  $form = $app['form.factory']->createNamedBuilder(NULL, 'form', $params)
     ->add('type', 'choice', [
       'choices' => [
         'Run' => 'Running',
@@ -500,6 +498,7 @@ $app->get('/activities', function(Request $request) use ($app) {
     'gain_format' => ($params['format'] == 'imperial') ? 'ft' : 'm',
     'pages' => $pages,
     'current' => $pagination->currentPage(),
+    'currentParams' => html_entity_decode($_SERVER['QUERY_STRING']),
   ]);
 })
 ->value('page', 1)
@@ -520,7 +519,6 @@ $app->get('/data', function(Request $request) use ($app) {
 
   // Build the form.
   $params = $request->query->all();
-  $params = isset($params['form']) ? $params['form'] : $params;
   $params += [
     'type' => 'Run',
     'group' => 'month',
@@ -534,7 +532,7 @@ $app->get('/data', function(Request $request) use ($app) {
   if (is_string($params['end_date'])) {
     $params['end_date'] = new DateTime($params['end_date']);
   }
-  $form = $app['form.factory']->createBuilder('form', $params)
+  $form = $app['form.factory']->createNamedBuilder(NULL, 'form', $params)
     ->add('type', 'choice', [
       'choices' => [
         'Run' => 'Running',
@@ -730,7 +728,6 @@ $app->get('/column', function(Request $request) use ($app) {
 
   // Build the form.
   $params = $request->query->all();
-  $params = isset($params['form']) ? $params['form'] : $params;
   $params += [
     'group' => 'month',
     'format' => 'imperial',
@@ -742,7 +739,7 @@ $app->get('/column', function(Request $request) use ($app) {
   if (is_string($params['end_date'])) {
     $params['end_date'] = new DateTime($params['end_date']);
   }
-  $form = $app['form.factory']->createBuilder('form', $params)
+  $form = $app['form.factory']->createNamedBuilder(NULL, 'form', $params)
     ->add('group', 'choice', [
       'choices' => ['month' => 'Monthly', 'week' => 'Weekly', 'year' => 'Yearly'],
       'label' => FALSE,
@@ -968,7 +965,6 @@ $app->get('/records', function(Request $request) use ($app) {
 
   // Build the form.
   $params = $request->query->all();
-  $params = isset($params['form']) ? $params['form'] : $params;
   $params += [
     'type' => 'Run',
     'format' => 'imperial',
@@ -981,7 +977,7 @@ $app->get('/records', function(Request $request) use ($app) {
   if (is_string($params['end_date'])) {
     $params['end_date'] = new DateTime($params['end_date']);
   }
-  $form = $app['form.factory']->createBuilder('form', $params)
+  $form = $app['form.factory']->createNamedBuilder(NULL, 'form', $params)
     ->add('type', 'choice', [
       'choices' => [
         'Run' => 'Running',
@@ -1066,6 +1062,7 @@ $app->get('/records', function(Request $request) use ($app) {
     'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
     'pages' => $pages,
     'current' => $pagination->currentPage(),
+    'currentParams' => html_entity_decode($_SERVER['QUERY_STRING']),
   ]);
 })
 ->value('page', 1)
@@ -1086,7 +1083,6 @@ $app->get('/jon', function(Request $request) use ($app) {
 
   // Build the form.
   $params = $request->query->all();
-  $params = isset($params['form']) ? $params['form'] : $params;
   $params += get_begin_and_end_dates();
   if (is_string($params['begin_date'])) {
     $params['begin_date'] = new DateTime($params['begin_date']);
@@ -1094,7 +1090,7 @@ $app->get('/jon', function(Request $request) use ($app) {
   if (is_string($params['end_date'])) {
     $params['end_date'] = new DateTime($params['end_date']);
   }
-  $form = $app['form.factory']->createBuilder('form', $params)
+  $form = $app['form.factory']->createNamedBuilder(NULL, 'form', $params)
     ->add('begin_date', 'date', [
       'input' => 'datetime',
       'widget' => 'single_text',
