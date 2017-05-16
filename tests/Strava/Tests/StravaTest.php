@@ -23,6 +23,11 @@ class StravaTest extends WebTestCase {
     $app['session.test'] = TRUE;
     unset($app['exception_handler']);
 
+    // Load the test php file (used for login/logout).
+    if (file_exists(__DIR__ . "/../../../../config/test.php")) {
+      require_once __DIR__ . "/../../../../config/test.php";
+    }
+
     return $app;
   }
 
@@ -30,10 +35,141 @@ class StravaTest extends WebTestCase {
    * Test the home page.
    */
   public function testHomePage() {
+    $this->login();
     $client = $this->createClient();
     $crawler = $client->request('GET', '/');
 
     $this->assertTrue($client->getResponse()->isOk());
-    $this->assertCount(1, $crawler->filter('h1:contains("Barrett\'s Strava App")'));
+    $this->verifyLoggedInHeader($crawler);
+  }
+
+  /**
+   * Test the home page as anonymous.
+   */
+  public function testAnonymousHomePage() {
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedOutHeader($crawler);
+    $this->assertContains('Click the button below to login using Strava.', $crawler->filter('body')->text());
+  }
+
+  /**
+   * Test the activities page.
+   */
+  public function testActivitiesPage() {
+    $this->login();
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/activities');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedInHeader($crawler);
+  }
+
+  /**
+   * Test the records page.
+   */
+  public function testRecordsPage() {
+    $this->login();
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/records');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedInHeader($crawler);
+  }
+
+  /**
+   * Test the graphs page.
+   */
+  public function testGraphsPage() {
+    $this->login();
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/data');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedInHeader($crawler);
+  }
+
+  /**
+   * Test the charts page.
+   */
+  public function testChartsPage() {
+    $this->login();
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/column');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedInHeader($crawler);
+  }
+
+  /**
+   * Test the Jon score page.
+   */
+  public function testJonScorePage() {
+    $this->login();
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/jon');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedInHeader($crawler);
+  }
+
+  /**
+   * Test the import/update page.
+   */
+  public function testImportUpdatePage() {
+    $this->login();
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/import');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedInHeader($crawler);
+  }
+
+  /**
+   * Login function.
+   */
+  private function login() {
+    if (function_exists('test_login')) {
+      test_login($this->app);
+    }
+  }
+
+  /**
+   * Logout function.
+   */
+  private function logout() {
+    if (function_exists('test_logout')) {
+      test_logout($this->app);
+    }
+  }
+
+  /**
+   * Verify logged in header links.
+   */
+  private function verifyLoggedInHeader($crawler) {
+    $this->assertCount(1, $crawler->filter('div.header h1:contains("Barrett\'s Strava App")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("My Activities")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("KOMs and PRs")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("General Graphs")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Column Charts")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Jon Score Graph")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Import/Update")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Logout")'));
+  }
+
+  /**
+   * Verify logged out header links.
+   */
+  private function verifyLoggedOutHeader($crawler) {
+    $this->assertCount(1, $crawler->filter('div.header h1:contains("Barrett\'s Strava App")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("My Activities")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("KOMs and PRs")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("General Graphs")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Column Charts")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Jon Score Graph")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Import/Update")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Logout")'));
   }
 }
