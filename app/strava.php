@@ -46,7 +46,7 @@ $app['twig.form.templates'] = ['form.html'];
 // Register the config service provider.
 // Get the app environment from the Apache config.
 $env = getenv('APP_ENV') ?: 'prod';
-$app->register(new ConfigServiceProvider(__DIR__."/../config/$env.json"));
+$app->register(new ConfigServiceProvider(__DIR__ . "/../config/$env.json"));
 
 // Register the doctrine service provider.
 $app->register(new DoctrineServiceProvider(), [
