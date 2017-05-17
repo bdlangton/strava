@@ -32,6 +32,34 @@ class StravaTest extends WebTestCase {
   }
 
   /**
+   * Test as anonymous.
+   */
+  public function testAnonymous() {
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/');
+
+    // Test that there is a login button on the home page.
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedOutHeader($crawler);
+    $this->assertContains('Click the button below to login using Strava.', $crawler->filter('body')->text());
+
+    // Test that the user gets redirected to the home page if they try to access
+    // other pages.
+    $client->request('GET', '/activities');
+    $this->assertTrue($client->getResponse()->isRedirect('/'));
+    $client->request('GET', '/records');
+    $this->assertTrue($client->getResponse()->isRedirect('/'));
+    $client->request('GET', '/data');
+    $this->assertTrue($client->getResponse()->isRedirect('/'));
+    $client->request('GET', '/column');
+    $this->assertTrue($client->getResponse()->isRedirect('/'));
+    $client->request('GET', '/jon');
+    $this->assertTrue($client->getResponse()->isRedirect('/'));
+    $client->request('GET', '/import');
+    $this->assertTrue($client->getResponse()->isRedirect('/'));
+  }
+
+  /**
    * Test the home page.
    */
   public function testHomePage() {
@@ -44,18 +72,6 @@ class StravaTest extends WebTestCase {
   }
 
   /**
-   * Test the home page as anonymous.
-   */
-  public function testAnonymousHomePage() {
-    $client = $this->createClient();
-    $crawler = $client->request('GET', '/');
-
-    $this->assertTrue($client->getResponse()->isOk());
-    $this->verifyLoggedOutHeader($crawler);
-    $this->assertContains('Click the button below to login using Strava.', $crawler->filter('body')->text());
-  }
-
-  /**
    * Test the activities page.
    */
   public function testActivitiesPage() {
@@ -65,6 +81,8 @@ class StravaTest extends WebTestCase {
 
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
+    $this->verifyFormExists($crawler);
+    $this->assertCount(1, $crawler->filter('ul.pagination'));
   }
 
   /**
@@ -77,6 +95,8 @@ class StravaTest extends WebTestCase {
 
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
+    $this->verifyFormExists($crawler);
+    $this->assertCount(1, $crawler->filter('ul.pagination'));
   }
 
   /**
@@ -89,6 +109,7 @@ class StravaTest extends WebTestCase {
 
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
+    $this->verifyFormExists($crawler);
   }
 
   /**
@@ -101,6 +122,7 @@ class StravaTest extends WebTestCase {
 
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
+    $this->verifyFormExists($crawler);
   }
 
   /**
@@ -113,6 +135,7 @@ class StravaTest extends WebTestCase {
 
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
+    $this->verifyFormExists($crawler);
   }
 
   /**
@@ -125,6 +148,7 @@ class StravaTest extends WebTestCase {
 
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
+    $this->verifyFormExists($crawler);
   }
 
   /**
@@ -171,5 +195,13 @@ class StravaTest extends WebTestCase {
     $this->assertCount(0, $crawler->filter('div.header a:contains("Jon Score Graph")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("Import/Update")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("Logout")'));
+  }
+
+  /**
+   * Verify that a form exists with a submit button.
+   */
+  private function verifyFormExists($crawler) {
+    $this->assertCount(1, $crawler->filter('form'));
+    $this->assertCount(1, $crawler->filter('form input[name="submit"]'));
   }
 }
