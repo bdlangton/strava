@@ -83,6 +83,18 @@ class StravaTest extends WebTestCase {
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
     $this->assertCount(1, $crawler->filter('ul.pagination'));
+    $this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
+    $this->assertCount(1, $crawler->filter('th:contains("Elevation Gain (ft)")'));
+
+    // Test the form.
+    $form = $crawler->selectButton('submit')->form();
+    $form['format'] = 'metric';
+    $crawler = $client->submit($form);
+    $this->assertCount(1, $crawler->filter('th:contains("Elevation Gain (m)")'));
+    $form = $crawler->selectButton('submit')->form();
+    $form['type'] = 'Ride';
+    $crawler = $client->submit($form);
+    $this->assertCount(0, $crawler->filter('input[name="workout[]"]'));
   }
 
   /**
@@ -97,6 +109,13 @@ class StravaTest extends WebTestCase {
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
     $this->assertCount(1, $crawler->filter('ul.pagination'));
+    $this->assertCount(1, $crawler->filter('th:contains("Distance (mi)")'));
+
+    // Test the form.
+    $form = $crawler->selectButton('submit')->form();
+    $form['format'] = 'metric';
+    $crawler = $client->submit($form);
+    $this->assertCount(1, $crawler->filter('th:contains("Distance (km)")'));
   }
 
   /**
@@ -110,6 +129,13 @@ class StravaTest extends WebTestCase {
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
+    $this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
+
+    // Test the form.
+    $form = $crawler->selectButton('submit')->form();
+    $form['type'] = 'Ride';
+    $crawler = $client->submit($form);
+    $this->assertCount(0, $crawler->filter('input[name="workout[]"]'));
   }
 
   /**

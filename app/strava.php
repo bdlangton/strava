@@ -48,10 +48,13 @@ $app['twig.form.templates'] = ['form.html'];
 $env = getenv('APP_ENV') ?: 'prod';
 $app->register(new ConfigServiceProvider(__DIR__ . "/../config/$env.json"));
 
+// Include the environment specific settings file.
+if (file_exists(__DIR__ . "/../config/$env.php")) {
+  require_once __DIR__ . "/../config/$env.php";
+}
+
 // Register the doctrine service provider.
-$app->register(new DoctrineServiceProvider(), [
-  'db.options' => $app['db.options'],
-]);
+$app->register(new DoctrineServiceProvider(), []);
 
 // Home page.
 $app->get('/', function() use ($app) {
@@ -485,6 +488,7 @@ $app->get('/activities', function(Request $request) use ($app) {
   foreach ($datapoints as $point) {
     $point['distance'] = convert_distance($point['distance'], $params['format']);
     $point['date'] = convert_date_format($point['start_date_local']);
+    $point['elapsed_time'] = gmdate("H:i:s", $point['elapsed_time']);
     $point['total_elevation_gain'] = convert_elevation_gain($point['total_elevation_gain'], $params['format']);
     $activities[] = $point;
   }
