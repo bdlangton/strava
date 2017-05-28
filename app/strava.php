@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/functions.php';
-
 use Doctrine\DBAL\Connection;
 use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
@@ -26,6 +24,9 @@ $app->register(new Silex\Provider\SessionServiceProvider(), [
     'cookie_lifetime' => 0,
   ],
 ]);
+
+// Our custom strava service.
+$app->register(new Strava\StravaServiceProvider());
 
 // Register the pagination provider.
 $app->register(new PaginationServiceProvider, array('pagination.per_page' => 20));
@@ -206,7 +207,7 @@ $app->get('/import', function(Request $request) use ($app) {
       foreach ($activities as $activity) {
         // If we are importing a specific year.
         if (is_numeric($import_type)) {
-          $start_year = (int) convert_date_format($activity['start_date_local'], 'Y');
+          $start_year = (int) $app['strava']->convert_date_format($activity['start_date_local'], 'Y');
 
           // If the activity is for a year that is earlier than the import year,
           // then we need to stop importing.
@@ -496,10 +497,10 @@ $app->get('/activities', function(Request $request) use ($app) {
 
   $activities = [];
   foreach ($datapoints as $point) {
-    $point['distance'] = convert_distance($point['distance'], $params['format']);
-    $point['date'] = convert_date_format($point['start_date_local']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
+    $point['date'] = $app['strava']->convert_date_format($point['start_date_local']);
     $point['elapsed_time'] = gmdate("H:i:s", $point['elapsed_time']);
-    $point['total_elevation_gain'] = convert_elevation_gain($point['total_elevation_gain'], $params['format']);
+    $point['total_elevation_gain'] = $app['strava']->convert_elevation_gain($point['total_elevation_gain'], $params['format']);
     $activities[] = $point;
   }
 
@@ -538,7 +539,7 @@ $app->get('/data', function(Request $request) use ($app) {
     'format' => 'imperial',
     'workout' => [0, 1, 2, 3],
   ];
-  $params += get_begin_and_end_dates($params['group']);
+  $params += $app['strava']->get_begin_and_end_dates($params['group']);
   if (is_string($params['begin_date'])) {
     $params['begin_date'] = new DateTime($params['begin_date']);
   }
@@ -718,8 +719,8 @@ $app->get('/data', function(Request $request) use ($app) {
 
   // Add the data points to the chart.
   foreach ($datapoints as $point) {
-    $point['distance'] = convert_distance($point['distance'], $params['format']);
-    $point['elevation_gain'] = convert_elevation_gain($point['elevation_gain'], $params['format']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
+    $point['elevation_gain'] = $app['strava']->convert_elevation_gain($point['elevation_gain'], $params['format']);
     $chart->xAxis->categories[] = $point['grp'];
     $chart->series[0]['data'][] = $point['distance'];
     $chart2->xAxis->categories[] = $point['grp'];
@@ -755,7 +756,7 @@ $app->get('/column', function(Request $request) use ($app) {
     'group' => 'month',
     'format' => 'imperial',
   ];
-  $params += get_begin_and_end_dates($params['group']);
+  $params += $app['strava']->get_begin_and_end_dates($params['group']);
   if (is_string($params['begin_date'])) {
     $params['begin_date'] = new DateTime($params['begin_date']);
   }
@@ -918,7 +919,7 @@ $app->get('/column', function(Request $request) use ($app) {
     while ($index > count($series[$point['workout_type']]['data'])) {
       $series[$point['workout_type']]['data'][] = 0;
     }
-    $point['distance'] = convert_distance($point['distance'], $params['format']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
     $series[$point['workout_type']]['data'][] = $point['distance'];
   }
   $running_chart->series = $series;
@@ -933,7 +934,7 @@ $app->get('/column', function(Request $request) use ($app) {
     while ($index > count($series[$point['trainer']]['data'])) {
       $series[$point['trainer']]['data'][] = 0;
     }
-    $point['distance'] = convert_distance($point['distance'], $params['format']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
     $series[$point['trainer']]['data'][] = $point['distance'];
   }
   $treadmill_chart->series = $series;
@@ -963,7 +964,7 @@ $app->get('/column', function(Request $request) use ($app) {
     while ($index > count($series[$ride_type]['data'])) {
       $series[$ride_type]['data'][] = 0;
     }
-    $point['distance'] = convert_distance($point['distance'], $params['format']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
     $series[$ride_type]['data'][] = $point['distance'];
   }
   $cycling_chart->series = $series;
@@ -1072,9 +1073,9 @@ $app->get('/records', function(Request $request) use ($app) {
   // Add the segments to the array.
   $efforts = [];
   foreach ($datapoints as $point) {
-    $point['distance'] = convert_distance($point['distance'], $params['format']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
     $point['time'] = gmdate("H:i:s", $point['time']);
-    $point['date'] = convert_date_format($point['date']);
+    $point['date'] = $app['strava']->convert_date_format($point['date']);
     $point['pr_rank'] = !empty($point['pr_rank']) ? 'Yes' : 'No';
     $efforts[] = $point;
   }
@@ -1107,7 +1108,7 @@ $app->get('/jon', function(Request $request) use ($app) {
 
   // Build the form.
   $params = $request->query->all();
-  $params += get_begin_and_end_dates();
+  $params += $app['strava']->get_begin_and_end_dates();
   if (is_string($params['begin_date'])) {
     $params['begin_date'] = new DateTime($params['begin_date']);
   }
@@ -1174,7 +1175,7 @@ $app->get('/jon', function(Request $request) use ($app) {
     $miles = round($point['distance'] * DISTANCE_TO_MILES, 1);
     $gain = round($point['total_elevation_gain'] * GAIN_TO_FEET);
     $pace = round(60 / ($point['average_speed'] * 2.23694), 2);
-    $chart->xAxis->categories[] = convert_date_format($point['start_date_local']);
+    $chart->xAxis->categories[] = $app['strava']->convert_date_format($point['start_date_local']);
     $chart->series[0]['data'][] = [
       'name' => $point['name'],
       'y' => round($miles / 2 + (($gain / $miles) / 10) + (120 / ($pace - 5) + ((185 - $hr) * 1.05))),
