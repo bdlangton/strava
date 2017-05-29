@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains the majority of the strava app functionality.
+ */
+
 use Doctrine\DBAL\Connection;
 use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
@@ -11,6 +16,7 @@ use Silex\Provider\TwigServiceProvider;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -93,7 +99,7 @@ $app->get('/logout', function() use ($app) {
 });
 
 // Token exchange.
-$app->get('/token_exchange', function(Request $request) use ($app) {
+$app->get('/token_exchange', function (Request $request) use ($app) {
   // Check the session.
   $user = $app['session']->get('user');
   if (!empty($user)) {
@@ -146,7 +152,7 @@ $app->get('/token_exchange', function(Request $request) use ($app) {
 });
 
 // Import user activities.
-$app->get('/import', function(Request $request) use ($app) {
+$app->get('/import', function (Request $request) use ($app) {
   // Check the session.
   $user = $app['session']->get('user');
   if (empty($user)) {
@@ -250,7 +256,7 @@ $app->get('/import', function(Request $request) use ($app) {
                 'commute' => $activity['commute'],
                 'manual' => $activity['manual'],
                 'private' => $activity['private'],
-                'workout_type' => empty($activity['workout_type']) ? 0: $activity['workout_type'],
+                'workout_type' => empty($activity['workout_type']) ? 0 : $activity['workout_type'],
                 'average_speed' => !empty($activity['average_speed']) ? $activity['average_speed'] : NULL,
                 'max_speed' => $activity['max_speed'],
                 'calories' => !empty($activity['calories']) ? $activity['calories'] : NULL,
@@ -288,7 +294,7 @@ $app->get('/import', function(Request $request) use ($app) {
               'commute' => !empty($activity['commute']) ? $activity['commute'] : NULL,
               'manual' => $activity['manual'],
               'private' => $activity['private'],
-              'workout_type' => empty($activity['workout_type']) ? 0: $activity['workout_type'],
+              'workout_type' => empty($activity['workout_type']) ? 0 : $activity['workout_type'],
               'average_speed' => !empty($activity['average_speed']) ? $activity['average_speed'] : NULL,
               'max_speed' => !empty($activity['max_speed']) ? $activity['max_speed'] : NULL,
               'calories' => !empty($activity['calories']) ? $activity['calories'] : NULL,
@@ -405,7 +411,7 @@ $app->get('/import', function(Request $request) use ($app) {
 });
 
 // My activities.
-$app->get('/activities', function(Request $request) use ($app) {
+$app->get('/activities', function (Request $request) use ($app) {
   // Check the session.
   $user = $app['session']->get('user');
   if (empty($user)) {
@@ -499,7 +505,7 @@ $app->get('/activities', function(Request $request) use ($app) {
   foreach ($datapoints as $point) {
     $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
     $point['date'] = $app['strava']->convert_date_format($point['start_date_local']);
-    $point['elapsed_time'] = gmdate("H:i:s", $point['elapsed_time']);
+    $point['elapsed_time'] = $app['strava']->convert_time_format($point['elapsed_time']);
     $point['total_elevation_gain'] = $app['strava']->convert_elevation_gain($point['total_elevation_gain'], $params['format']);
     $activities[] = $point;
   }
@@ -524,7 +530,7 @@ $app->get('/activities', function(Request $request) use ($app) {
 );
 
 // General graphs.
-$app->get('/data', function(Request $request) use ($app) {
+$app->get('/data', function (Request $request) use ($app) {
   // Check the session.
   $user = $app['session']->get('user');
   if (empty($user)) {
@@ -743,7 +749,7 @@ $app->get('/data', function(Request $request) use ($app) {
 });
 
 // Stacked column charts.
-$app->get('/column', function(Request $request) use ($app) {
+$app->get('/column', function (Request $request) use ($app) {
   // Check the session.
   $user = $app['session']->get('user');
   if (empty($user)) {
@@ -980,7 +986,7 @@ $app->get('/column', function(Request $request) use ($app) {
 });
 
 // Display PRs and CRs.
-$app->get('/records', function(Request $request) use ($app) {
+$app->get('/records', function (Request $request) use ($app) {
   // Check the session.
   $user = $app['session']->get('user');
   if (empty($user)) {
@@ -1074,7 +1080,7 @@ $app->get('/records', function(Request $request) use ($app) {
   $efforts = [];
   foreach ($datapoints as $point) {
     $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
-    $point['time'] = gmdate("H:i:s", $point['time']);
+    $point['time'] = $app['strava']->convert_time_format($point['time']);
     $point['date'] = $app['strava']->convert_date_format($point['date']);
     $point['pr_rank'] = !empty($point['pr_rank']) ? 'Yes' : 'No';
     $efforts[] = $point;
@@ -1098,8 +1104,164 @@ $app->get('/records', function(Request $request) use ($app) {
   }
 );
 
+// Display the Biggest Stats page.
+$app->get('/big', function (Request $request) use ($app) {
+  // Check the session.
+  $user = $app['session']->get('user');
+  if (empty($user)) {
+    return $app->redirect('/');
+  }
+
+  // Build the form.
+  $params = $request->query->all();
+  $generating = !empty($params['stat_type']);
+  $params += [
+    'activity_type' => 'Run',
+    'stat_type' => 'distance',
+    'duration' => 7,
+  ];
+  $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
+    ->add('activity_type', ChoiceType::class, [
+      'choices' => [
+        'Run' => 'Running',
+        'Ride' => 'Cycling',
+      ],
+      'label' => 'Activity Type',
+    ])
+    ->add('stat_type', ChoiceType::class, [
+      'choices' => [
+        'distance' => 'Distance',
+        'total_elevation_gain' => 'Elevation Gain',
+        'elapsed_time' => 'Time',
+      ],
+      'label' => 'Stat Type',
+    ])
+    ->add('duration', TextType::class, [
+      'label' => 'Duration',
+    ])
+    ->add('excluding_races', ChoiceType::class, [
+      'choices' => ['excluding_races' => 'Exclude Races'],
+      'expanded' => TRUE,
+      'multiple' => TRUE,
+      'label' => FALSE,
+    ]);
+  $form = $form->getForm();
+
+  // If we need to generate a new stat.
+  if ($generating) {
+    // Build the query.
+    $sql = 'SELECT DATEDIFF(start_date_local, "2000-01-01") day, SUM(' . $params['stat_type'] . ') stat ';
+    $sql .= 'FROM activities ';
+    $sql .= 'WHERE athlete_id = ? AND type = ? ';
+    if (!empty($params['excluding_races'])) {
+      $sql .= 'AND workout_type <> 1 ';
+    }
+    $sql .= 'GROUP BY start_date_local ';
+    $sql .= 'ORDER BY start_date_local';
+    $results = $app['db']->executeQuery($sql, [
+      $user['id'],
+      $params['activity_type'],
+    ])->fetchAll();
+    $days = array();
+    foreach ($results as $result) {
+      $days[$result['day']] = $result['stat'];
+    }
+    $days += array_fill_keys(range(min(array_keys($days)), max(array_keys($days))), 0);
+    ksort($days);
+
+    // Find the biggest data.
+    $biggest_date = NULL;
+    $biggest_stat = 0;
+    $i = 0;
+    foreach ($days as $key => $day) {
+      $slice = array_slice($days, $i, $params['duration']);
+      $current_stat = array_sum($slice);
+      if ($current_stat > $biggest_stat) {
+        $biggest_stat = $current_stat;
+        $biggest_date = $key;
+      }
+      $i++;
+    }
+    $start_timestamp = strtotime('+' . $biggest_date . ' days', strtotime('2000-01-01'));
+    $start_date = new DateTime();
+    $start_date->setTimestamp($start_timestamp);
+    $end_timestamp = strtotime('+' . $params['duration'] . ' days', $start_timestamp);
+    $end_date = new DateTime();
+    $end_date->setTimestamp($end_timestamp);
+
+    // Update or insert the stat.
+    $sql = 'SELECT * ';
+    $sql .= 'FROM stats ';
+    $sql .= 'WHERE athlete_id = ? AND activity_type = ? AND duration = ? AND stat_type = ? AND excluding_races = ?';
+    $result = $app['db']->executeQuery($sql, [
+      $user['id'],
+      $params['activity_type'],
+      $params['duration'],
+      $params['stat_type'],
+      !empty($params['excluding_races']),
+    ])->fetchAll();
+    if (empty($result)) {
+      $app['db']->insert('stats', [
+        'athlete_id' => $user['id'],
+        'activity_type' => $params['activity_type'],
+        'duration' => $params['duration'],
+        'stat_type' => $params['stat_type'],
+        'stat' => $biggest_stat,
+        'start_date' => $start_date->format('Y-m-d'),
+        'end_date' => $end_date->format('Y-m-d'),
+        'excluding_races' => !empty($params['excluding_races']),
+      ]);
+    }
+    else {
+      $result = $app['db']->update('stats', [
+        'stat' => $biggest_stat,
+        'start_date' => $start_date->format('Y-m-d'),
+        'end_date' => $end_date->format('Y-m-d'),
+      ],
+      [
+        'athlete_id' => $user['id'],
+        'activity_type' => $params['activity_type'],
+        'duration' => $params['duration'],
+        'stat_type' => $params['stat_type'],
+        'excluding_races' => !empty($params['excluding_races']),
+      ]);
+    }
+  }
+
+  // Query all stats from this user.
+  $sql = 'SELECT * ';
+  $sql .= 'FROM stats ';
+  $sql .= 'WHERE athlete_id = ? ';
+  $sql .= 'ORDER BY activity_type, stat_type, duration';
+  $stats = $app['db']->executeQuery($sql, [
+    $user['id'],
+  ])->fetchAll();
+
+  foreach ($stats as &$stat) {
+    if ($stat['stat_type'] == 'distance') {
+      $stat['stat_type'] = 'Distance';
+      $stat['stat'] = $app['strava']->convert_distance($stat['stat'], 'imperial') . ' miles';
+    }
+    elseif ($stat['stat_type'] == 'total_elevation_gain') {
+      $stat['stat_type'] = 'Elevation Gain';
+      $stat['stat'] = $app['strava']->convert_elevation_gain($stat['stat'], 'imperial') . ' feet';
+    }
+    elseif ($stat['stat_type'] == 'elapsed_time') {
+      $stat['stat_type'] = 'Time';
+      $stat['stat'] = $app['strava']->convert_time_format($stat['stat'], 'j-H:i:s');
+    }
+    $stat['excluding_races'] = empty($stat['excluding_races']) ? 'N' : 'Y';
+  }
+
+  // Render the page.
+  return $app['twig']->render('big.twig', [
+    'form' => $form->createView(),
+    'stats' => $stats,
+  ]);
+});
+
 // Display the Jon score chart.
-$app->get('/jon', function(Request $request) use ($app) {
+$app->get('/jon', function (Request $request) use ($app) {
   // Check the session.
   $user = $app['session']->get('user');
   if (empty($user)) {

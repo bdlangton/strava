@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <p>Curious about what your biggest seven day period was? You can find out stats like that by submitting the form on this page. Just choose what activity type, stat type (distance, elevation gain, or time), and the duration. You can also choose to exclude races if you are more interested in your biggest training period rather than a period that involves a race.</p>
+  <p>Stats on this page are static once generated. If you want to update the stats, simply re-submit the form and it will update the entry.</p>
+  <form action="/big" method="get">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+  <table>
+    <tr>
+      <th>Activity Type</th>
+      <th>Stat Type</th>
+      <th>Excluding Races</th>
+      <th>Duration</th>
+      <th>Stat</th>
+      <th>Date Range</th>
+    </tr>
+    {% for stat in stats %}
+      <tr>
+        <td>{{ stat.activity_type }}</td>
+        <td>{{ stat.stat_type }}</td>
+        <td>{{ stat.excluding_races }}</td>
+        <td>{{ stat.duration }} days</td>
+        <td>{{ stat.stat }}</td>
+        <td>{{ stat.start_date }} to {{ stat.end_date }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

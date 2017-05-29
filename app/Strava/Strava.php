@@ -60,6 +60,21 @@ class Strava {
   }
 
   /**
+   * Convert time in seconds to a readable format.
+   *
+   * @param int $time
+   *   The time in seconds.
+   * @param string $format
+   *   Format to output the time.
+   *
+   * @return string
+   *   Returns the time formatted.
+   */
+  function convert_time_format($time, $format = 'H:i:s') {
+    return gmdate($format, $time);
+  }
+
+  /**
    * Convert a provided date to a certain format.
    *
    * @param string $date
