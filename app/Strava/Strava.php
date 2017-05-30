@@ -113,4 +113,20 @@ class Strava {
     return $dates;
   }
 
+  /**
+   * Get the current URL params minus the 'page' param.
+   */
+  function get_current_params() {
+    $current_params = !empty($_SERVER['QUERY_STRING']) ? html_entity_decode($_SERVER['QUERY_STRING']) : NULL;
+    if (!empty($current_params)) {
+      $params_array = explode('&', $current_params);
+      foreach ($params_array as $key => $param) {
+        if (strpos($param, 'page=') === 0) {
+          unset($params_array[$key]);
+        }
+      }
+      $current_params = implode('&', $params_array);
+    }
+    return $current_params;
+  }
 }
