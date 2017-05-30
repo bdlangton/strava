@@ -1250,7 +1250,9 @@ $app->get('/big', function (Request $request) use ($app) {
       $stat['stat_type'] = 'Time';
       $stat['stat'] = $app['strava']->convert_time_format($stat['stat'], 'j-H:i:s');
     }
-    $stat['excluding_races'] = empty($stat['excluding_races']) ? 'N' : 'Y';
+    $stat['excluding_races'] = empty($stat['excluding_races']) ? '' : 'Yes';
+    $stat['start_date'] = $app['strava']->convert_date_format($stat['start_date']);
+    $stat['end_date'] = $app['strava']->convert_date_format($stat['end_date']);
   }
 
   // Render the page.

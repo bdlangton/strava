@@ -17,12 +17,16 @@ div.header a {
 
 div.form-group {
   float: left;
+  padding-right: 10px;
   position: relative;
 }
 
-div.selector {
+div.form-group label {
+  padding-right: 5px;
+}
+
+div.form-group div.selector {
   position: relative;
-  float: left;
 }
 
 .workout {
