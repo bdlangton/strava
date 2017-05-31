@@ -30,12 +30,12 @@ class Strava {
    */
   function convert_distance($distance, $format) {
     if ($format == 'imperial') {
-      $distance = round($distance * DISTANCE_TO_MILES, 2);
+      $distance = round($distance * DISTANCE_TO_MILES, 1);
     }
     else {
-      $distance = round($distance * DISTANCE_TO_KM, 2);
+      $distance = round($distance * DISTANCE_TO_KM, 1);
     }
-    return $distance;
+    return number_format($distance, 1, '.', ',');
   }
 
   /**
@@ -56,7 +56,7 @@ class Strava {
     else {
       $elevation_gain = round($elevation_gain);
     }
-    return $elevation_gain;
+    return number_format($elevation_gain, 0, '.', ',');
   }
 
   /**

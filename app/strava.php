@@ -1119,6 +1119,7 @@ $app->get('/big', function (Request $request) use ($app) {
     'activity_type' => 'Run',
     'stat_type' => 'distance',
     'duration' => 7,
+    'excluding_races' => array(),
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('activity_type', ChoiceType::class, [
@@ -1137,7 +1138,7 @@ $app->get('/big', function (Request $request) use ($app) {
       'label' => 'Stat Type',
     ])
     ->add('duration', TextType::class, [
-      'label' => 'Duration',
+      'label' => 'Days',
     ])
     ->add('excluding_races', ChoiceType::class, [
       'choices' => ['excluding_races' => 'Exclude Races'],
@@ -1248,7 +1249,13 @@ $app->get('/big', function (Request $request) use ($app) {
     }
     elseif ($stat['stat_type'] == 'elapsed_time') {
       $stat['stat_type'] = 'Time';
-      $stat['stat'] = $app['strava']->convert_time_format($stat['stat'], 'j-H:i:s');
+      $minutes = $app['strava']->convert_time_format($stat['stat'], 'i');
+      $hours = $app['strava']->convert_time_format($stat['stat'], 'H');
+      $days = $app['strava']->convert_time_format($stat['stat'], 'j') - 1;
+      if ($days > 0) {
+        $hours += $days * 24;
+      }
+      $stat['stat'] = $hours . ' hours, ' . $minutes . ' minutes';
     }
     $stat['excluding_races'] = empty($stat['excluding_races']) ? '' : 'Yes';
     $stat['start_date'] = $app['strava']->convert_date_format($stat['start_date']);
@@ -1260,6 +1267,77 @@ $app->get('/big', function (Request $request) use ($app) {
     'form' => $form->createView(),
     'stats' => $stats,
   ]);
+});
+
+// Update a biggest stat result.
+$app->get('/big/update/{id}', function (Request $request, $id) use ($app) {
+  // Check the session.
+  $user = $app['session']->get('user');
+  if (empty($user)) {
+    return $app->redirect('/');
+  }
+
+  // Find the stat.
+  $sql = 'SELECT * ';
+  $sql .= 'FROM stats ';
+  $sql .= 'WHERE athlete_id = ? AND id = ?';
+  $stat = $app['db']->executeQuery($sql, [
+    $user['id'],
+    $id,
+  ])->fetch();
+
+  // Update the stat.
+  if (!empty($stat)) {
+    $subRequest = Request::create(
+      '/big',
+      'GET',
+      array(
+        'activity_type' => $stat['activity_type'],
+        'stat_type' => $stat['stat_type'],
+        'duration' => $stat['duration'],
+        'excluding_races' => $stat['excluding_races'] ? array('excluding_races') : array(),
+      ),
+      $request->cookies->all(),
+      array(),
+      $request->server->all()
+    );
+    if ($request->getSession()) {
+      $subRequest->setSession($request->getSession());
+    }
+    $response = $app->handle($subRequest, HttpKernelInterface::SUB_REQUEST, FALSE);
+    $app['session']->getFlashBag()->add('strava', 'Your strava stat was updated!');
+  }
+  else {
+    $app['session']->getFlashBag()->add('strava', 'We could not find a stat to update.');
+  }
+
+  // Reload the big page.
+  return $app->redirect('/big');
+});
+
+// Delete a biggest stat result.
+$app->get('/big/delete/{id}', function (Request $request, $id) use ($app) {
+  // Check the session.
+  $user = $app['session']->get('user');
+  if (empty($user)) {
+    return $app->redirect('/');
+  }
+
+  // Only let the user delete the stat if they own it.
+  $result = $app['db']->delete('stats', [
+    'id' => $id,
+    'athlete_id' => $user['id'],
+  ]);
+
+  if ($result) {
+    $app['session']->getFlashBag()->add('strava', 'Your strava stat was deleted!');
+  }
+  else {
+    $app['session']->getFlashBag()->add('strava', 'We could not find a stat to delete.');
+  }
+
+  // Reload the big page.
+  return $app->redirect('/big');
 });
 
 // Display the Jon score chart.
@@ -1360,6 +1438,9 @@ $app->error(function (\Exception $e, Request $request, $code) use ($app) {
   // Redirect to home page on page not found.
   if ($code === 404) {
     return $app->redirect('/');
+  }
+  if ($app['debug']) {
+    return new Response($e);
   }
 });
 

@@ -29,6 +29,11 @@
         {% endif %}
       </div>
     {% endblock %}
+    <div class="messages">
+    {% for message in app.session.flashbag.get('strava') %}
+      <div class="message"><strong>{{ message }}</strong></div>
+    {% endfor %}
+    </div>
     <div class="content">
       {% block content %}{% endblock %}
     </div>

@@ -15,6 +15,7 @@
       <th>Duration</th>
       <th>Stat</th>
       <th>Date Range</th>
+      <th>Operations</th>
     </tr>
     {% for stat in stats %}
       <tr>
@@ -24,6 +25,7 @@
         <td>{{ stat.duration }} days</td>
         <td>{{ stat.stat }}</td>
         <td>{{ stat.start_date }} to {{ stat.end_date }}</td>
+        <td class="operations"><a href="/big/update/{{ stat.id }}">Update</a> <a href="/big/delete/{{ stat.id }}">Delete</a></td>
       </tr>
     {% endfor %}
   </table>

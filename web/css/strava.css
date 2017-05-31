@@ -15,6 +15,14 @@ div.header a {
   color: #fff;
 }
 
+a, a:visited {
+  color: #fc4c02;
+}
+
+div.message {
+  padding: 10px;
+}
+
 div.form-group {
   float: left;
   padding-right: 10px;
@@ -87,6 +95,13 @@ ul.pagination a:hover {
 
 table th,
 table td {
-  padding-right: 10px;
+  padding: 0 10px 10px 0;
   text-align: left;
+}
+
+td.operations a {
+  padding: 5px;
+  color: #fff;
+  background-color: #fc4c02;
+  text-decoration: none;
 }
