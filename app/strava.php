@@ -379,9 +379,13 @@ $app->get('/import', function (Request $request) use ($app) {
                   'country' => $segment['country'],
                   'climb_category' => $segment['climb_category'],
                   'private' => $segment['private'],
-                  'total_elevation_gain' => $segment['total_elevation_gain'],
-                  'effort_count' => $segment['effort_count'],
-                  'athlete_count' => $segment['athlete_count'],
+                  // Note: total_elevation_gain, effort_count, and athlete_count
+                  // is not included in the activity endpoint. We would need to
+                  // query the segment itself to get that. For now, we are
+                  // avoiding that extra API call.
+                  'total_elevation_gain' => !empty($segment['total_elevation_gain']) ? $segment['total_elevation_gain'] : NULL,
+                  'effort_count' => !empty($segment['effort_count']) ? $segment['effort_count'] : NULL,
+                  'athlete_count' => !empty($segment['athlete_count']) ? $segment['athlete_count'] : NULL,
                   'hazardous' => $segment['hazardous'],
                 ]);
               }
@@ -1186,7 +1190,7 @@ $app->get('/big', function (Request $request) use ($app) {
     $start_timestamp = strtotime('+' . $biggest_date . ' days', strtotime('2000-01-01'));
     $start_date = new DateTime();
     $start_date->setTimestamp($start_timestamp);
-    $end_timestamp = strtotime('+' . $params['duration'] . ' days', $start_timestamp);
+    $end_timestamp = strtotime('+' . ($params['duration'] - 1) . ' days', $start_timestamp);
     $end_date = new DateTime();
     $end_date->setTimestamp($end_timestamp);
 
