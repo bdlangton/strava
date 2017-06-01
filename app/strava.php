@@ -736,7 +736,7 @@ $app->get('/data', function (Request $request) use ($app) {
     $chart2->xAxis->categories[] = $point['grp'];
     $chart2->series[0]['data'][] = $point['elevation_gain'];
     $chart3->xAxis->categories[] = $point['grp'];
-    $chart3->series[0]['data'][] = round($point['elevation_gain'] / $point['distance']);
+    $chart3->series[0]['data'][] = (!empty($point['distance']) ? round($point['elevation_gain'] / $point['distance']) : 0);
     $chart4->xAxis->categories[] = $point['grp'];
     $chart4->series[0]['data'][] = round($point['moving_time'] / 3600, 1);
   }
