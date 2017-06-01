@@ -5,6 +5,9 @@
  * Contains the majority of the strava app functionality.
  */
 
+require_once __DIR__ . '/../app/Strava/StravaServiceProvider.php';
+require_once __DIR__ . '/../app/Strava/Strava.php';
+
 use Doctrine\DBAL\Connection;
 use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
@@ -729,8 +732,8 @@ $app->get('/data', function (Request $request) use ($app) {
 
   // Add the data points to the chart.
   foreach ($datapoints as $point) {
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
-    $point['elevation_gain'] = $app['strava']->convert_elevation_gain($point['elevation_gain'], $params['format']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format'], FALSE);
+    $point['elevation_gain'] = $app['strava']->convert_elevation_gain($point['elevation_gain'], $params['format'], FALSE);
     $chart->xAxis->categories[] = $point['grp'];
     $chart->series[0]['data'][] = $point['distance'];
     $chart2->xAxis->categories[] = $point['grp'];
@@ -929,7 +932,7 @@ $app->get('/column', function (Request $request) use ($app) {
     while ($index > count($series[$point['workout_type']]['data'])) {
       $series[$point['workout_type']]['data'][] = 0;
     }
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format'], FALSE);
     $series[$point['workout_type']]['data'][] = $point['distance'];
   }
   $running_chart->series = $series;
@@ -944,7 +947,7 @@ $app->get('/column', function (Request $request) use ($app) {
     while ($index > count($series[$point['trainer']]['data'])) {
       $series[$point['trainer']]['data'][] = 0;
     }
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format'], FALSE);
     $series[$point['trainer']]['data'][] = $point['distance'];
   }
   $treadmill_chart->series = $series;
@@ -974,7 +977,7 @@ $app->get('/column', function (Request $request) use ($app) {
     while ($index > count($series[$ride_type]['data'])) {
       $series[$ride_type]['data'][] = 0;
     }
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
+    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format'], FALSE);
     $series[$ride_type]['data'][] = $point['distance'];
   }
   $cycling_chart->series = $series;

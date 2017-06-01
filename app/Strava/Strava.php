@@ -24,18 +24,20 @@ class Strava {
    *   Distance provided by Strava.
    * @param string $format
    *   Imperial or metric.
+   * @param bool $number_format
+   *   Whether or not to use the number_format function.
    *
    * @return float
    *   Returns the distance in miles or meters.
    */
-  function convert_distance($distance, $format) {
+  function convert_distance($distance, $format, $number_format = TRUE) {
     if ($format == 'imperial') {
       $distance = round($distance * DISTANCE_TO_MILES, 1);
     }
     else {
       $distance = round($distance * DISTANCE_TO_KM, 1);
     }
-    return number_format($distance, 1, '.', ',');
+    return $number_format ? number_format($distance, 1, '.', ',') : $distance;
   }
 
   /**
@@ -45,18 +47,20 @@ class Strava {
    *   Elevation gain provided by Strava.
    * @param string $format
    *   Imperial or metric.
+   * @param bool $number_format
+   *   Whether or not to use the number_format function.
    *
    * @return float
    *   Returns the elevation gain in feet or meters.
    */
-  function convert_elevation_gain($elevation_gain, $format) {
+  function convert_elevation_gain($elevation_gain, $format, $number_format = TRUE) {
     if ($format == 'imperial') {
       $elevation_gain = round($elevation_gain * GAIN_TO_FEET);
     }
     else {
       $elevation_gain = round($elevation_gain);
     }
-    return number_format($elevation_gain, 0, '.', ',');
+    return $number_format ? number_format($elevation_gain, 0, '.', ',') : $elevation_gain;
   }
 
   /**
