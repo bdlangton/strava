@@ -55,7 +55,7 @@ $app['twig.form.templates'] = ['form.html'];
 
 // Register the config service provider.
 // Get the app environment from the Apache config.
-$env = getenv('APP_ENV') ?: 'prod';
+$env = getenv('APP_ENV') ?: 'dev';
 $app->register(new ConfigServiceProvider(__DIR__ . "/../config/$env.json"));
 
 // Include the environment specific settings file.
@@ -172,15 +172,15 @@ $app->get('/import', function (Request $request) use ($app) {
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
       'choices' => [
-        'new' => 'New Activities',
-        '2017' => '2017 Activities',
-        '2016' => '2016 Activities',
-        '2015' => '2015 Activities',
-        '2014' => '2014 Activities',
-        '2013' => '2013 Activities',
-        '2012' => '2012 Activities',
-        '2011' => '2011 Activities',
-        '2010' => '2010 Activities',
+        'New Activities' => 'new',
+        '2017 Activities' => '2017',
+        '2016 Activities' => '2016',
+        '2015 Activities' => '2015',
+        '2014 Activities' => '2014',
+        '2013 Activities' => '2013',
+        '2012 Activities' => '2012',
+        '2011 Activities' => '2011',
+        '2010 Activities' => '2010',
       ],
       'label' => FALSE,
     ]);
@@ -430,41 +430,20 @@ $app->get('/activities', function (Request $request) use ($app) {
   $params += [
     'type' => 'Run',
     'format' => 'imperial',
-    'workout' => [0, 1, 2, 3],
+    'workout' => $app['strava']->run_workout_choices,
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => [
-        'Run' => 'Running',
-        'Ride' => 'Cycling',
-        'Swim' => 'Swimming',
-        'AlpineSki' => 'Alpine Skiing',
-        'BackcountrySki' => 'Backcountry Skiing',
-        'CrossCountrySkiing' => 'Cross Country Skiing',
-        'Crossfit' => 'CrossFit',
-        'Hike' => 'Hiking',
-        'Kayaking' => 'Kayaking',
-        'NordicSki' => 'Nordic Skiing',
-        'RockClimbing' => 'Rock Climbing',
-        'Rowing' => 'Rowing',
-        'Snowshoe' => 'Snowshoeing',
-        'StandUpPaddling' => 'Stand Up Paddleboard',
-        'VirtualRide' => 'Virtual Ride',
-        'Walk' => 'Walking',
-        'WaterSport' => 'Water Sports',
-        'WeightTraining' => 'Weight Training',
-        'Workout' => 'Workout',
-        'Yoga' => 'Yoga',
-      ],
+      'choices' => $app['strava']->activity_type_choices,
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => ['imperial' => 'Imperial', 'metric' => 'Metric'],
+      'choices' => $app['strava']->format_choices,
       'label' => FALSE,
     ]);
   if ($params['type'] == 'Run') {
     $form = $form->add('workout', ChoiceType::class, [
-      'choices' => ['Default', 'Race', 'Long Run', 'Intervals'],
+      'choices' => $app['strava']->run_workout_choices,
       'expanded' => TRUE,
       'multiple' => TRUE,
       'label' => FALSE,
@@ -550,7 +529,7 @@ $app->get('/data', function (Request $request) use ($app) {
     'type' => 'Run',
     'group' => 'month',
     'format' => 'imperial',
-    'workout' => [0, 1, 2, 3],
+    'workout' => $app['strava']->run_workout_choices,
   ];
   $params += $app['strava']->get_begin_and_end_dates($params['group']);
   if (is_string($params['begin_date'])) {
@@ -561,36 +540,15 @@ $app->get('/data', function (Request $request) use ($app) {
   }
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => [
-        'Run' => 'Running',
-        'Ride' => 'Cycling',
-        'Swim' => 'Swimming',
-        'AlpineSki' => 'Alpine Skiing',
-        'BackcountrySki' => 'Backcountry Skiing',
-        'CrossCountrySkiing' => 'Cross Country Skiing',
-        'Crossfit' => 'CrossFit',
-        'Hike' => 'Hiking',
-        'Kayaking' => 'Kayaking',
-        'NordicSki' => 'Nordic Skiing',
-        'RockClimbing' => 'Rock Climbing',
-        'Rowing' => 'Rowing',
-        'Snowshoe' => 'Snowshoeing',
-        'StandUpPaddling' => 'Stand Up Paddleboard',
-        'VirtualRide' => 'Virtual Ride',
-        'Walk' => 'Walking',
-        'WaterSport' => 'Water Sports',
-        'WeightTraining' => 'Weight Training',
-        'Workout' => 'Workout',
-        'Yoga' => 'Yoga',
-      ],
+      'choices' => $app['strava']->activity_type_choices,
       'label' => FALSE,
     ])
     ->add('group', ChoiceType::class, [
-      'choices' => ['month' => 'Monthly', 'week' => 'Weekly', 'year' => 'Yearly'],
+      'choices' => $app['strava']->group_choices,
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => ['imperial' => 'Imperial', 'metric' => 'Metric'],
+      'choices' => $app['strava']->format_choices,
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -603,7 +561,7 @@ $app->get('/data', function (Request $request) use ($app) {
     ]);
   if ($params['type'] == 'Run') {
     $form = $form->add('workout', ChoiceType::class, [
-      'choices' => ['Default', 'Race', 'Long Run', 'Intervals'],
+      'choices' => $app['strava']->run_workout_choices,
       'expanded' => TRUE,
       'multiple' => TRUE,
       'label' => FALSE,
@@ -612,12 +570,14 @@ $app->get('/data', function (Request $request) use ($app) {
   $form = $form->getForm();
   if ($params['group'] == 'month') {
     $group = 'CONCAT(MONTHNAME(start_date_local), " ", YEAR(start_date_local))';
+    $order_by_group = 'DATE_FORMAT(start_date_local, "%Y%m")';
   }
   elseif ($params['group'] == 'week') {
-    $group = 'CONCAT("Week ", YEARWEEK(start_date_local))';
+    $group = 'CONCAT("Week ", WEEK(start_date_local), " ", YEAR(start_date_local))';
+    $order_by_group = 'CONCAT("Week ", YEARWEEK(start_date_local))';
   }
   else {
-    $group = 'YEAR(start_date_local)';
+    $group = $order_by_group = 'YEAR(start_date_local)';
   }
   $sql = 'SELECT ' . $group . ' grp, SUM(distance) distance, SUM(total_elevation_gain) elevation_gain, ';
   $sql .= 'SUM(elapsed_time) elapsed_time, SUM(moving_time) moving_time ';
@@ -626,8 +586,8 @@ $app->get('/data', function (Request $request) use ($app) {
   if ($params['type'] == 'Run') {
     $sql .= 'AND workout_type IN (?) ';
   }
-  $sql .= 'GROUP BY ' . $group . ' ';
-  $sql .= 'ORDER BY start_date_local';
+  $sql .= 'GROUP BY ' . $group . ', ' . $order_by_group . ' ';
+  $sql .= 'ORDER BY ' . $order_by_group;
   if ($params['type'] == 'Run') {
     $datapoints = $app['db']->executeQuery($sql,
       [
@@ -778,11 +738,11 @@ $app->get('/column', function (Request $request) use ($app) {
   }
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('group', ChoiceType::class, [
-      'choices' => ['month' => 'Monthly', 'week' => 'Weekly', 'year' => 'Yearly'],
+      'choices' => $app['strava']->group_choices,
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => ['imperial' => 'Imperial', 'metric' => 'Metric'],
+      'choices' => $app['strava']->format_choices,
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -796,12 +756,14 @@ $app->get('/column', function (Request $request) use ($app) {
   $form = $form->getForm();
   if ($params['group'] == 'month') {
     $group = 'CONCAT(MONTHNAME(start_date_local), " ", YEAR(start_date_local))';
+    $order_by_group = 'DATE_FORMAT(start_date_local, "%Y%m")';
   }
   elseif ($params['group'] == 'week') {
     $group = 'CONCAT("Week ", WEEK(start_date_local), " ", YEAR(start_date_local))';
+    $order_by_group = 'CONCAT("Week ", YEARWEEK(start_date_local))';
   }
   else {
-    $group = 'YEAR(start_date_local)';
+    $group = $order_by_group = 'YEAR(start_date_local)';
   }
 
   // Query for the x-axis points that will be used for running charts.
@@ -809,8 +771,8 @@ $app->get('/column', function (Request $request) use ($app) {
   $sql .= 'FROM activities ';
   $sql .= 'WHERE type = ? AND athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
   $sql .= "AND $group IS NOT NULL ";
-  $sql .= 'GROUP BY ' . $group . ' ';
-  $sql .= 'ORDER BY start_date_local';
+  $sql .= 'GROUP BY ' . $group . ', ' . $order_by_group . ' ';
+  $sql .= 'ORDER BY ' . $order_by_group;
   $running_xaxis = $app['db']->executeQuery($sql, [
     'Run',
     $user['id'],
@@ -824,8 +786,8 @@ $app->get('/column', function (Request $request) use ($app) {
   $sql .= 'FROM activities ';
   $sql .= 'WHERE type = ? AND athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
   $sql .= "AND $group IS NOT NULL ";
-  $sql .= 'GROUP BY ' . $group . ', workout_type ';
-  $sql .= 'ORDER BY start_date_local';
+  $sql .= 'GROUP BY ' . $group . ', ' . $order_by_group . ', workout_type ';
+  $sql .= 'ORDER BY ' . $order_by_group;
   $workout_data = $app['db']->executeQuery($sql, [
     'Run',
     $user['id'],
@@ -839,8 +801,8 @@ $app->get('/column', function (Request $request) use ($app) {
   $sql .= 'FROM activities ';
   $sql .= 'WHERE type = ? AND athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
   $sql .= "AND $group IS NOT NULL ";
-  $sql .= 'GROUP BY ' . $group . ', IFNULL(trainer, 0) ';
-  $sql .= 'ORDER BY start_date_local';
+  $sql .= 'GROUP BY ' . $group . ', ' . $order_by_group . ', IFNULL(trainer, 0) ';
+  $sql .= 'ORDER BY ' . $order_by_group;
   $treadmill_data = $app['db']->executeQuery($sql, [
     'Run',
     $user['id'],
@@ -853,8 +815,8 @@ $app->get('/column', function (Request $request) use ($app) {
   $sql .= 'FROM activities ';
   $sql .= 'WHERE type = ? AND athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
   $sql .= "AND $group IS NOT NULL ";
-  $sql .= 'GROUP BY ' . $group . ' ';
-  $sql .= 'ORDER BY start_date_local';
+  $sql .= 'GROUP BY ' . $group . ', ' . $order_by_group . ' ';
+  $sql .= 'ORDER BY ' . $order_by_group;
   $cycling_xaxis = $app['db']->executeQuery($sql, [
     'Ride',
     $user['id'],
@@ -868,8 +830,8 @@ $app->get('/column', function (Request $request) use ($app) {
   $sql .= 'FROM activities ';
   $sql .= 'WHERE type = ? AND athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
   $sql .= "AND $group IS NOT NULL ";
-  $sql .= 'GROUP BY ' . $group . ', CONCAT(trainer, commute) ';
-  $sql .= 'ORDER BY start_date_local';
+  $sql .= 'GROUP BY ' . $group . ', ' . $order_by_group . ', CONCAT(trainer, commute) ';
+  $sql .= 'ORDER BY ' . $order_by_group;
   $cycling_data = $app['db']->executeQuery($sql, [
     'Ride',
     $user['id'],
@@ -1018,22 +980,22 @@ $app->get('/records', function (Request $request) use ($app) {
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
       'choices' => [
-        'Run' => 'Running',
-        'Ride' => 'Cycling',
+        'Running' => 'Run',
+        'Cycling' => 'Ride',
       ],
       'label' => FALSE,
     ])
     ->add('record', ChoiceType::class, [
       'choices' => [
-        'All' => 'All Records',
-        'PR' => 'PR Only',
-        'CR' => 'KOM/CR Only',
-        'Top10' => 'Top 10 Only',
+        'All Records' => 'All',
+        'PR Only' => 'PR',
+        'KOM/CR Only' => 'CR',
+        'Top 10 Only' => 'Top10',
       ],
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => ['imperial' => 'Imperial', 'metric' => 'Metric'],
+      'choices' => $app['strava']->format_choices,
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -1131,16 +1093,16 @@ $app->get('/big', function (Request $request) use ($app) {
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('activity_type', ChoiceType::class, [
       'choices' => [
-        'Run' => 'Running',
-        'Ride' => 'Cycling',
+        'Running' => 'Run',
+        'Cycling' => 'Ride',
       ],
       'label' => 'Activity Type',
     ])
     ->add('stat_type', ChoiceType::class, [
       'choices' => [
-        'distance' => 'Distance',
-        'total_elevation_gain' => 'Elevation Gain',
-        'elapsed_time' => 'Time',
+        'Distance' => 'distance',
+        'Elevation Gain' => 'total_elevation_gain',
+        'Time' => 'elapsed_time',
       ],
       'label' => 'Stat Type',
     ])
@@ -1148,7 +1110,7 @@ $app->get('/big', function (Request $request) use ($app) {
       'label' => 'Days',
     ])
     ->add('excluding_races', ChoiceType::class, [
-      'choices' => ['excluding_races' => 'Exclude Races'],
+      'choices' => ['Exclude Races' => 'excluding_races'],
       'expanded' => TRUE,
       'multiple' => TRUE,
       'label' => FALSE,

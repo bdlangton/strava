@@ -18,6 +18,47 @@ define("GAIN_TO_FEET", 3.28084);
 class Strava {
 
   /**
+   * Activity type form choices.
+   */
+  public $activity_type_choices = [
+    'Running' => 'Run',
+    'Cycling' => 'Ride',
+    'Swimming' => 'Swim',
+    'AlpineSki' => 'Alpine Skiing',
+    'BackcountrySki' => 'Backcountry Skiing',
+    'CrossCountrySkiing' => 'Cross Country Skiing',
+    'Crossfit' => 'CrossFit',
+    'Hike' => 'Hiking',
+    'Kayaking' => 'Kayaking',
+    'NordicSki' => 'Nordic Skiing',
+    'RockClimbing' => 'Rock Climbing',
+    'Rowing' => 'Rowing',
+    'Snowshoe' => 'Snowshoeing',
+    'StandUpPaddling' => 'Stand Up Paddleboard',
+    'VirtualRide' => 'Virtual Ride',
+    'Walk' => 'Walking',
+    'WaterSport' => 'Water Sports',
+    'WeightTraining' => 'Weight Training',
+    'Workout' => 'Workout',
+    'Yoga' => 'Yoga',
+  ];
+
+  /**
+   * Format form choices.
+   */
+  public $format_choices = ['Imperial' => 'imperial', 'Metric' => 'metric'];
+
+  /**
+   * Group form choices.
+   */
+  public $group_choices = ['Monthly' => 'month', 'Weekly' => 'week', 'Yearly' => 'year'];
+
+  /**
+   * Run workout form choices.
+   */
+  public $run_workout_choices = ['Default' => 0, 'Race' => 1, 'Long Run' => 2, 'Intervals' => 3];
+
+  /**
    * Convert distance depending on format.
    *
    * @param float $distance
