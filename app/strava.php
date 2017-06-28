@@ -136,9 +136,16 @@ $app->get('/token_exchange', function (Request $request) use ($app) {
         'access_token' => $data['access_token'],
       ]);
     }
+    $athlete_data = $app['db']->executeQuery(
+      'SELECT default_activity_type, default_format
+      FROM athletes WHERE id = ?',
+      $data['athlete']['id']
+    );
     $app['session']->set('user', [
       'id' => $data['athlete']['id'],
       'access_token' => $data['access_token'],
+      'activity_type' => $athlete_data['default_activity_type'],
+      'format' => $athlete_data['default_format'],
     ]);
   }
   catch (Exception $e) { }
@@ -428,8 +435,8 @@ $app->get('/activities', function (Request $request) use ($app) {
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => 'Run',
-    'format' => 'imperial',
+    'type' => $user['activity_type'],
+    'format' => $user['format'],
     'workout' => $app['strava']->run_workout_choices,
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
@@ -526,9 +533,9 @@ $app->get('/data', function (Request $request) use ($app) {
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => 'Run',
+    'type' => $user['activity_type'],
+    'format' => $user['format'],
     'group' => 'month',
-    'format' => 'imperial',
     'workout' => $app['strava']->run_workout_choices,
   ];
   $params += $app['strava']->get_begin_and_end_dates($params['group']);
@@ -965,8 +972,8 @@ $app->get('/records', function (Request $request) use ($app) {
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => 'Run',
-    'format' => 'imperial',
+    'type' => $user['activity_type'],
+    'format' => $user['format'],
     'record' => NULL,
     'begin_date' => new DateTime('now - 1 year'),
     'end_date' => new DateTime('now'),
@@ -1085,7 +1092,7 @@ $app->get('/big', function (Request $request) use ($app) {
   $params = $request->query->all();
   $generating = !empty($params['stat_type']);
   $params += [
-    'activity_type' => 'Run',
+    'type' => $user['activity_type'],
     'stat_type' => 'distance',
     'duration' => 7,
     'excluding_races' => array(),
@@ -1130,7 +1137,7 @@ $app->get('/big', function (Request $request) use ($app) {
     $sql .= 'ORDER BY start_date_local';
     $results = $app['db']->executeQuery($sql, [
       $user['id'],
-      $params['activity_type'],
+      $params['type'],
     ])->fetchAll();
     $days = array();
     foreach ($results as $result) {
@@ -1165,7 +1172,7 @@ $app->get('/big', function (Request $request) use ($app) {
     $sql .= 'WHERE athlete_id = ? AND activity_type = ? AND duration = ? AND stat_type = ? AND excluding_races = ?';
     $result = $app['db']->executeQuery($sql, [
       $user['id'],
-      $params['activity_type'],
+      $params['type'],
       $params['duration'],
       $params['stat_type'],
       !empty($params['excluding_races']),
@@ -1173,13 +1180,13 @@ $app->get('/big', function (Request $request) use ($app) {
     if (empty($result)) {
       $app['db']->insert('stats', [
         'athlete_id' => $user['id'],
-        'activity_type' => $params['activity_type'],
+        'activity_type' => $params['type'],
         'duration' => $params['duration'],
         'stat_type' => $params['stat_type'],
         'stat' => $biggest_stat,
         'start_date' => $start_date->format('Y-m-d'),
         'end_date' => $end_date->format('Y-m-d'),
-        'excluding_races' => !empty($params['excluding_races']),
+        'excluding_races' => !empty($params['excluding_races']) ? 1 : 0,
       ]);
     }
     else {
@@ -1190,10 +1197,10 @@ $app->get('/big', function (Request $request) use ($app) {
       ],
       [
         'athlete_id' => $user['id'],
-        'activity_type' => $params['activity_type'],
+        'activity_type' => $params['type'],
         'duration' => $params['duration'],
         'stat_type' => $params['stat_type'],
-        'excluding_races' => !empty($params['excluding_races']),
+        'excluding_races' => !empty($params['excluding_races']) ? 1 : 0,
       ]);
     }
   }
@@ -1261,7 +1268,7 @@ $app->get('/big/update/{id}', function (Request $request, $id) use ($app) {
       '/big',
       'GET',
       array(
-        'activity_type' => $stat['activity_type'],
+        'type' => $stat['type'],
         'stat_type' => $stat['stat_type'],
         'duration' => $stat['duration'],
         'excluding_races' => $stat['excluding_races'] ? array('excluding_races') : array(),
