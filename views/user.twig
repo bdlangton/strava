@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Set your default settings</h2>
+  <p>What you choose here will be selected by default on any other page that you go to.</p>
+  <form action="/user" method="post">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+{% endblock %}

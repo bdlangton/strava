@@ -424,6 +424,75 @@ $app->get('/import', function (Request $request) use ($app) {
   ]);
 });
 
+// User profile settings.
+$app->get('/user', function (Request $request) use ($app) {
+  // Check the session.
+  $user = $app['session']->get('user');
+  if (empty($user)) {
+    return $app->redirect('/');
+  }
+
+  // Build the form.
+  $params = $request->query->all();
+  $params += [
+    'type' => $user['activity_type'],
+    'format' => $user['format'],
+  ];
+  $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
+    ->add('type', ChoiceType::class, [
+      'choices' => [
+        'Running' => 'Run',
+        'Cycling' => 'Ride',
+      ],
+      'label' => 'Activity Type',
+    ])
+    ->add('format', ChoiceType::class, [
+      'choices' => [
+        'Imperial' => 'imperial',
+        'Metric' => 'metric',
+      ],
+      'label' => 'Format',
+    ]);
+  $form = $form->getForm();
+
+  // Render the page.
+  return $app['twig']->render('user.twig', [
+    'form' => $form->createView(),
+  ]);
+});
+
+// User profile settings post.
+$app->post('/user', function (Request $request) use ($app) {
+  // Check the session.
+  $user = $app['session']->get('user');
+  if (empty($user)) {
+    return $app->redirect('/');
+  }
+
+  // Get the form submissions.
+  $type = $request->get('type')  ?: $user['activity_type'];
+  $format = $request->get('format') ?: $user['format'];
+
+  // Update the database.
+  $result = $app['db']->update('athletes',
+    [
+      'default_activity_type' => $type,
+      'default_format' => $format,
+    ],
+    [
+      'id' => $user['id'],
+    ]
+  );
+
+  // Update the user session.
+  $user['activity_type'] = $type;
+  $user['format'] = $format;
+  $app['session']->set('user', $user);
+
+  // Redirect to the user page.
+  return $app->redirect('/user');
+});
+
 // My activities.
 $app->get('/activities', function (Request $request) use ($app) {
   // Check the session.
@@ -1098,7 +1167,7 @@ $app->get('/big', function (Request $request) use ($app) {
     'excluding_races' => array(),
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
-    ->add('activity_type', ChoiceType::class, [
+    ->add('type', ChoiceType::class, [
       'choices' => [
         'Running' => 'Run',
         'Cycling' => 'Ride',
