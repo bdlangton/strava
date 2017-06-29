@@ -139,8 +139,8 @@ $app->get('/token_exchange', function (Request $request) use ($app) {
     $athlete_data = $app['db']->executeQuery(
       'SELECT default_activity_type, default_format
       FROM athletes WHERE id = ?',
-      $data['athlete']['id']
-    );
+      [$data['athlete']['id']]
+    )->fetch();
     $app['session']->set('user', [
       'id' => $data['athlete']['id'],
       'access_token' => $data['access_token'],
@@ -803,7 +803,7 @@ $app->get('/column', function (Request $request) use ($app) {
   $params = $request->query->all();
   $params += [
     'group' => 'month',
-    'format' => 'imperial',
+    'format' => $user['format'],
   ];
   $params += $app['strava']->get_begin_and_end_dates($params['group']);
   if (is_string($params['begin_date'])) {
