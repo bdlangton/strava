@@ -702,7 +702,7 @@ $app->get('/data', function (Request $request) use ($app) {
   $chart->xAxis->categories = [];
   $chart->yAxis = [
     'title' => [
-      'text' => ($params['format'] == 'imperial' ? 'Miles' : 'Meters'),
+      'text' => ($params['format'] == 'imperial' ? 'Miles' : 'Kilometers'),
     ],
     'plotLines' => [
       [
@@ -734,6 +734,7 @@ $app->get('/data', function (Request $request) use ($app) {
   $chart2 = clone $chart;
   $chart2->chart['renderTo'] = 'chart2';
   $chart2->title['text'] = 'Elevation Gain';
+  $chart2->yAxis['title']['text'] = ($params['format'] == 'imperial' ? 'Feet' : 'Meters');
   $chart2->series = [
     [
       'type' => 'area',
@@ -745,11 +746,12 @@ $app->get('/data', function (Request $request) use ($app) {
   // Create elevation gain per distance chart.
   $chart3 = clone $chart;
   $chart3->chart['renderTo'] = 'chart3';
-  $chart3->title['text'] = 'Elevation Gain / ' . ($params['format'] == 'imperial' ? 'Mile' : 'Meter');
+  $chart3->title['text'] = 'Elevation Gain / ' . ($params['format'] == 'imperial' ? 'Mile' : 'Kilometer');
+  $chart3->yAxis['title']['text'] = ($params['format'] == 'imperial' ? 'Feet' : 'Meters');
   $chart3->series = [
     [
       'type' => 'area',
-      'name' => 'Elevation Gain per ' . ($params['format'] == 'imperial' ? 'Mile' : 'Meter'),
+      'name' => 'Elevation Gain per ' . ($params['format'] == 'imperial' ? 'Mile' : 'Kilometer'),
       'data' => [],
     ],
   ];
@@ -758,6 +760,7 @@ $app->get('/data', function (Request $request) use ($app) {
   $chart4 = clone $chart;
   $chart4->chart['renderTo'] = 'chart4';
   $chart4->title['text'] = 'Moving Time';
+  $chart4->yAxis['title']['text'] = 'Hours';
   $chart4->series = [
     [
       'type' => 'area',
