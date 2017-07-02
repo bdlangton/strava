@@ -1289,11 +1289,11 @@ $app->get('/big', function (Request $request) use ($app) {
   foreach ($stats as &$stat) {
     if ($stat['stat_type'] == 'distance') {
       $stat['stat_type'] = 'Distance';
-      $stat['stat'] = $app['strava']->convert_distance($stat['stat'], 'imperial') . ' miles';
+      $stat['stat'] = $app['strava']->convert_distance($stat['stat'], $user['format']) . ' ' . ($user['format'] == 'imperial' ? 'miles' : 'kilometers');
     }
     elseif ($stat['stat_type'] == 'total_elevation_gain') {
       $stat['stat_type'] = 'Elevation Gain';
-      $stat['stat'] = $app['strava']->convert_elevation_gain($stat['stat'], 'imperial') . ' feet';
+      $stat['stat'] = $app['strava']->convert_elevation_gain($stat['stat'], $user['format']) . ' ' . ($user['format'] == 'imperial' ? 'feet' : 'meters');
     }
     elseif ($stat['stat_type'] == 'elapsed_time') {
       $stat['stat_type'] = 'Time';
