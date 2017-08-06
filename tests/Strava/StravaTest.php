@@ -5,7 +5,7 @@
  * Strava test functionality.
  */
 
-namespace Strava\Tests;
+namespace Tests\Strava;
 
 use Silex\WebTestCase;
 
@@ -18,14 +18,14 @@ class StravaTest extends WebTestCase {
    * Create application.
    */
   public function createApplication() {
-    $app = require __DIR__ . '/../../../app/strava.php';
+    $app = require __DIR__ . '/../../app/strava.php';
     $app['debug'] = TRUE;
     $app['session.test'] = TRUE;
     unset($app['exception_handler']);
 
     // Load the test php file (used for login/logout).
-    if (file_exists(__DIR__ . "/../../../../config/test.php")) {
-      require_once __DIR__ . "/../../../../config/test.php";
+    if (file_exists(__DIR__ . "/../../../config/test.php")) {
+      require_once __DIR__ . "/../../../config/test.php";
     }
 
     return $app;
