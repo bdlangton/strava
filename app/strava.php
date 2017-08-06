@@ -46,6 +46,15 @@ $app->register(new TwigServiceProvider(), [
   'twig.autoescape' => FALSE,
 ]);
 
+// Register the asset service provider.
+$app->register(new Silex\Provider\AssetServiceProvider(), array(
+  'assets.version' => 'v1',
+  'assets.version_format' => '%s?version=%s',
+  'assets.named_packages' => array(
+    'css' => array('version' => 'css2', 'base_path' => '/css'),
+  ),
+));
+
 // Register the form provider.
 $app->register(new FormServiceProvider());
 $app->register(new Silex\Provider\ValidatorServiceProvider());

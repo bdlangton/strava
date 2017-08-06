@@ -3,12 +3,12 @@
     <title>{% block title %}Barrett's Strava App{% endblock %}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     {% block head %}
-      <link rel="stylesheet" href="../css/uniform.default.css" media="screen" />
-      <link rel="stylesheet" href="../css/strava.css" media="screen" />
+      <link rel="stylesheet" href="{{ asset('css/uniform.default.css') }}" media="screen" />
+      <link rel="stylesheet" href="{{ asset('css/strava.css') }}" media="screen" />
       <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
       <script type="text/javascript" src="http://code.highcharts.com/highcharts.js"></script>
-      <script src="../js/jquery.uniform.min.js"></script>
-      <script src="../js/strava.js"></script>
+      <script src="{{ asset('js/jquery.uniform.min.js') }}"></script>
+      <script src="{{ asset('js/strava.js') }}"></script>
     {% endblock %}
   </head>
   <body>
