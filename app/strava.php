@@ -65,7 +65,21 @@ $app['twig.form.templates'] = ['form.html'];
 // Register the config service provider.
 // Get the app environment from the Apache config.
 $env = getenv('APP_ENV') ?: 'dev';
-$app->register(new ConfigServiceProvider(__DIR__ . "/../config/$env.json"));
+if (file_exists(__DIR__ . "/../config/$env.json")) {
+  $app->register(new ConfigServiceProvider(__DIR__ . "/../config/$env.json"));
+}
+else {
+  $app['debug'] = getenv('strava_debug');
+  $app['client_id'] = getenv('strava_client_id');
+  $app['client_secret'] = getenv('strava_client_secret');
+  $app['db.options'] = array(
+    'dbname' => getenv('strava_db_options_dbname'),
+    'user' => getenv('strava_db_options_user'),
+    'password' => getenv('strava_db_options_password'),
+    'host' => getenv('strava_db_options_host'),
+    'driver' => getenv('strava_db_options_driver'),
+  );
+}
 
 // Include the environment specific settings file.
 if (file_exists(__DIR__ . "/../config/$env.php")) {
