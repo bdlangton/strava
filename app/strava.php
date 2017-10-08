@@ -69,15 +69,15 @@ if (file_exists(__DIR__ . "/../config/$env.json")) {
   $app->register(new ConfigServiceProvider(__DIR__ . "/../config/$env.json"));
 }
 else {
-  $app['debug'] = getenv('strava.debug');
-  $app['client_id'] = getenv('strava.client_id');
-  $app['client_secret'] = getenv('strava.client_secret');
+  $app['debug'] = getenv('strava_debug');
+  $app['client_id'] = getenv('strava_client_id');
+  $app['client_secret'] = getenv('strava_client_secret');
   $app['db.options'] = array(
-    'dbname' => getenv('strava.db.options.dbname'),
-    'user' => getenv('strava.db.options.user'),
-    'password' => getenv('strava.db.options.password'),
-    'host' => getenv('strava.db.options.host'),
-    'driver' => getenv('strava.db.options.driver'),
+    'dbname' => getenv('strava_db_options_dbname'),
+    'user' => getenv('strava_db_options_user'),
+    'password' => getenv('strava_db_options_password'),
+    'host' => getenv('strava_db_options_host'),
+    'driver' => getenv('strava_db_options_driver'),
   );
 }
 

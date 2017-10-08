@@ -1,7 +1,14 @@
 language: php
 
 php:
-    - 7.0
+  - 7.0
+
+env:
+  - APP_ENV=dev
+
+services:
+  - mysql
 
 before_script:
-    - "composer install --dev"
+  - composer install --dev
+  - ./tests/setup_mysql.php
