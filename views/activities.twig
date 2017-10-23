@@ -7,9 +7,11 @@
   </form>
   <table>
     <tr>
-      <th>Date</th><th>Activity</th>
-      <th>Distance ({{ format }})</th><th>Elapsed Time</th>
-      <th>Elevation Gain ({{ gain_format }})</th>
+      <th><a href="/activities?{{ current_params }}&sort=date">Date</a></th>
+      <th>Activity</th>
+      <th><a href="/activities?{{ current_params }}&sort=distance">Distance ({{ format }})</a></th>
+      <th>Elapsed Time</th>
+      <th><a href="/activities?{{ current_params }}&sort=gain">Elevation Gain ({{ gain_format }})</a></th>
     </tr>
     {% for activity in activities %}
       <tr>

@@ -530,6 +530,7 @@ $app->get('/activities', function (Request $request) use ($app) {
     'type' => $user['activity_type'],
     'format' => $user['format'],
     'workout' => $app['strava']->run_workout_choices,
+    'sort' => NULL,
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
@@ -549,13 +550,30 @@ $app->get('/activities', function (Request $request) use ($app) {
     ]);
   }
   $form = $form->getForm();
+
+  // Determine the sort order.
+  switch ($params['sort']) {
+    case 'gain':
+      $sort = 'ORDER BY total_elevation_gain DESC';
+      break;
+
+    case 'distance':
+      $sort = 'ORDER BY distance DESC';
+      break;
+
+    default:
+      $sort = 'ORDER BY start_date_local DESC';
+      break;
+  }
+
+  // Build the query.
   $sql = 'SELECT * ';
   $sql .= 'FROM activities ';
   $sql .= 'WHERE type = ? AND athlete_id = ? ';
   if ($params['type'] == 'Run') {
     $sql .= 'AND workout_type IN (?) ';
   }
-  $sql .= 'ORDER BY start_date_local DESC';
+  $sql .= $sort;
   if ($params['type'] == 'Run') {
     $datapoints = $app['db']->executeQuery($sql,
       [
@@ -1072,6 +1090,7 @@ $app->get('/records', function (Request $request) use ($app) {
     'record' => NULL,
     'begin_date' => new DateTime('now - 1 year'),
     'end_date' => new DateTime('now'),
+    'sort' => NULL,
   ];
   if (is_string($params['begin_date'])) {
     $params['begin_date'] = new DateTime($params['begin_date']);
@@ -1122,6 +1141,25 @@ $app->get('/records', function (Request $request) use ($app) {
     $record_query = 'se.kom_rank IS NOT NULL';
   }
 
+  // Determine the sort order.
+  switch ($params['sort']) {
+    case 'avg':
+      $sort = 'ORDER BY s.average_grade DESC';
+      break;
+
+    case 'max':
+      $sort = 'ORDER BY s.maximum_grade DESC';
+      break;
+
+    case 'distance':
+      $sort = 'ORDER BY s.distance DESC';
+      break;
+
+    default:
+      $sort = 'ORDER BY a.start_date_local DESC';
+      break;
+  }
+
   // Build the query.
   $sql = 'SELECT s.name, se.id effort_id, se.segment_id, se.activity_id, ';
   $sql .= 's.distance, se.elapsed_time time, s.average_grade, s.maximum_grade, ';
@@ -1130,7 +1168,7 @@ $app->get('/records', function (Request $request) use ($app) {
   $sql .= 'JOIN segment_efforts se ON (a.athlete_id = se.athlete_id AND a.id = se.activity_id) ';
   $sql .= 'JOIN segments s ON (s.id = se.segment_id) ';
   $sql .= 'WHERE (' . $record_query . ') AND a.type = ? AND a.athlete_id = ? AND a.start_date_local BETWEEN ? AND ? ';
-  $sql .= 'ORDER BY a.start_date_local DESC';
+  $sql .= $sort;
   $datapoints = $app['db']->executeQuery($sql, [
     $params['type'],
     $user['id'],
