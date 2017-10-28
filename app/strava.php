@@ -13,9 +13,16 @@ use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
 use Igorw\Silex\ConfigServiceProvider;
 use Kilte\Silex\Pagination\PaginationServiceProvider;
+use Silex\Application;
+use Silex\Provider\AssetServiceProvider;
 use Silex\Provider\DoctrineServiceProvider;
 use Silex\Provider\FormServiceProvider;
+use Silex\Provider\LocaleServiceProvider;
+use Silex\Provider\SessionServiceProvider;
+use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\TwigServiceProvider;
+use Silex\Provider\ValidatorServiceProvider;
+use Strava\StravaServiceProvider;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -24,21 +31,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-$app = new Silex\Application();
+$app = new Application();
 unset($app['exception_handler']);
 
 // Register the session provider.
-$app->register(new Silex\Provider\SessionServiceProvider(), [
+$app->register(new SessionServiceProvider(), [
   'session.storage.options' => [
     'cookie_lifetime' => 0,
   ],
 ]);
 
 // Our custom strava service.
-$app->register(new Strava\StravaServiceProvider());
+$app->register(new StravaServiceProvider());
 
 // Register the pagination provider.
-$app->register(new PaginationServiceProvider, array('pagination.per_page' => 20));
+$app->register(new PaginationServiceProvider(), array('pagination.per_page' => 20));
 
 // Register the twig service provider.
 $app->register(new TwigServiceProvider(), [
@@ -47,7 +54,7 @@ $app->register(new TwigServiceProvider(), [
 ]);
 
 // Register the asset service provider.
-$app->register(new Silex\Provider\AssetServiceProvider(), array(
+$app->register(new AssetServiceProvider(), array(
   'assets.version' => 'v1',
   'assets.version_format' => '%s?version=%s',
   'assets.named_packages' => array(
@@ -57,9 +64,9 @@ $app->register(new Silex\Provider\AssetServiceProvider(), array(
 
 // Register the form provider.
 $app->register(new FormServiceProvider());
-$app->register(new Silex\Provider\ValidatorServiceProvider());
-$app->register(new Silex\Provider\LocaleServiceProvider());
-$app->register(new Silex\Provider\TranslationServiceProvider());
+$app->register(new ValidatorServiceProvider());
+$app->register(new LocaleServiceProvider());
+$app->register(new TranslationServiceProvider());
 $app['twig.form.templates'] = ['form.html'];
 
 // Register the config service provider.
@@ -90,7 +97,7 @@ if (file_exists(__DIR__ . "/../config/$env.php")) {
 $app->register(new DoctrineServiceProvider(), []);
 
 // Home page.
-$app->get('/', function() use ($app) {
+$app->get('/', function () use ($app) {
   $user = $app['session']->get('user');
 
   // The user is logged in.
@@ -119,7 +126,7 @@ $app->get('/', function() use ($app) {
 });
 
 // Logout.
-$app->get('/logout', function() use ($app) {
+$app->get('/logout', function () use ($app) {
   $app['session']->set('user', NULL);
   return $app->redirect('/');
 });
@@ -171,7 +178,8 @@ $app->get('/token_exchange', function (Request $request) use ($app) {
       'format' => $athlete_data['default_format'],
     ]);
   }
-  catch (Exception $e) { }
+  catch (Exception $e) {
+  }
 
   // Import new activities for the user.
   $subRequest = Request::create('/import', 'GET', array('type' => 'new'), $request->cookies->all(), array(), $request->server->all());
@@ -246,7 +254,7 @@ $app->get('/import', function (Request $request) use ($app) {
       foreach ($activities as $activity) {
         // If we are importing a specific year.
         if (is_numeric($import_type)) {
-          $start_year = (int) $app['strava']->convert_date_format($activity['start_date_local'], 'Y');
+          $start_year = (int) $app['strava']->convertDateFormat($activity['start_date_local'], 'Y');
 
           // If the activity is for a year that is earlier than the import year,
           // then we need to stop importing.
@@ -529,21 +537,21 @@ $app->get('/activities', function (Request $request) use ($app) {
   $params += [
     'type' => $user['activity_type'],
     'format' => $user['format'],
-    'workout' => $app['strava']->run_workout_choices,
+    'workout' => $app['strava']->runWorkoutChoices,
     'sort' => NULL,
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => $app['strava']->activity_type_choices,
+      'choices' => $app['strava']->activityTypeChoices,
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->format_choices,
+      'choices' => $app['strava']->formatChoices,
       'label' => FALSE,
     ]);
   if ($params['type'] == 'Run') {
     $form = $form->add('workout', ChoiceType::class, [
-      'choices' => $app['strava']->run_workout_choices,
+      'choices' => $app['strava']->runWorkoutChoices,
       'expanded' => TRUE,
       'multiple' => TRUE,
       'label' => FALSE,
@@ -606,10 +614,10 @@ $app->get('/activities', function (Request $request) use ($app) {
 
   $activities = [];
   foreach ($datapoints as $point) {
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
-    $point['date'] = $app['strava']->convert_date_format($point['start_date_local']);
-    $point['elapsed_time'] = $app['strava']->convert_time_format($point['elapsed_time']);
-    $point['total_elevation_gain'] = $app['strava']->convert_elevation_gain($point['total_elevation_gain'], $params['format']);
+    $point['distance'] = $app['strava']->convertDistance($point['distance'], $params['format']);
+    $point['date'] = $app['strava']->convertDateFormat($point['start_date_local']);
+    $point['elapsed_time'] = $app['strava']->convertTimeFormat($point['elapsed_time']);
+    $point['total_elevation_gain'] = $app['strava']->convertElevationGain($point['total_elevation_gain'], $params['format']);
     $activities[] = $point;
   }
 
@@ -621,7 +629,7 @@ $app->get('/activities', function (Request $request) use ($app) {
     'gain_format' => ($params['format'] == 'imperial') ? 'ft' : 'm',
     'pages' => $pages,
     'current' => $pagination->currentPage(),
-    'current_params' => $app['strava']->get_current_params(),
+    'current_params' => $app['strava']->getCurrentParams(),
   ]);
 })
 ->value('page', 1)
@@ -646,9 +654,9 @@ $app->get('/data', function (Request $request) use ($app) {
     'type' => $user['activity_type'],
     'format' => $user['format'],
     'group' => 'month',
-    'workout' => $app['strava']->run_workout_choices,
+    'workout' => $app['strava']->runWorkoutChoices,
   ];
-  $params += $app['strava']->get_begin_and_end_dates($params['group']);
+  $params += $app['strava']->getBeginAndEndDates($params['group']);
   if (is_string($params['begin_date'])) {
     $params['begin_date'] = new DateTime($params['begin_date']);
   }
@@ -657,15 +665,15 @@ $app->get('/data', function (Request $request) use ($app) {
   }
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => $app['strava']->activity_type_choices,
+      'choices' => $app['strava']->activityTypeChoices,
       'label' => FALSE,
     ])
     ->add('group', ChoiceType::class, [
-      'choices' => $app['strava']->group_choices,
+      'choices' => $app['strava']->groupChoices,
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->format_choices,
+      'choices' => $app['strava']->formatChoices,
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -678,7 +686,7 @@ $app->get('/data', function (Request $request) use ($app) {
     ]);
   if ($params['type'] == 'Run') {
     $form = $form->add('workout', ChoiceType::class, [
-      'choices' => $app['strava']->run_workout_choices,
+      'choices' => $app['strava']->runWorkoutChoices,
       'expanded' => TRUE,
       'multiple' => TRUE,
       'label' => FALSE,
@@ -768,7 +776,7 @@ $app->get('/data', function (Request $request) use ($app) {
   $chart->series[] = [
     'type' => 'area',
     'name' => 'Distance per ' . $params['group'],
-    'data' => []
+    'data' => [],
   ];
 
   // Create elevation gain chart.
@@ -812,8 +820,8 @@ $app->get('/data', function (Request $request) use ($app) {
 
   // Add the data points to the chart.
   foreach ($datapoints as $point) {
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format'], FALSE);
-    $point['elevation_gain'] = $app['strava']->convert_elevation_gain($point['elevation_gain'], $params['format'], FALSE);
+    $point['distance'] = $app['strava']->convertDistance($point['distance'], $params['format'], FALSE);
+    $point['elevation_gain'] = $app['strava']->convertElevationGain($point['elevation_gain'], $params['format'], FALSE);
     $chart->xAxis->categories[] = $point['grp'];
     $chart->series[0]['data'][] = $point['distance'];
     $chart2->xAxis->categories[] = $point['grp'];
@@ -849,7 +857,7 @@ $app->get('/column', function (Request $request) use ($app) {
     'group' => 'month',
     'format' => $user['format'],
   ];
-  $params += $app['strava']->get_begin_and_end_dates($params['group']);
+  $params += $app['strava']->getBeginAndEndDates($params['group']);
   if (is_string($params['begin_date'])) {
     $params['begin_date'] = new DateTime($params['begin_date']);
   }
@@ -858,11 +866,11 @@ $app->get('/column', function (Request $request) use ($app) {
   }
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('group', ChoiceType::class, [
-      'choices' => $app['strava']->group_choices,
+      'choices' => $app['strava']->groupChoices,
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->format_choices,
+      'choices' => $app['strava']->formatChoices,
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -1014,7 +1022,7 @@ $app->get('/column', function (Request $request) use ($app) {
     while ($index > count($series[$point['workout_type']]['data'])) {
       $series[$point['workout_type']]['data'][] = 0;
     }
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format'], FALSE);
+    $point['distance'] = $app['strava']->convertDistance($point['distance'], $params['format'], FALSE);
     $series[$point['workout_type']]['data'][] = $point['distance'];
   }
   $running_chart->series = $series;
@@ -1029,7 +1037,7 @@ $app->get('/column', function (Request $request) use ($app) {
     while ($index > count($series[$point['trainer']]['data'])) {
       $series[$point['trainer']]['data'][] = 0;
     }
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format'], FALSE);
+    $point['distance'] = $app['strava']->convertDistance($point['distance'], $params['format'], FALSE);
     $series[$point['trainer']]['data'][] = $point['distance'];
   }
   $treadmill_chart->series = $series;
@@ -1059,7 +1067,7 @@ $app->get('/column', function (Request $request) use ($app) {
     while ($index > count($series[$ride_type]['data'])) {
       $series[$ride_type]['data'][] = 0;
     }
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format'], FALSE);
+    $point['distance'] = $app['strava']->convertDistance($point['distance'], $params['format'], FALSE);
     $series[$ride_type]['data'][] = $point['distance'];
   }
   $cycling_chart->series = $series;
@@ -1116,7 +1124,7 @@ $app->get('/records', function (Request $request) use ($app) {
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->format_choices,
+      'choices' => $app['strava']->formatChoices,
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -1188,9 +1196,9 @@ $app->get('/records', function (Request $request) use ($app) {
   // Add the segments to the array.
   $efforts = [];
   foreach ($datapoints as $point) {
-    $point['distance'] = $app['strava']->convert_distance($point['distance'], $params['format']);
-    $point['time'] = $app['strava']->convert_time_format($point['time']);
-    $point['date'] = $app['strava']->convert_date_format($point['date']);
+    $point['distance'] = $app['strava']->convertDistance($point['distance'], $params['format']);
+    $point['time'] = $app['strava']->convertTimeFormat($point['time']);
+    $point['date'] = $app['strava']->convertDateFormat($point['date']);
     $point['pr_rank'] = !empty($point['pr_rank']) ? 'Yes' : 'No';
     $efforts[] = $point;
   }
@@ -1202,7 +1210,7 @@ $app->get('/records', function (Request $request) use ($app) {
     'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
     'pages' => $pages,
     'current' => $pagination->currentPage(),
-    'current_params' => $app['strava']->get_current_params(),
+    'current_params' => $app['strava']->getCurrentParams(),
   ]);
 })
 ->value('page', 1)
@@ -1350,25 +1358,25 @@ $app->get('/big', function (Request $request) use ($app) {
   foreach ($stats as &$stat) {
     if ($stat['stat_type'] == 'distance') {
       $stat['stat_type'] = 'Distance';
-      $stat['stat'] = $app['strava']->convert_distance($stat['stat'], $user['format']) . ' ' . ($user['format'] == 'imperial' ? 'miles' : 'kilometers');
+      $stat['stat'] = $app['strava']->convertDistance($stat['stat'], $user['format']) . ' ' . ($user['format'] == 'imperial' ? 'miles' : 'kilometers');
     }
     elseif ($stat['stat_type'] == 'total_elevation_gain') {
       $stat['stat_type'] = 'Elevation Gain';
-      $stat['stat'] = $app['strava']->convert_elevation_gain($stat['stat'], $user['format']) . ' ' . ($user['format'] == 'imperial' ? 'feet' : 'meters');
+      $stat['stat'] = $app['strava']->convertElevationGain($stat['stat'], $user['format']) . ' ' . ($user['format'] == 'imperial' ? 'feet' : 'meters');
     }
     elseif ($stat['stat_type'] == 'elapsed_time') {
       $stat['stat_type'] = 'Time';
-      $minutes = $app['strava']->convert_time_format($stat['stat'], 'i');
-      $hours = $app['strava']->convert_time_format($stat['stat'], 'H');
-      $days = $app['strava']->convert_time_format($stat['stat'], 'j') - 1;
+      $minutes = $app['strava']->convertTimeFormat($stat['stat'], 'i');
+      $hours = $app['strava']->convertTimeFormat($stat['stat'], 'H');
+      $days = $app['strava']->convertTimeFormat($stat['stat'], 'j') - 1;
       if ($days > 0) {
         $hours += $days * 24;
       }
       $stat['stat'] = $hours . ' hours, ' . $minutes . ' minutes';
     }
     $stat['excluding_races'] = empty($stat['excluding_races']) ? '' : 'Yes';
-    $stat['start_date'] = $app['strava']->convert_date_format($stat['start_date']);
-    $stat['end_date'] = $app['strava']->convert_date_format($stat['end_date']);
+    $stat['start_date'] = $app['strava']->convertDateFormat($stat['start_date']);
+    $stat['end_date'] = $app['strava']->convertDateFormat($stat['end_date']);
   }
 
   // Render the page.
@@ -1459,7 +1467,7 @@ $app->get('/jon', function (Request $request) use ($app) {
 
   // Build the form.
   $params = $request->query->all();
-  $params += $app['strava']->get_begin_and_end_dates();
+  $params += $app['strava']->getBeginAndEndDates();
   if (is_string($params['begin_date'])) {
     $params['begin_date'] = new DateTime($params['begin_date']);
   }
@@ -1526,7 +1534,7 @@ $app->get('/jon', function (Request $request) use ($app) {
     $miles = round($point['distance'] * DISTANCE_TO_MILES, 1);
     $gain = round($point['total_elevation_gain'] * GAIN_TO_FEET);
     $pace = round(60 / ($point['average_speed'] * 2.23694), 2);
-    $chart->xAxis->categories[] = $app['strava']->convert_date_format($point['start_date_local']);
+    $chart->xAxis->categories[] = $app['strava']->convertDateFormat($point['start_date_local']);
     $chart->series[0]['data'][] = [
       'name' => $point['name'],
       'y' => round($miles / 2 + (($gain / $miles) / 10) + (120 / ($pace - 5) + ((185 - $hr) * 1.05))),

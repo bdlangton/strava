@@ -1,9 +1,5 @@
 <?php
 
-/**
- * This file provides functions for use with the Strava app.
- */
-
 namespace Strava;
 
 use \DateTime;
@@ -19,44 +15,61 @@ class Strava {
 
   /**
    * Activity type form choices.
+   *
+   * @var array
    */
-  public $activity_type_choices = [
+  public $activityTypeChoices = [
     'Running' => 'Run',
     'Cycling' => 'Ride',
     'Swimming' => 'Swim',
-    'AlpineSki' => 'Alpine Skiing',
-    'BackcountrySki' => 'Backcountry Skiing',
-    'CrossCountrySkiing' => 'Cross Country Skiing',
-    'Crossfit' => 'CrossFit',
-    'Hike' => 'Hiking',
+    'Alpine Skiing' => 'AlpineSki',
+    'Backcountry Skiing' => 'BackcountrySki',
+    'Cross Country Skiing' => 'CrossCountrySkiing',
+    'CrossFit' => 'Crossfit',
+    'Hiking' => 'Hike',
     'Kayaking' => 'Kayaking',
-    'NordicSki' => 'Nordic Skiing',
-    'RockClimbing' => 'Rock Climbing',
+    'Nordic Skiing' => 'NordicSki',
+    'Rock Climbing' => 'RockClimbing',
     'Rowing' => 'Rowing',
-    'Snowshoe' => 'Snowshoeing',
-    'StandUpPaddling' => 'Stand Up Paddleboard',
-    'VirtualRide' => 'Virtual Ride',
-    'Walk' => 'Walking',
-    'WaterSport' => 'Water Sports',
-    'WeightTraining' => 'Weight Training',
+    'Snowshoeing' => 'Snowshoe',
+    'Stand Up Paddleboard' => 'StandUpPaddling',
+    'Virtual Ride' => 'VirtualRide',
+    'Walking' => 'Walk',
+    'Water Sports' => 'WaterSport',
+    'Weight Training' => 'WeightTraining',
     'Workout' => 'Workout',
     'Yoga' => 'Yoga',
   ];
 
   /**
    * Format form choices.
+   *
+   * @var array
    */
-  public $format_choices = ['Imperial' => 'imperial', 'Metric' => 'metric'];
+  public $formatChoices = ['Imperial' => 'imperial', 'Metric' => 'metric'];
 
   /**
    * Group form choices.
+   *
+   * @var array
    */
-  public $group_choices = ['Monthly' => 'month', 'Weekly' => 'week', 'Yearly' => 'year'];
+  public $groupChoices = [
+    'Monthly' => 'month',
+    'Weekly' => 'week',
+    'Yearly' => 'year',
+  ];
 
   /**
    * Run workout form choices.
+   *
+   * @var array
    */
-  public $run_workout_choices = ['Default' => 0, 'Race' => 1, 'Long Run' => 2, 'Intervals' => 3];
+  public $runWorkoutChoices = [
+    'Default' => 0,
+    'Race' => 1,
+    'Long Run' => 2,
+    'Intervals' => 3,
+  ];
 
   /**
    * Convert distance depending on format.
@@ -71,7 +84,7 @@ class Strava {
    * @return float
    *   Returns the distance in miles or meters.
    */
-  function convert_distance($distance, $format, $number_format = TRUE) {
+  public function convertDistance($distance, $format, $number_format = TRUE) {
     if ($format == 'imperial') {
       $distance = round($distance * DISTANCE_TO_MILES, 1);
     }
@@ -94,7 +107,7 @@ class Strava {
    * @return float
    *   Returns the elevation gain in feet or meters.
    */
-  function convert_elevation_gain($elevation_gain, $format, $number_format = TRUE) {
+  public function convertElevationGain($elevation_gain, $format, $number_format = TRUE) {
     if ($format == 'imperial') {
       $elevation_gain = round($elevation_gain * GAIN_TO_FEET);
     }
@@ -115,7 +128,7 @@ class Strava {
    * @return string
    *   Returns the time formatted.
    */
-  function convert_time_format($time, $format = 'H:i:s') {
+  public function convertTimeFormat($time, $format = 'H:i:s') {
     return gmdate($format, $time);
   }
 
@@ -130,7 +143,7 @@ class Strava {
    * @return string
    *   Return the date in string format.
    */
-  function convert_date_format($date, $format = 'M d, Y') {
+  public function convertDateFormat($date, $format = 'M d, Y') {
     $datetime = new DateTime($date);
     return $datetime->format($format);
   }
@@ -144,7 +157,7 @@ class Strava {
    * @return array
    *   Return array of begin date and end date.
    */
-  function get_begin_and_end_dates($group = 'month') {
+  public function getBeginAndEndDates($group = 'month') {
     $dates = array(
       'begin_date' => NULL,
       'end_date' => new DateTime('now'),
@@ -161,7 +174,7 @@ class Strava {
   /**
    * Get the current URL params minus the 'page' and 'sort' params.
    */
-  function get_current_params() {
+  public function getCurrentParams() {
     $current_params = !empty($_SERVER['QUERY_STRING']) ? html_entity_decode($_SERVER['QUERY_STRING']) : NULL;
     if (!empty($current_params)) {
       $params_array = explode('&', $current_params);
@@ -174,4 +187,5 @@ class Strava {
     }
     return $current_params;
   }
+
 }
