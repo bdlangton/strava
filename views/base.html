@@ -14,9 +14,12 @@
   <body>
     {% block header %}
       <div class="header">
-        <h1><a href="/">Barrett's Strava App</a></h1>
-        {% if login is not defined or login == false %}
-          <ul>
+      {% if login is not defined or login == false %}
+        <nav class="mobile-menu">
+          <label for="show-menu" class="show-menu"><span>Menu</span><div class="lines"></div></label>
+          <input type="checkbox" id="show-menu" class="no-uniform"/>
+          <ul id="menu">
+            <li><a href="/">Home</a></li>
             <li><a href="/activities">My Activities</a></li>
             <li><a href="/records">KOMs and PRs</a></li>
             <li><a href="/big">Biggest Stats</a></li>
@@ -26,7 +29,8 @@
             <li><a href="/user">Settings</a></li>
             <li><a href="/logout">Logout</a></li>
           </ul>
-        {% endif %}
+        </nav>
+      {% endif %}
       </div>
     {% endblock %}
     <div class="messages">
