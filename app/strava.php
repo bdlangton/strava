@@ -629,7 +629,8 @@ $app->get('/activities', function (Request $request) use ($app) {
     'gain_format' => ($params['format'] == 'imperial') ? 'ft' : 'm',
     'pages' => $pages,
     'current' => $pagination->currentPage(),
-    'current_params' => $app['strava']->getCurrentParams(),
+    'current_params_minus_page' => $app['strava']->getCurrentParams(['page']),
+    'current_params_minus_sort' => $app['strava']->getCurrentParams(['sort']),
   ]);
 })
 ->value('page', 1)
@@ -1210,7 +1211,8 @@ $app->get('/records', function (Request $request) use ($app) {
     'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
     'pages' => $pages,
     'current' => $pagination->currentPage(),
-    'current_params' => $app['strava']->getCurrentParams(),
+    'current_params_minus_page' => $app['strava']->getCurrentParams(['page']),
+    'current_params_minus_sort' => $app['strava']->getCurrentParams(['sort']),
   ]);
 })
 ->value('page', 1)
