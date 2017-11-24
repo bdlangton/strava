@@ -2,8 +2,20 @@
 
 {% block content %}
   {% if login %}
-    <div>Click the button below to login using Strava.</div>
-    <div><a href="https://www.strava.com/oauth/authorize?client_id=4369&scope=view_private&response_type=code&redirect_uri=http://strava.barrettlangton.com/token_exchange&scope=view_private"><img src="/images/ConnectWithStrava.png"></a></div>
+    <p>Welcome to Data Analytics. Click the button below to login using Strava.</p>
+    <p>Once you join, you'll be able to view your data in ways that it is hard to by just using Strava itself.</p>
+    <p>Here are the main ways that you can view your data:
+      <ol>
+        <li>Graphs of your data for any sport, grouped by week, month, or year.</li>
+        <li>Running data broken up by type: regular/long run/race/workout.</li>
+        <li>Running data broken up by outside vs treadmill.</li>
+        <li>Cycling data broken up by regular/commute/stationary.</li>
+        <li>Listing of your KOMs/CRs and PRs</li>
+        <li>Listing of your biggest stats for ranges that you specify. Example: What is the most mileage that I've ran over a seven day period?</li>
+        <li>Standard listing of all activities that you've done, sortable.</li>
+      </ol>
+    </p>
+    <p><a href="https://www.strava.com/oauth/authorize?client_id=4369&scope=view_private&response_type=code&redirect_uri=http://strava.barrettlangton.com/token_exchange&scope=view_private"><img src="/images/ConnectWithStrava.png"></a></p>
   {% else %}
     <div class="updates">
       <h2>Important Update</h2>

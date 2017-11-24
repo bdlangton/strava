@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>{% block title %}Barrett's Data Analytics{% endblock %}</title>
+    <title>{% block title %}Data Analytics{% endblock %}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% block head %}
@@ -15,23 +15,25 @@
   <body>
     {% block header %}
       <div class="header">
-      {% if login is not defined or login == false %}
         <nav class="mobile-menu">
-          <label for="show-menu" class="show-menu"><span>Menu</span><div class="lines"></div></label>
+          <label for="show-menu" class="show-menu"><span>Data Analytics</span><div class="lines"></div></label>
           <input type="checkbox" id="show-menu" class="no-uniform"/>
           <ul id="menu">
-            <li><a href="/">Home</a></li>
-            <li><a href="/activities">My Activities</a></li>
-            <li><a href="/records">KOMs and PRs</a></li>
-            <li><a href="/big">Biggest Stats</a></li>
-            <li><a href="/data">General Graphs</a></li>
-            <li><a href="/column">Column Charts</a></li>
-            <li><a href="/jon">Jon Score Graph</a></li>
-            <li><a href="/user">Settings</a></li>
-            <li><a href="/logout">Logout</a></li>
+            {% if login is not defined or login == false %}
+              <li><a href="/">Home</a></li>
+              <li><a href="/activities">My Activities</a></li>
+              <li><a href="/records">KOMs and PRs</a></li>
+              <li><a href="/big">Biggest Stats</a></li>
+              <li><a href="/data">General Graphs</a></li>
+              <li><a href="/column">Column Charts</a></li>
+              <li><a href="/jon">Jon Score Graph</a></li>
+              <li><a href="/user">Settings</a></li>
+              <li><a href="/logout">Logout</a></li>
+            {% else %}
+              <li><a href="/">Data Analytics</a></li>
+            {% endif %}
           </ul>
         </nav>
-      {% endif %}
       </div>
     {% endblock %}
     <div class="messages">

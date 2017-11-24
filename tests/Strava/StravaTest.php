@@ -194,7 +194,7 @@ class StravaTest extends WebTestCase {
    * Verify logged in header links.
    */
   private function verifyLoggedInHeader($crawler) {
-    $this->assertCount(1, $crawler->filter('div.header h1:contains("Barrett\'s Data Analytics")'));
+    $this->assertCount(1, $crawler->filter('div.header h1:contains("Data Analytics")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("My Activities")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("KOMs and PRs")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("General Graphs")'));
@@ -208,7 +208,7 @@ class StravaTest extends WebTestCase {
    * Verify logged out header links.
    */
   private function verifyLoggedOutHeader($crawler) {
-    $this->assertCount(1, $crawler->filter('div.header h1:contains("Barrett\'s Data Analytics")'));
+    $this->assertCount(1, $crawler->filter('div.header h1:contains("Data Analytics")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("My Activities")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("KOMs and PRs")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("General Graphs")'));
