@@ -11,7 +11,7 @@
          syntaxCheck="false"
 >
     <testsuites>
-        <testsuite name="Barrett's Strava App Test Suite">
+        <testsuite name="Barrett's Data Analytics Test Suite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
