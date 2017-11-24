@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Strava test functionality.
- */
-
 namespace Tests\Strava;
 
 use Silex\WebTestCase;
@@ -230,4 +225,5 @@ class StravaTest extends WebTestCase {
     $this->assertCount(1, $crawler->filter('form'));
     $this->assertCount(1, $crawler->filter('form input[name="submit"]'));
   }
+
 }

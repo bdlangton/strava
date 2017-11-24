@@ -172,14 +172,22 @@ class Strava {
   }
 
   /**
-   * Get the current URL params minus the 'page' and 'sort' params.
+   * Get the current URL params.
+   *
+   * @param array $exclude
+   *   Optional array of params to exclude from the return. Used if you want to
+   *   exclude something such as 'page' or 'sort'.
+   *
+   * @return string
+   *   Returns a string of params joined by "&".
    */
-  public function getCurrentParams() {
+  public function getCurrentParams(array $exclude = array()) {
     $current_params = !empty($_SERVER['QUERY_STRING']) ? html_entity_decode($_SERVER['QUERY_STRING']) : NULL;
-    if (!empty($current_params)) {
+    if (!empty($current_params) && !empty($exclude)) {
       $params_array = explode('&', $current_params);
       foreach ($params_array as $key => $param) {
-        if (strpos($param, 'page=') === 0 || strpos($param, 'sort=') === 0) {
+        $param_explode = explode('=', $param);
+        if (in_array($param_explode[0], $exclude)) {
           unset($params_array[$key]);
         }
       }
