@@ -2,7 +2,7 @@
 
 namespace Strava;
 
-use \DateTime;
+use DateTime;
 
 define("DISTANCE_TO_MILES", 0.00062137);
 define("DISTANCE_TO_KM", 0.001);
@@ -24,19 +24,34 @@ class Strava {
     'Swimming' => 'Swim',
     'Alpine Skiing' => 'AlpineSki',
     'Backcountry Skiing' => 'BackcountrySki',
+    'Canoeing' => 'Canoeing',
+    // Deprecated.
     'Cross Country Skiing' => 'CrossCountrySkiing',
     'CrossFit' => 'Crossfit',
+    'E-Bike Riding' => 'EBikeRide',
+    'Elliptical' => 'Elliptical',
+    'Handcycling' => 'Handcycle',
     'Hiking' => 'Hike',
+    'Ice Skating' => 'IceSkate',
+    'Inline Skating' => 'InlineSkate',
     'Kayaking' => 'Kayaking',
+    'Kite Surfing' => 'Kitesurf',
     'Nordic Skiing' => 'NordicSki',
     'Rock Climbing' => 'RockClimbing',
+    'Roller Skiing' => 'RollerSki',
     'Rowing' => 'Rowing',
+    'Snowboarding' => 'Snowboard',
     'Snowshoeing' => 'Snowshoe',
+    'Stair Stepper' => 'StairStepper',
     'Stand Up Paddleboard' => 'StandUpPaddling',
+    'Surfing' => 'Surfing',
     'Virtual Ride' => 'VirtualRide',
     'Walking' => 'Walk',
+    // Deprecated.
     'Water Sports' => 'WaterSport',
     'Weight Training' => 'WeightTraining',
+    'Wheel Chair' => 'WheelChair',
+    'Wind Surfing' => 'Windsurf',
     'Workout' => 'Workout',
     'Yoga' => 'Yoga',
   ];
