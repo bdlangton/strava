@@ -81,8 +81,8 @@ class StravaTest extends WebTestCase {
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
     $this->assertCount(1, $crawler->filter('ul.pagination'));
-    //$this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
-    //$this->assertCount(1, $crawler->filter('th a:contains("Elevation Gain (ft)")'));
+    $this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
+    $this->assertCount(1, $crawler->filter('th a:contains("Elevation Gain (ft)")'));
 
     // Test the form.
     $form = $crawler->selectButton('submit')->form();
@@ -107,13 +107,13 @@ class StravaTest extends WebTestCase {
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
     $this->assertCount(1, $crawler->filter('ul.pagination'));
-    //$this->assertCount(1, $crawler->filter('th a:contains("Distance (mi)")'));
+    $this->assertCount(1, $crawler->filter('th a:contains("Distance (mi)")'));
 
     // Test the form.
     $form = $crawler->selectButton('submit')->form();
     $form['format'] = 'metric';
     $crawler = $client->submit($form);
-    //$this->assertCount(1, $crawler->filter('th a:contains("Distance (km)")'));
+    $this->assertCount(1, $crawler->filter('th a:contains("Distance (km)")'));
   }
 
   /**
@@ -127,7 +127,7 @@ class StravaTest extends WebTestCase {
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
-    //$this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
+    $this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
 
     // Test the form.
     $form = $crawler->selectButton('submit')->form();
@@ -194,8 +194,8 @@ class StravaTest extends WebTestCase {
     $this->app['session']->set('user', [
       'id' => getenv('strava_test_user_id'),
       'access_token' => getenv('strava_test_access_token'),
-      'activity_type' => getenv('strava_test_user_activity_type') ?? 'Run',
-      'format' => getenv('strava_test_user_format') ?? 'imperial',
+      'activity_type' => getenv('strava_test_user_activity_type') ?: 'Run',
+      'format' => getenv('strava_test_user_format') ?: 'imperial',
     ]);
   }
 
