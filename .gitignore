@@ -1,3 +1,5 @@
 config
 vendor
 .ddev
+.docksal
+.vscode

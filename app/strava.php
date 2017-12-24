@@ -41,6 +41,14 @@ $app->register(new SessionServiceProvider(), [
   ],
 ]);
 
+// Get the app environment from the Apache config.
+$env = getenv('APP_ENV') ?: 'dev';
+
+// Include the environment specific settings file.
+if (file_exists(__DIR__ . "/../config/$env.php")) {
+  require_once __DIR__ . "/../config/$env.php";
+}
+
 // Our custom strava service.
 $app->register(new StravaServiceProvider());
 
@@ -70,8 +78,6 @@ $app->register(new TranslationServiceProvider());
 $app['twig.form.templates'] = ['form.html'];
 
 // Register the config service provider.
-// Get the app environment from the Apache config.
-$env = getenv('APP_ENV') ?: 'dev';
 if (file_exists(__DIR__ . "/../config/$env.json")) {
   $app->register(new ConfigServiceProvider(__DIR__ . "/../config/$env.json"));
 }
@@ -86,11 +92,6 @@ else {
     'host' => getenv('strava_db_options_host'),
     'driver' => getenv('strava_db_options_driver'),
   );
-}
-
-// Include the environment specific settings file.
-if (file_exists(__DIR__ . "/../config/$env.php")) {
-  require_once __DIR__ . "/../config/$env.php";
 }
 
 // Register the doctrine service provider.

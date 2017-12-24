@@ -64,7 +64,6 @@ class StravaTest extends WebTestCase {
     $this->login();
     $client = $this->createClient();
     $crawler = $client->request('GET', '/');
-    print_r($client->getResponse());
 
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
