@@ -536,8 +536,8 @@ $app->get('/activities', function (Request $request) use ($app) {
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => $user['activity_type'],
-    'format' => $user['format'],
+    'type' => $user['activity_type'] ?: 'Run',
+    'format' => $user['format'] ?: 'imperial',
     'workout' => $app['strava']->runWorkoutChoices,
     'sort' => NULL,
   ];
@@ -628,6 +628,109 @@ $app->get('/activities', function (Request $request) use ($app) {
     'activities' => $activities,
     'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
     'gain_format' => ($params['format'] == 'imperial') ? 'ft' : 'm',
+    'pages' => $pages,
+    'current' => $pagination->currentPage(),
+    'current_params_minus_page' => $app['strava']->getCurrentParams(['page']),
+    'current_params_minus_sort' => $app['strava']->getCurrentParams(['sort']),
+  ]);
+})
+->value('page', 1)
+->convert(
+  'page',
+  function ($page) {
+    return (int) $page;
+  }
+);
+
+// My segments.
+$app->get('/segments', function (Request $request) use ($app) {
+  // Check the session.
+  $user = $app['session']->get('user');
+  if (empty($user)) {
+    return $app->redirect('/');
+  }
+
+  // Query for activities.
+  $curl = curl_init();
+  curl_setopt_array($curl, [
+    CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?access_token=' . $user['access_token'],
+    CURLOPT_RETURNTRANSFER => TRUE,
+  ]);
+  $starred_segments = curl_exec($curl);
+  $starred_segments = json_decode($starred_segments, TRUE);
+
+  // Update or insert the stat.
+  $sql = 'SELECT segment_id ';
+  $sql .= 'FROM starred_segments ';
+  $sql .= 'WHERE athlete_id = ?';
+  $result = $app['db']->executeQuery($sql, [
+    $user['id'],
+  ])->fetchAll(\PDO::FETCH_COLUMN);
+  foreach ($starred_segments as $starred_segment) {
+    if (!in_array($starred_segment['id'], $result)) {
+      $app['db']->insert('starred_segments', [
+        'athlete_id' => $user['id'],
+        'segment_id' => $starred_segment['id'],
+      ]);
+    }
+    else {
+      break;
+    }
+  }
+
+  // Build the form.
+  $params = $request->query->all();
+  $params += [
+    'type' => $user['activity_type'] ?: 'Run',
+    'sort' => NULL,
+  ];
+  $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
+    ->add('type', ChoiceType::class, [
+      'choices' => $app['strava']->activityTypeChoices,
+      'label' => FALSE,
+    ]);
+  $form = $form->getForm();
+
+  // Build the query.
+  $sql = 'SELECT s.id, s.name, s.activity_type, s.distance ';
+  $sql .= 'FROM starred_segments ss ';
+  $sql .= 'JOIN segments s ON (ss.segment_id = s.id) ';
+  $sql .= 'WHERE ss.athlete_id = ?';
+  if ($params['type'] == 'Run') {
+    $datapoints = $app['db']->executeQuery($sql,
+      [
+        $user['id'],
+      ],
+      [
+        \PDO::PARAM_INT,
+      ]
+    );
+  }
+  else {
+    $datapoints = $app['db']->executeQuery($sql, [
+      $user['id'],
+    ]);
+  }
+
+  // Get the current page and build the pagination.
+  $page = $request->query->get('page') ?: 1;
+  $pagination = $app['pagination']($datapoints->rowCount(), $page);
+  $pages = $pagination->build();
+
+  // Trim the datapoints to just the results we want for this page.
+  $datapoints = $datapoints->fetchAll();
+  $datapoints = array_slice($datapoints, ($page - 1) * $app['pagination.per_page'], $app['pagination.per_page']);
+
+  $activities = [];
+  foreach ($datapoints as $point) {
+    $point['distance'] = $app['strava']->convertDistance($point['distance'], $user['format']);
+    $segments[] = $point;
+  }
+
+  // Render the page.
+  return $app['twig']->render('segments.twig', [
+    'form' => $form->createView(),
+    'segments' => $segments,
     'pages' => $pages,
     'current' => $pagination->currentPage(),
     'current_params_minus_page' => $app['strava']->getCurrentParams(['page']),
