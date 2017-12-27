@@ -8,6 +8,7 @@
     <th>Segment</th>
     <th>Activity Type</th>
     <th>Distance</th>
+    <th>Starred Date</th>
   </tr>
   {% for segment in segments %}
   <tr>
@@ -16,6 +17,7 @@
     </td>
     <td>{{ segment.activity_type }}</td>
     <td>{{ segment.distance }}</td>
+    <td>{{ segment.starred_date }}</td>
   </tr>
   {% endfor %}
 </table>

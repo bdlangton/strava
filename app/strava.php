@@ -680,6 +680,7 @@ $app->get('/segments', function (Request $request) use ($app) {
       $app['db']->insert('starred_segments', [
         'athlete_id' => $user['id'],
         'segment_id' => $starred_segment['id'],
+        'starred_date' => str_replace('Z', '', $starred_segment['starred_date']),
       ]);
     }
     else {
@@ -700,11 +701,15 @@ $app->get('/segments', function (Request $request) use ($app) {
     ]);
   $form = $form->getForm();
 
+  // Sort.
+  $sort = 'ORDER BY ss.starred_date ';
+
   // Build the query.
-  $sql = 'SELECT s.id, s.name, s.activity_type, s.distance ';
+  $sql = 'SELECT s.id, s.name, s.activity_type, s.distance, ss.starred_date ';
   $sql .= 'FROM starred_segments ss ';
   $sql .= 'JOIN segments s ON (ss.segment_id = s.id) ';
-  $sql .= 'WHERE ss.athlete_id = ?';
+  $sql .= 'WHERE ss.athlete_id = ? ';
+  $sql .= $sort;
   if ($params['type'] == 'Run') {
     $datapoints = $app['db']->executeQuery($sql,
       [
@@ -733,6 +738,7 @@ $app->get('/segments', function (Request $request) use ($app) {
   $activities = [];
   foreach ($datapoints as $point) {
     $point['distance'] = $app['strava']->convertDistance($point['distance'], $user['format']);
+    $point['starred_date'] = $app['strava']->convertDateFormat($point['starred_date']);
     $segments[] = $point;
   }
 
