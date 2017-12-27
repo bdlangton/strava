@@ -536,7 +536,7 @@ $app->get('/activities', function (Request $request) use ($app) {
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => $user['activity_type'] ?: 'Run',
+    'type' => $user['activity_type'] ?: 'All',
     'format' => $user['format'] ?: 'imperial',
     'workout' => $app['strava']->runWorkoutChoices,
     'sort' => NULL,
@@ -578,7 +578,10 @@ $app->get('/activities', function (Request $request) use ($app) {
   // Build the query.
   $sql = 'SELECT * ';
   $sql .= 'FROM activities ';
-  $sql .= 'WHERE type = ? AND athlete_id = ? ';
+  $sql .= 'WHERE athlete_id = ? ';
+  if ($params['type'] != 'All') {
+    $sql .= 'AND type = ? ';
+  }
   if ($params['type'] == 'Run') {
     $sql .= 'AND workout_type IN (?) ';
   }
@@ -586,8 +589,8 @@ $app->get('/activities', function (Request $request) use ($app) {
   if ($params['type'] == 'Run') {
     $datapoints = $app['db']->executeQuery($sql,
       [
-        $params['type'],
         $user['id'],
+        $params['type'],
         $params['workout'],
       ],
       [
@@ -597,10 +600,15 @@ $app->get('/activities', function (Request $request) use ($app) {
       ]
     );
   }
+  elseif ($params['type'] == 'All') {
+    $datapoints = $app['db']->executeQuery($sql, [
+      $user['id'],
+    ]);
+  }
   else {
     $datapoints = $app['db']->executeQuery($sql, [
-      $params['type'],
       $user['id'],
+      $params['type'],
     ]);
   }
 
@@ -626,6 +634,7 @@ $app->get('/activities', function (Request $request) use ($app) {
   return $app['twig']->render('activities.twig', [
     'form' => $form->createView(),
     'activities' => $activities,
+    'type' => $params['type'],
     'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
     'gain_format' => ($params['format'] == 'imperial') ? 'ft' : 'm',
     'pages' => $pages,
@@ -756,8 +765,8 @@ $app->get('/data', function (Request $request) use ($app) {
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => $user['activity_type'],
-    'format' => $user['format'],
+    'type' => $user['activity_type'] ?: 'All',
+    'format' => $user['format'] ?: 'imperial',
     'group' => 'month',
     'workout' => $app['strava']->runWorkoutChoices,
   ];
@@ -812,7 +821,10 @@ $app->get('/data', function (Request $request) use ($app) {
   $sql = 'SELECT ' . $group . ' grp, SUM(distance) distance, SUM(total_elevation_gain) elevation_gain, ';
   $sql .= 'SUM(elapsed_time) elapsed_time, SUM(moving_time) moving_time ';
   $sql .= 'FROM activities ';
-  $sql .= 'WHERE type = ? AND athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
+  $sql .= 'WHERE athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
+  if ($params['type'] != 'All') {
+    $sql .= 'AND type = ? ';
+  }
   if ($params['type'] == 'Run') {
     $sql .= 'AND workout_type IN (?) ';
   }
@@ -821,10 +833,10 @@ $app->get('/data', function (Request $request) use ($app) {
   if ($params['type'] == 'Run') {
     $datapoints = $app['db']->executeQuery($sql,
       [
-        $params['type'],
         $user['id'],
         $params['begin_date']->format('Y-m-d'),
         $params['end_date']->format('Y-m-d'),
+        $params['type'],
         $params['workout'],
       ],
       [
@@ -836,12 +848,19 @@ $app->get('/data', function (Request $request) use ($app) {
       ]
     );
   }
-  else {
+  elseif ($params['type'] == 'All') {
     $datapoints = $app['db']->executeQuery($sql, [
-      $params['type'],
       $user['id'],
       $params['begin_date']->format('Y-m-d'),
       $params['end_date']->format('Y-m-d'),
+    ]);
+  }
+  else {
+    $datapoints = $app['db']->executeQuery($sql, [
+      $user['id'],
+      $params['begin_date']->format('Y-m-d'),
+      $params['end_date']->format('Y-m-d'),
+      $params['type'],
     ]);
   }
 

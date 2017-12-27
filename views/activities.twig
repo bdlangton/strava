@@ -11,6 +11,9 @@
         <a href="/activities?{{ current_params_minus_sort }}&sort=date">Date</a>
       </th>
       <th>Activity</th>
+      {% if type == 'All' %}
+        <th>Type</th>
+      {% endif %}
       <th>
         <a href="/activities?{{ current_params_minus_sort }}&sort=distance">Distance ({{ format }})</a>
       </th>
@@ -23,6 +26,9 @@
       <tr>
         <td>{{ activity.date }}</td>
         <td><a href="https://www.strava.com/activities/{{ activity.id }}">{{ activity.name }}</a></td>
+        {% if type == 'All' %}
+          <td>{{ activity.type }}</td>
+        {% endif %}
         <td>{{ activity.distance }}</td>
         <td>{{ activity.elapsed_time }}</td>
         <td>{{ activity.total_elevation_gain }}</td>

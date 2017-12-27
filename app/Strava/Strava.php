@@ -19,6 +19,7 @@ class Strava {
    * @var array
    */
   public $activityTypeChoices = [
+    'All' => 'All',
     'Running' => 'Run',
     'Cycling' => 'Ride',
     'Swimming' => 'Swim',
