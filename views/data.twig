@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
+{% block title %}Graphs{% endblock %}
+
 {% block content %}
+  <h1>Graphs</h1>
   <form action="/data" method="get">
     {{ form_widget(form) }}
     <input type="submit" name="submit" />

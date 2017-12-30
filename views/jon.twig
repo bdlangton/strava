@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
+{% block title %}Jon Score{% endblock %}
+
 {% block content %}
+  <h1>Jon Score</h1>
   <p>Jon Score is a complex calculation that takes into consideration your heart rate, pace, and elevation gain and spits out a score. Typically, over 100 is considered good.</p>
   <form action="/jon" method="get">
     {{ form_widget(form) }}
