@@ -660,7 +660,7 @@ $app->get('/segments', function (Request $request) use ($app) {
   }
 
   // Query for activities.
-  $curl = curl_init();
+  /*$curl = curl_init();
   curl_setopt_array($curl, [
     CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?access_token=' . $user['access_token'],
     CURLOPT_RETURNTRANSFER => TRUE,
@@ -686,43 +686,63 @@ $app->get('/segments', function (Request $request) use ($app) {
     else {
       break;
     }
-  }
+  }*/
 
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => $user['activity_type'] ?: 'Run',
+    'type' => $user['activity_type'] ?: 'All',
+    'name' => '',
+    'format' => $user['format'] ?: 'imperial',
     'sort' => NULL,
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
       'choices' => $app['strava']->activityTypeChoices,
       'label' => FALSE,
+    ])
+    ->add('name', TextType::class, [
+      'label' => FALSE,
+      'required' => FALSE,
     ]);
   $form = $form->getForm();
 
   // Sort.
-  $sort = 'ORDER BY ss.starred_date ';
+  switch ($params['sort']) {
+    case 'segment':
+      $sort = 'ORDER BY s.name';
+      break;
+
+    case 'distance':
+      $sort = 'ORDER BY s.distance DESC';
+      break;
+
+    default:
+      $sort = 'ORDER BY ss.starred_date DESC';
+      break;
+  }
 
   // Build the query.
   $sql = 'SELECT s.id, s.name, s.activity_type, s.distance, ss.starred_date ';
   $sql .= 'FROM starred_segments ss ';
   $sql .= 'JOIN segments s ON (ss.segment_id = s.id) ';
   $sql .= 'WHERE ss.athlete_id = ? ';
+  $sql .= 'AND s.name LIKE ? ';
+  if ($params['type'] != 'All') {
+    $sql .= 'AND s.activity_type = ? ';
+  }
   $sql .= $sort;
-  if ($params['type'] == 'Run') {
-    $datapoints = $app['db']->executeQuery($sql,
-      [
-        $user['id'],
-      ],
-      [
-        \PDO::PARAM_INT,
-      ]
-    );
+  if ($params['type'] == 'All') {
+    $datapoints = $app['db']->executeQuery($sql, [
+      $user['id'],
+      '%' . $params['name'] . '%',
+    ]);
   }
   else {
     $datapoints = $app['db']->executeQuery($sql, [
       $user['id'],
+      '%' . $params['name'] . '%',
+      $params['type'],
     ]);
   }
 
@@ -746,6 +766,8 @@ $app->get('/segments', function (Request $request) use ($app) {
   return $app['twig']->render('segments.twig', [
     'form' => $form->createView(),
     'segments' => $segments,
+    'type' => $params['type'],
+    'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
     'pages' => $pages,
     'current' => $pagination->currentPage(),
     'current_params_minus_page' => $app['strava']->getCurrentParams(['page']),

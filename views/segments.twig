@@ -1,43 +1,52 @@
-{% extends "base.html" %} {% block content %}
-<form action="/segments" method="get">
-  {{ form_widget(form) }}
-  <input type="submit" name="submit" />
-</form>
-<table>
-  <tr>
-    <th>Segment</th>
-    <th>Activity Type</th>
-    <th>Distance</th>
-    <th>Starred Date</th>
-  </tr>
-  {% for segment in segments %}
-  <tr>
-    <td>
-      <a href="https://www.strava.com/segments/?{{ segment.id }}">{{ segment.name }}</a>
-    </td>
-    <td>{{ segment.activity_type }}</td>
-    <td>{{ segment.distance }}</td>
-    <td>{{ segment.starred_date }}</td>
-  </tr>
-  {% endfor %}
-</table>
-<ul class="pagination">
-  {% for number, position in pages %} {% if position == 'first' %}
-  <li>
-    <a href="/segments?{{ current_params_minus_page }}&page={{ number }}">&laquo;</a>
-  </li>
-  {% elseif position == 'less' or position == 'more' %}
-  <li>...</li>
-  {% elseif position == 'previous' or position == 'next' %}
-  <li>
-    <a href="/segments?{{ current_params_minus_page }}&page={{ number }}">{{ number }}</a>
-  </li>
-  {% elseif position == 'current' %}
-  <li>{{ number }}</li>
-  {% elseif position == 'last' %}
-  <li>
-    <a href="/segments?{{ current_params_minus_page }}&page={{ number }}">&raquo;</a>
-  </li>
-  {% endif %} {% endfor %}
-</ul>
+{% extends "base.html" %}
+
+{% block title %}Segments{% endblock %}
+
+{% block content %}
+  <p>List of your starred segments on Strava.</p>
+  <form action="/segments" method="get">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+  <table>
+    <tr>
+      <th><a href="/segments?{{ current_params_minus_sort }}&sort=segment">Segment</a></th>
+      {% if type == 'All' %}
+        <th>Activity Type</th>
+      {% endif %}
+      <th><a href="/segments?{{ current_params_minus_sort }}&sort=distance">Distance ({{ format }})</a></th>
+      <th><a href="/segments?{{ current_params_minus_sort }}&sort=date">Starred Date</a></th>
+    </tr>
+    {% for segment in segments %}
+    <tr>
+      <td>
+        <a href="https://www.strava.com/segments/?{{ segment.id }}">{{ segment.name }}</a>
+      </td>
+      {% if type == 'All' %}
+        <td>{{ segment.activity_type }}</td>
+      {% endif %}
+      <td>{{ segment.distance }}</td>
+      <td>{{ segment.starred_date }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <ul class="pagination">
+    {% for number, position in pages %} {% if position == 'first' %}
+    <li>
+      <a href="/segments?{{ current_params_minus_page }}&page={{ number }}">&laquo;</a>
+    </li>
+    {% elseif position == 'less' or position == 'more' %}
+    <li>...</li>
+    {% elseif position == 'previous' or position == 'next' %}
+    <li>
+      <a href="/segments?{{ current_params_minus_page }}&page={{ number }}">{{ number }}</a>
+    </li>
+    {% elseif position == 'current' %}
+    <li>{{ number }}</li>
+    {% elseif position == 'last' %}
+    <li>
+      <a href="/segments?{{ current_params_minus_page }}&page={{ number }}">&raquo;</a>
+    </li>
+    {% endif %} {% endfor %}
+  </ul>
 {% endblock %}
