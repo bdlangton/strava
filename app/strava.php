@@ -538,6 +538,7 @@ $app->get('/activities', function (Request $request) use ($app) {
   $params += [
     'type' => $user['activity_type'] ?: 'All',
     'format' => $user['format'] ?: 'imperial',
+    'name' => '',
     'workout' => $app['strava']->runWorkoutChoices,
     'sort' => NULL,
   ];
@@ -549,6 +550,10 @@ $app->get('/activities', function (Request $request) use ($app) {
     ->add('format', ChoiceType::class, [
       'choices' => $app['strava']->formatChoices,
       'label' => FALSE,
+    ])
+    ->add('name', TextType::class, [
+      'label' => FALSE,
+      'required' => FALSE,
     ]);
   if ($params['type'] == 'Run') {
     $form = $form->add('workout', ChoiceType::class, [
@@ -579,6 +584,7 @@ $app->get('/activities', function (Request $request) use ($app) {
   $sql = 'SELECT * ';
   $sql .= 'FROM activities ';
   $sql .= 'WHERE athlete_id = ? ';
+  $sql .= 'AND name LIKE ? ';
   if ($params['type'] != 'All') {
     $sql .= 'AND type = ? ';
   }
@@ -590,10 +596,12 @@ $app->get('/activities', function (Request $request) use ($app) {
     $datapoints = $app['db']->executeQuery($sql,
       [
         $user['id'],
+        '%' . $params['name'] . '%',
         $params['type'],
         $params['workout'],
       ],
       [
+        \PDO::PARAM_STR,
         \PDO::PARAM_STR,
         \PDO::PARAM_INT,
         Connection::PARAM_INT_ARRAY,
@@ -603,11 +611,13 @@ $app->get('/activities', function (Request $request) use ($app) {
   elseif ($params['type'] == 'All') {
     $datapoints = $app['db']->executeQuery($sql, [
       $user['id'],
+      '%' . $params['name'] . '%',
     ]);
   }
   else {
     $datapoints = $app['db']->executeQuery($sql, [
       $user['id'],
+      '%' . $params['name'] . '%',
       $params['type'],
     ]);
   }
