@@ -88,7 +88,7 @@ class Strava {
   ];
 
   /**
-   * Convert distance depending on format.
+   * Converts distance depending on format.
    *
    * @param float $distance
    *   Distance provided by Strava.
@@ -111,7 +111,7 @@ class Strava {
   }
 
   /**
-   * Convert elevation gain depending on format.
+   * Converts elevation gain depending on format.
    *
    * @param float $elevation_gain
    *   Elevation gain provided by Strava.
@@ -134,7 +134,7 @@ class Strava {
   }
 
   /**
-   * Convert time in seconds to a readable format.
+   * Converts time in seconds to a readable format.
    *
    * @param int $time
    *   The time in seconds.
@@ -149,7 +149,7 @@ class Strava {
   }
 
   /**
-   * Convert a provided date to a certain format.
+   * Converts a provided date to a certain format.
    *
    * @param string $date
    *   The date in 'Y-m-d' format.
@@ -157,7 +157,7 @@ class Strava {
    *   The format that we want the date in.
    *
    * @return string
-   *   Return the date in string format.
+   *   Returns the date in string format.
    */
   public function convertDateFormat($date, $format = 'M d, Y') {
     $datetime = new DateTime($date);
@@ -165,13 +165,30 @@ class Strava {
   }
 
   /**
-   * Get the begin and end dates based on the grouping option selected.
+   * Gets activity type choices.
+   *
+   * @param bool $include_all
+   *   Whether or not to include All.
+   *
+   * @return array
+   *   Returns an array of activity types.
+   */
+  public function getActivityTypes(bool $include_all = TRUE) : array {
+    $choices = $this->activityTypeChoices;
+    if (!$include_all) {
+      unset($choices['All']);
+    }
+    return $choices;
+  }
+
+  /**
+   * Gets the begin and end dates based on the grouping option selected.
    *
    * @param string $group
    *   Group by year, month, or week.
    *
    * @return array
-   *   Return array of begin date and end date.
+   *   Returns array of begin date and end date.
    */
   public function getBeginAndEndDates($group = 'month') {
     $dates = array(
@@ -188,7 +205,7 @@ class Strava {
   }
 
   /**
-   * Get the current URL params.
+   * Gets the current URL params.
    *
    * @param array $exclude
    *   Optional array of params to exclude from the return. Used if you want to

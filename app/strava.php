@@ -1386,17 +1386,14 @@ $app->get('/big', function (Request $request) use ($app) {
   $params = $request->query->all();
   $generating = !empty($params['stat_type']);
   $params += [
-    'type' => $user['activity_type'],
+    'type' => $user['activity_type'] ?: 'Run',
     'stat_type' => 'distance',
     'duration' => 7,
-    'excluding_races' => array(),
+    'excluding_races' => [],
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => [
-        'Running' => 'Run',
-        'Cycling' => 'Ride',
-      ],
+      'choices' => $app['strava']->getActivityTypes(FALSE),
       'label' => 'Activity Type',
     ])
     ->add('stat_type', ChoiceType::class, [
