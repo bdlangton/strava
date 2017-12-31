@@ -580,6 +580,16 @@ $app->get('/activities', function (Request $request) use ($app) {
       break;
   }
 
+  // Query params and types.
+  $query_params = [
+    $user['id'],
+    '%' . $params['name'] . '%',
+  ];
+  $query_types = [
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
+  ];
+
   // Build the query.
   $sql = 'SELECT * ';
   $sql .= 'FROM activities ';
@@ -587,40 +597,16 @@ $app->get('/activities', function (Request $request) use ($app) {
   $sql .= 'AND name LIKE ? ';
   if ($params['type'] != 'All') {
     $sql .= 'AND type = ? ';
+    $query_params[] = $params['type'];
+    $query_types[] = \PDO::PARAM_INT;
   }
   if ($params['type'] == 'Run') {
     $sql .= 'AND workout_type IN (?) ';
+    $query_params[] = $params['workout'];
+    $query_types[] = Connection::PARAM_INT_ARRAY;
   }
   $sql .= $sort;
-  if ($params['type'] == 'Run') {
-    $datapoints = $app['db']->executeQuery($sql,
-      [
-        $user['id'],
-        '%' . $params['name'] . '%',
-        $params['type'],
-        $params['workout'],
-      ],
-      [
-        \PDO::PARAM_STR,
-        \PDO::PARAM_STR,
-        \PDO::PARAM_INT,
-        Connection::PARAM_INT_ARRAY,
-      ]
-    );
-  }
-  elseif ($params['type'] == 'All') {
-    $datapoints = $app['db']->executeQuery($sql, [
-      $user['id'],
-      '%' . $params['name'] . '%',
-    ]);
-  }
-  else {
-    $datapoints = $app['db']->executeQuery($sql, [
-      $user['id'],
-      '%' . $params['name'] . '%',
-      $params['type'],
-    ]);
-  }
+  $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
 
   // Get the current page and build the pagination.
   $page = $request->query->get('page') ?: 1;
@@ -732,6 +718,16 @@ $app->get('/segments', function (Request $request) use ($app) {
       break;
   }
 
+  // Query params and types.
+  $query_params = [
+    $user['id'],
+    '%' . $params['name'] . '%',
+  ];
+  $query_types = [
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
+  ];
+
   // Build the query.
   $sql = 'SELECT s.id, s.name, s.activity_type, s.distance, ss.starred_date ';
   $sql .= 'FROM starred_segments ss ';
@@ -740,21 +736,11 @@ $app->get('/segments', function (Request $request) use ($app) {
   $sql .= 'AND s.name LIKE ? ';
   if ($params['type'] != 'All') {
     $sql .= 'AND s.activity_type = ? ';
+    $query_params[] = $params['type'];
+    $query_types[] = \PDO::PARAM_STR;
   }
   $sql .= $sort;
-  if ($params['type'] == 'All') {
-    $datapoints = $app['db']->executeQuery($sql, [
-      $user['id'],
-      '%' . $params['name'] . '%',
-    ]);
-  }
-  else {
-    $datapoints = $app['db']->executeQuery($sql, [
-      $user['id'],
-      '%' . $params['name'] . '%',
-      $params['type'],
-    ]);
-  }
+  $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
 
   // Get the current page and build the pagination.
   $page = $request->query->get('page') ?: 1;
@@ -856,51 +842,37 @@ $app->get('/data', function (Request $request) use ($app) {
   else {
     $group = $order_by_group = 'YEAR(start_date_local)';
   }
+
+  // Query params and types.
+  $query_params = [
+    $user['id'],
+    $params['begin_date']->format('Y-m-d'),
+    $params['end_date']->format('Y-m-d'),
+  ];
+  $query_types = [
+    \PDO::PARAM_INT,
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
+  ];
+
+  // Build the query.
   $sql = 'SELECT ' . $group . ' grp, SUM(distance) distance, SUM(total_elevation_gain) elevation_gain, ';
   $sql .= 'SUM(elapsed_time) elapsed_time, SUM(moving_time) moving_time ';
   $sql .= 'FROM activities ';
   $sql .= 'WHERE athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
   if ($params['type'] != 'All') {
     $sql .= 'AND type = ? ';
+    $query_params[] = $params['type'];
+    $query_types[] = \PDO::PARAM_STR;
   }
   if ($params['type'] == 'Run') {
     $sql .= 'AND workout_type IN (?) ';
+    $query_params[] = $params['workout'];
+    $query_types[] = Connection::PARAM_INT_ARRAY;
   }
   $sql .= 'GROUP BY ' . $group . ', ' . $order_by_group . ' ';
   $sql .= 'ORDER BY ' . $order_by_group;
-  if ($params['type'] == 'Run') {
-    $datapoints = $app['db']->executeQuery($sql,
-      [
-        $user['id'],
-        $params['begin_date']->format('Y-m-d'),
-        $params['end_date']->format('Y-m-d'),
-        $params['type'],
-        $params['workout'],
-      ],
-      [
-        \PDO::PARAM_STR,
-        \PDO::PARAM_INT,
-        \PDO::PARAM_STR,
-        \PDO::PARAM_STR,
-        Connection::PARAM_INT_ARRAY,
-      ]
-    );
-  }
-  elseif ($params['type'] == 'All') {
-    $datapoints = $app['db']->executeQuery($sql, [
-      $user['id'],
-      $params['begin_date']->format('Y-m-d'),
-      $params['end_date']->format('Y-m-d'),
-    ]);
-  }
-  else {
-    $datapoints = $app['db']->executeQuery($sql, [
-      $user['id'],
-      $params['begin_date']->format('Y-m-d'),
-      $params['end_date']->format('Y-m-d'),
-      $params['type'],
-    ]);
-  }
+  $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
 
   // Build the chart.
   $chart = new Highchart();
@@ -1330,6 +1302,20 @@ $app->get('/records', function (Request $request) use ($app) {
       break;
   }
 
+  // Query params and types.
+  $query_params = [
+    $params['type'],
+    $user['id'],
+    $params['begin_date']->format('Y-m-d'),
+    $params['end_date']->format('Y-m-d'),
+  ];
+  $query_types = [
+    \PDO::PARAM_STR,
+    \PDO::PARAM_INT,
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
+  ];
+
   // Build the query.
   $sql = 'SELECT s.name, se.id effort_id, se.segment_id, se.activity_id, ';
   $sql .= 's.distance, se.elapsed_time time, s.average_grade, s.maximum_grade, ';
@@ -1339,12 +1325,7 @@ $app->get('/records', function (Request $request) use ($app) {
   $sql .= 'JOIN segments s ON (s.id = se.segment_id) ';
   $sql .= 'WHERE (' . $record_query . ') AND a.type = ? AND a.athlete_id = ? AND a.start_date_local BETWEEN ? AND ? ';
   $sql .= $sort;
-  $datapoints = $app['db']->executeQuery($sql, [
-    $params['type'],
-    $user['id'],
-    $params['begin_date']->format('Y-m-d'),
-    $params['end_date']->format('Y-m-d'),
-  ]);
+  $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
 
   // Get the current page and build the pagination.
   $page = $request->query->get('page') ?: 1;
@@ -1511,9 +1492,7 @@ $app->get('/big', function (Request $request) use ($app) {
   $sql .= 'FROM stats ';
   $sql .= 'WHERE athlete_id = ? ';
   $sql .= 'ORDER BY activity_type, stat_type, duration';
-  $stats = $app['db']->executeQuery($sql, [
-    $user['id'],
-  ])->fetchAll();
+  $stats = $app['db']->executeQuery($sql, [$user['id']], [\PDO::PARAM_INT])->fetchAll();
 
   foreach ($stats as &$stat) {
     if ($stat['stat_type'] == 'distance') {
@@ -1561,6 +1540,10 @@ $app->get('/big/update/{id}', function (Request $request, $id) use ($app) {
   $stat = $app['db']->executeQuery($sql, [
     $user['id'],
     $id,
+  ],
+  [
+    \PDO::PARAM_INT,
+    \PDO::PARAM_INT,
   ])->fetch();
 
   // Update the stat.
@@ -1655,6 +1638,12 @@ $app->get('/jon', function (Request $request) use ($app) {
     $user['id'],
     $params['begin_date']->format('Y-m-d'),
     $params['end_date']->format('Y-m-d'),
+  ],
+  [
+    \PDO::PARAM_STR,
+    \PDO::PARAM_INT,
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
   ]);
 
   // Build the chart.
