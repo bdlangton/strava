@@ -80,6 +80,15 @@ CREATE TABLE `segments` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+CREATE TABLE `starred_segments` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `segment_id` int(11) DEFAULT NULL,
+  `athlete_id` int(11) DEFAULT NULL,
+  `starred_date` date DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `segment_id` (`segment_id`,`athlete_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 CREATE TABLE `state` (
   `name_long` varchar(20) NOT NULL DEFAULT '' COMMENT 'Common Name',
   `name_short` varchar(20) NOT NULL DEFAULT '' COMMENT 'USPS Abbreviation'
@@ -110,6 +119,9 @@ LOCK TABLES `segment_efforts` WRITE;
 UNLOCK TABLES;
 
 LOCK TABLES `segments` WRITE;
+UNLOCK TABLES;
+
+LOCK TABLES `starred_segments` WRITE;
 UNLOCK TABLES;
 
 LOCK TABLES `state` WRITE;

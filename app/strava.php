@@ -780,7 +780,7 @@ $app->get('/segments', function (Request $request) use ($app) {
   $datapoints = $datapoints->fetchAll();
   $datapoints = array_slice($datapoints, ($page - 1) * $app['pagination.per_page'], $app['pagination.per_page']);
 
-  $activities = [];
+  $segments = [];
   foreach ($datapoints as $point) {
     $point['distance'] = $app['strava']->convertDistance($point['distance'], $user['format']);
     $point['starred_date'] = $app['strava']->convertDateFormat($point['starred_date']);
