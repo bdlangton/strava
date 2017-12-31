@@ -23,6 +23,7 @@ use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\ValidatorServiceProvider;
 use Strava\StravaServiceProvider;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -207,11 +208,14 @@ $app->get('/import', function (Request $request) use ($app) {
   $import_type = !empty($params['type']) ? $params['type'] : NULL;
   $params += [
     'type' => 'new',
+    'starred_segments' => FALSE,
   ];
+  $params['starred_segments'] = !empty($params['starred_segments']);
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
       'choices' => [
         'New Activities' => 'new',
+        '2018 Activities' => '2018',
         '2017 Activities' => '2017',
         '2016 Activities' => '2016',
         '2015 Activities' => '2015',
@@ -222,11 +226,17 @@ $app->get('/import', function (Request $request) use ($app) {
         '2010 Activities' => '2010',
       ],
       'label' => FALSE,
+    ])
+    ->add('starred_segments', CheckboxType::class, [
+      'label' => 'Import Starred Segments',
+      'required' => FALSE,
+      'value' => TRUE,
     ]);
   $form = $form->getForm();
 
   if (!empty($import_type)) {
     $activities_added = $activities_updated = 0;
+    $starred_segments_added = 0;
     $processing = TRUE;
     for ($page = 1; $processing; $page++) {
       // Query for activities.
@@ -271,7 +281,7 @@ $app->get('/import', function (Request $request) use ($app) {
         }
 
         try {
-          // Check if we got a result.
+          // Check if we're importing an activity that already exists.
           if (in_array($activity['id'], $activity_results)) {
             // If we're just importing new activities, then since we found an
             // activity already in our db, we need to stop importing.
@@ -440,13 +450,64 @@ $app->get('/import', function (Request $request) use ($app) {
           break;
         }
       }
+      curl_close($curl);
     }
-    curl_close($curl);
+
+    // Importing starred segments.
+    if (!empty($params['starred_segments'])) {
+      // Query for existing segments so we don't import duplicates.
+      $sql = 'SELECT segment_id ';
+      $sql .= 'FROM starred_segments ';
+      $sql .= 'WHERE athlete_id = ?';
+      $existing_starred_segments = $app['db']->executeQuery($sql, [
+        $user['id'],
+      ])->fetchAll(\PDO::FETCH_COLUMN);
+
+      $processing = TRUE;
+      for ($page = 1; $processing; $page++) {
+        // Query for starred segments.
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+          CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?access_token=' . $user['access_token'] . '&page=' . $page,
+          CURLOPT_RETURNTRANSFER => TRUE,
+        ]);
+        $starred_segments = curl_exec($curl);
+        $starred_segments = json_decode($starred_segments, TRUE);
+
+        if (empty($starred_segments)) {
+          $processing = FALSE;
+          continue;
+        }
+
+        // Insert the starred segment if it doesn't exist.
+        foreach ($starred_segments as $starred_segment) {
+          if (!in_array($starred_segment['id'], $existing_starred_segments)) {
+            try {
+              $app['db']->insert('starred_segments', [
+                'athlete_id' => $user['id'],
+                'segment_id' => $starred_segment['id'],
+                'starred_date' => str_replace('Z', '', $starred_segment['starred_date']),
+              ]);
+              $starred_segments_added++;
+            }
+            catch (Exception $e) {
+              // Something went wrong. Stop processing.
+              $processing = FALSE;
+              break;
+            }
+          }
+        }
+        curl_close($curl);
+      }
+    }
 
     // Generate output.
     $output = 'Added ' . $activities_added . ' activities.';
     if (!empty($activities_updated)) {
       $output .= ' Updated ' . $activities_updated . ' activities.';
+    }
+    if (!empty($starred_segments_added)) {
+      $output .= ' Added ' . $starred_segments_added . ' starred segments.';
     }
   }
 
@@ -651,35 +712,6 @@ $app->get('/segments', function (Request $request) use ($app) {
   if (empty($user)) {
     return $app->redirect('/');
   }
-
-  // Query for activities.
-  /*$curl = curl_init();
-  curl_setopt_array($curl, [
-    CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?access_token=' . $user['access_token'],
-    CURLOPT_RETURNTRANSFER => TRUE,
-  ]);
-  $starred_segments = curl_exec($curl);
-  $starred_segments = json_decode($starred_segments, TRUE);
-
-  // Update or insert the stat.
-  $sql = 'SELECT segment_id ';
-  $sql .= 'FROM starred_segments ';
-  $sql .= 'WHERE athlete_id = ?';
-  $result = $app['db']->executeQuery($sql, [
-    $user['id'],
-  ])->fetchAll(\PDO::FETCH_COLUMN);
-  foreach ($starred_segments as $starred_segment) {
-    if (!in_array($starred_segment['id'], $result)) {
-      $app['db']->insert('starred_segments', [
-        'athlete_id' => $user['id'],
-        'segment_id' => $starred_segment['id'],
-        'starred_date' => str_replace('Z', '', $starred_segment['starred_date']),
-      ]);
-    }
-    else {
-      break;
-    }
-  }*/
 
   // Build the form.
   $params = $request->query->all();
