@@ -212,11 +212,12 @@ class StravaTest extends WebTestCase {
   private function verifyLoggedInHeader($crawler) {
     $this->assertCount(1, $crawler->filter('div.header a:contains("Home")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("My Activities")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Graphs")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("KOMs and PRs")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Segments")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("Biggest Stats")'));
-    $this->assertCount(1, $crawler->filter('div.header a:contains("General Graphs")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("Column Charts")'));
-    $this->assertCount(1, $crawler->filter('div.header a:contains("Jon Score Graph")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Jon Score")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("Settings")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("Logout")'));
   }
@@ -227,11 +228,12 @@ class StravaTest extends WebTestCase {
   private function verifyLoggedOutHeader($crawler) {
     $this->assertCount(1, $crawler->filter('div.header a:contains("Data Analytics")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("My Activities")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Graphs")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("KOMs and PRs")'));
-    $this->assertCount(0, $crawler->filter('div.header a:contains("General Graphs")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Segments")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("Column Charts")'));
-    $this->assertCount(0, $crawler->filter('div.header a:contains("Jon Score Graph")'));
-    $this->assertCount(0, $crawler->filter('div.header a:contains("Import/Update")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Jon Score")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Settings")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("Logout")'));
   }
 
