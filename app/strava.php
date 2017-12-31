@@ -53,7 +53,7 @@ if (file_exists(__DIR__ . "/../config/$env.php")) {
 $app->register(new StravaServiceProvider());
 
 // Register the pagination provider.
-$app->register(new PaginationServiceProvider(), array('pagination.per_page' => 20));
+$app->register(new PaginationServiceProvider(), ['pagination.per_page' => 20]);
 
 // Register the twig service provider.
 $app->register(new TwigServiceProvider(), [
@@ -62,13 +62,13 @@ $app->register(new TwigServiceProvider(), [
 ]);
 
 // Register the asset service provider.
-$app->register(new AssetServiceProvider(), array(
+$app->register(new AssetServiceProvider(), [
   'assets.version' => 'v1',
   'assets.version_format' => '%s?version=%s',
-  'assets.named_packages' => array(
-    'css' => array('version' => 'css2', 'base_path' => '/css'),
-  ),
-));
+  'assets.named_packages' => [
+    'css' => ['version' => 'css2', 'base_path' => '/css'],
+  ],
+]);
 
 // Register the form provider.
 $app->register(new FormServiceProvider());
@@ -85,13 +85,13 @@ else {
   $app['debug'] = getenv('strava_debug');
   $app['client_id'] = getenv('strava_client_id');
   $app['client_secret'] = getenv('strava_client_secret');
-  $app['db.options'] = array(
+  $app['db.options'] = [
     'dbname' => getenv('strava_db_options_dbname'),
     'user' => getenv('strava_db_options_user'),
     'password' => getenv('strava_db_options_password'),
     'host' => getenv('strava_db_options_host'),
     'driver' => getenv('strava_db_options_driver'),
-  );
+  ];
 }
 
 // Register the doctrine service provider.
@@ -183,7 +183,7 @@ $app->get('/token_exchange', function (Request $request) use ($app) {
   }
 
   // Import new activities for the user.
-  $subRequest = Request::create('/import', 'GET', array('type' => 'new'), $request->cookies->all(), array(), $request->server->all());
+  $subRequest = Request::create('/import', 'GET', ['type' => 'new'], $request->cookies->all(), [], $request->server->all());
   if ($request->getSession()) {
     $subRequest->setSession($request->getSession());
   }
@@ -502,7 +502,7 @@ $app->post('/user', function (Request $request) use ($app) {
   }
 
   // Get the form submissions.
-  $type = $request->get('type')  ?: $user['activity_type'];
+  $type = $request->get('type') ?: $user['activity_type'];
   $format = $request->get('format') ?: $user['format'];
 
   // Update the database.
@@ -1430,7 +1430,7 @@ $app->get('/big', function (Request $request) use ($app) {
       $user['id'],
       $params['type'],
     ])->fetchAll();
-    $days = array();
+    $days = [];
     foreach ($results as $result) {
       $days[$result['day']] = $result['stat'];
     }
@@ -1558,14 +1558,14 @@ $app->get('/big/update/{id}', function (Request $request, $id) use ($app) {
     $subRequest = Request::create(
       '/big',
       'GET',
-      array(
+      [
         'type' => $stat['type'],
         'stat_type' => $stat['stat_type'],
         'duration' => $stat['duration'],
-        'excluding_races' => $stat['excluding_races'] ? array('excluding_races') : array(),
-      ),
+        'excluding_races' => $stat['excluding_races'] ? ['excluding_races'] : [],
+      ],
       $request->cookies->all(),
-      array(),
+      [],
       $request->server->all()
     );
     if ($request->getSession()) {

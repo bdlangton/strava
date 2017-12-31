@@ -97,10 +97,10 @@ class Strava {
    * @param bool $number_format
    *   Whether or not to use the number_format function.
    *
-   * @return float
+   * @return string|float
    *   Returns the distance in miles or meters.
    */
-  public function convertDistance($distance, $format, $number_format = TRUE) {
+  public function convertDistance(float $distance, string $format, bool $number_format = TRUE) {
     if ($format == 'imperial') {
       $distance = round($distance * DISTANCE_TO_MILES, 1);
     }
@@ -123,7 +123,7 @@ class Strava {
    * @return float
    *   Returns the elevation gain in feet or meters.
    */
-  public function convertElevationGain($elevation_gain, $format, $number_format = TRUE) {
+  public function convertElevationGain(float $elevation_gain, string $format, bool $number_format = TRUE) : float {
     if ($format == 'imperial') {
       $elevation_gain = round($elevation_gain * GAIN_TO_FEET);
     }
@@ -144,7 +144,7 @@ class Strava {
    * @return string
    *   Returns the time formatted.
    */
-  public function convertTimeFormat($time, $format = 'H:i:s') {
+  public function convertTimeFormat(int $time, string $format = 'H:i:s') : string {
     return gmdate($format, $time);
   }
 
@@ -159,7 +159,7 @@ class Strava {
    * @return string
    *   Returns the date in string format.
    */
-  public function convertDateFormat($date, $format = 'M d, Y') {
+  public function convertDateFormat(string $date, string $format = 'M d, Y') : string {
     $datetime = new DateTime($date);
     return $datetime->format($format);
   }
@@ -190,11 +190,11 @@ class Strava {
    * @return array
    *   Returns array of begin date and end date.
    */
-  public function getBeginAndEndDates($group = 'month') {
-    $dates = array(
+  public function getBeginAndEndDates(string $group = 'month') : array {
+    $dates = [
       'begin_date' => NULL,
       'end_date' => new DateTime('now'),
-    );
+    ];
     if ($group == 'month' || $group == 'week') {
       $dates['begin_date'] = new DateTime('first day of this month - 1 year');
     }
@@ -214,8 +214,8 @@ class Strava {
    * @return string
    *   Returns a string of params joined by "&".
    */
-  public function getCurrentParams(array $exclude = array()) {
-    $current_params = !empty($_SERVER['QUERY_STRING']) ? html_entity_decode($_SERVER['QUERY_STRING']) : NULL;
+  public function getCurrentParams(array $exclude = []) : string {
+    $current_params = !empty($_SERVER['QUERY_STRING']) ? html_entity_decode($_SERVER['QUERY_STRING']) : '';
     if (!empty($current_params) && !empty($exclude)) {
       $params_array = explode('&', $current_params);
       foreach ($params_array as $key => $param) {
