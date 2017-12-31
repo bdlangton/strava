@@ -64,7 +64,6 @@ class StravaTest extends WebTestCase {
     $this->login();
     $client = $this->createClient();
     $crawler = $client->request('GET', '/');
-    print_r($client->getResponse());
 
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
@@ -82,8 +81,8 @@ class StravaTest extends WebTestCase {
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
     $this->assertCount(1, $crawler->filter('ul.pagination'));
-    //$this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
-    //$this->assertCount(1, $crawler->filter('th a:contains("Elevation Gain (ft)")'));
+    $this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
+    $this->assertCount(1, $crawler->filter('th a:contains("Elevation Gain (ft)")'));
 
     // Test the form.
     $form = $crawler->selectButton('submit')->form();
@@ -108,13 +107,26 @@ class StravaTest extends WebTestCase {
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
     $this->assertCount(1, $crawler->filter('ul.pagination'));
-    //$this->assertCount(1, $crawler->filter('th a:contains("Distance (mi)")'));
+    $this->assertCount(1, $crawler->filter('th a:contains("Distance (mi)")'));
 
     // Test the form.
     $form = $crawler->selectButton('submit')->form();
     $form['format'] = 'metric';
     $crawler = $client->submit($form);
-    //$this->assertCount(1, $crawler->filter('th a:contains("Distance (km)")'));
+    $this->assertCount(1, $crawler->filter('th a:contains("Distance (km)")'));
+  }
+
+  /**
+   * Test the segments page.
+   */
+  public function testSegmentPage() {
+    $this->login();
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/segments');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedInHeader($crawler);
+    $this->verifyFormExists($crawler);
   }
 
   /**
@@ -128,7 +140,7 @@ class StravaTest extends WebTestCase {
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
-    //$this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
+    $this->assertCount(4, $crawler->filter('input[name="workout[]"]'));
 
     // Test the form.
     $form = $crawler->selectButton('submit')->form();
@@ -195,8 +207,8 @@ class StravaTest extends WebTestCase {
     $this->app['session']->set('user', [
       'id' => getenv('strava_test_user_id'),
       'access_token' => getenv('strava_test_access_token'),
-      'activity_type' => getenv('strava_test_user_activity_type') ?? 'Run',
-      'format' => getenv('strava_test_user_format') ?? 'imperial',
+      'activity_type' => getenv('strava_test_user_activity_type') ?: 'Run',
+      'format' => getenv('strava_test_user_format') ?: 'imperial',
     ]);
   }
 
@@ -213,11 +225,12 @@ class StravaTest extends WebTestCase {
   private function verifyLoggedInHeader($crawler) {
     $this->assertCount(1, $crawler->filter('div.header a:contains("Home")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("My Activities")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Graphs")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("KOMs and PRs")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Segments")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("Biggest Stats")'));
-    $this->assertCount(1, $crawler->filter('div.header a:contains("General Graphs")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("Column Charts")'));
-    $this->assertCount(1, $crawler->filter('div.header a:contains("Jon Score Graph")'));
+    $this->assertCount(1, $crawler->filter('div.header a:contains("Jon Score")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("Settings")'));
     $this->assertCount(1, $crawler->filter('div.header a:contains("Logout")'));
   }
@@ -228,11 +241,12 @@ class StravaTest extends WebTestCase {
   private function verifyLoggedOutHeader($crawler) {
     $this->assertCount(1, $crawler->filter('div.header a:contains("Data Analytics")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("My Activities")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Graphs")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("KOMs and PRs")'));
-    $this->assertCount(0, $crawler->filter('div.header a:contains("General Graphs")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Segments")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("Column Charts")'));
-    $this->assertCount(0, $crawler->filter('div.header a:contains("Jon Score Graph")'));
-    $this->assertCount(0, $crawler->filter('div.header a:contains("Import/Update")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Jon Score")'));
+    $this->assertCount(0, $crawler->filter('div.header a:contains("Settings")'));
     $this->assertCount(0, $crawler->filter('div.header a:contains("Logout")'));
   }
 

@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
+{% block title %}KOMs and PRs{% endblock %}
+
 {% block content %}
+  <h1>KOMs and PRs</h1>
   <form action="/records" method="get">
     {{ form_widget(form) }}
     <input type="submit" name="submit" />

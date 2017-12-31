@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 
+{% block title %}Import Strava Data{% endblock %}
+
 {% block content %}
+  <h1>Import Strava Data</h1>
   {% if output %}
     {{ output }}
   {% endif %}
-  <h2>Select which activities that you want to import</h2>
+  <p>Select which activities that you want to import.</p>
   <form action="/import" method="get">
     {{ form_widget(form) }}
     <input type="submit" name="submit" />

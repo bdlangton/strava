@@ -23,6 +23,7 @@ use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\ValidatorServiceProvider;
 use Strava\StravaServiceProvider;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -41,11 +42,19 @@ $app->register(new SessionServiceProvider(), [
   ],
 ]);
 
+// Get the app environment from the Apache config.
+$env = getenv('APP_ENV') ?: 'dev';
+
+// Include the environment specific settings file.
+if (file_exists(__DIR__ . "/../config/$env.php")) {
+  require_once __DIR__ . "/../config/$env.php";
+}
+
 // Our custom strava service.
 $app->register(new StravaServiceProvider());
 
 // Register the pagination provider.
-$app->register(new PaginationServiceProvider(), array('pagination.per_page' => 20));
+$app->register(new PaginationServiceProvider(), ['pagination.per_page' => 20]);
 
 // Register the twig service provider.
 $app->register(new TwigServiceProvider(), [
@@ -54,13 +63,13 @@ $app->register(new TwigServiceProvider(), [
 ]);
 
 // Register the asset service provider.
-$app->register(new AssetServiceProvider(), array(
+$app->register(new AssetServiceProvider(), [
   'assets.version' => 'v1',
   'assets.version_format' => '%s?version=%s',
-  'assets.named_packages' => array(
-    'css' => array('version' => 'css2', 'base_path' => '/css'),
-  ),
-));
+  'assets.named_packages' => [
+    'css' => ['version' => 'css2', 'base_path' => '/css'],
+  ],
+]);
 
 // Register the form provider.
 $app->register(new FormServiceProvider());
@@ -70,8 +79,6 @@ $app->register(new TranslationServiceProvider());
 $app['twig.form.templates'] = ['form.html'];
 
 // Register the config service provider.
-// Get the app environment from the Apache config.
-$env = getenv('APP_ENV') ?: 'dev';
 if (file_exists(__DIR__ . "/../config/$env.json")) {
   $app->register(new ConfigServiceProvider(__DIR__ . "/../config/$env.json"));
 }
@@ -79,18 +86,13 @@ else {
   $app['debug'] = getenv('strava_debug');
   $app['client_id'] = getenv('strava_client_id');
   $app['client_secret'] = getenv('strava_client_secret');
-  $app['db.options'] = array(
+  $app['db.options'] = [
     'dbname' => getenv('strava_db_options_dbname'),
     'user' => getenv('strava_db_options_user'),
     'password' => getenv('strava_db_options_password'),
     'host' => getenv('strava_db_options_host'),
     'driver' => getenv('strava_db_options_driver'),
-  );
-}
-
-// Include the environment specific settings file.
-if (file_exists(__DIR__ . "/../config/$env.php")) {
-  require_once __DIR__ . "/../config/$env.php";
+  ];
 }
 
 // Register the doctrine service provider.
@@ -182,7 +184,7 @@ $app->get('/token_exchange', function (Request $request) use ($app) {
   }
 
   // Import new activities for the user.
-  $subRequest = Request::create('/import', 'GET', array('type' => 'new'), $request->cookies->all(), array(), $request->server->all());
+  $subRequest = Request::create('/import', 'GET', ['type' => 'new'], $request->cookies->all(), [], $request->server->all());
   if ($request->getSession()) {
     $subRequest->setSession($request->getSession());
   }
@@ -206,11 +208,14 @@ $app->get('/import', function (Request $request) use ($app) {
   $import_type = !empty($params['type']) ? $params['type'] : NULL;
   $params += [
     'type' => 'new',
+    'starred_segments' => FALSE,
   ];
+  $params['starred_segments'] = !empty($params['starred_segments']);
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
       'choices' => [
         'New Activities' => 'new',
+        '2018 Activities' => '2018',
         '2017 Activities' => '2017',
         '2016 Activities' => '2016',
         '2015 Activities' => '2015',
@@ -221,11 +226,17 @@ $app->get('/import', function (Request $request) use ($app) {
         '2010 Activities' => '2010',
       ],
       'label' => FALSE,
+    ])
+    ->add('starred_segments', CheckboxType::class, [
+      'label' => 'Import Starred Segments',
+      'required' => FALSE,
+      'value' => TRUE,
     ]);
   $form = $form->getForm();
 
   if (!empty($import_type)) {
     $activities_added = $activities_updated = 0;
+    $starred_segments_added = 0;
     $processing = TRUE;
     for ($page = 1; $processing; $page++) {
       // Query for activities.
@@ -270,7 +281,7 @@ $app->get('/import', function (Request $request) use ($app) {
         }
 
         try {
-          // Check if we got a result.
+          // Check if we're importing an activity that already exists.
           if (in_array($activity['id'], $activity_results)) {
             // If we're just importing new activities, then since we found an
             // activity already in our db, we need to stop importing.
@@ -439,13 +450,64 @@ $app->get('/import', function (Request $request) use ($app) {
           break;
         }
       }
+      curl_close($curl);
     }
-    curl_close($curl);
+
+    // Importing starred segments.
+    if (!empty($params['starred_segments'])) {
+      // Query for existing segments so we don't import duplicates.
+      $sql = 'SELECT segment_id ';
+      $sql .= 'FROM starred_segments ';
+      $sql .= 'WHERE athlete_id = ?';
+      $existing_starred_segments = $app['db']->executeQuery($sql, [
+        $user['id'],
+      ])->fetchAll(\PDO::FETCH_COLUMN);
+
+      $processing = TRUE;
+      for ($page = 1; $processing; $page++) {
+        // Query for starred segments.
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+          CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?access_token=' . $user['access_token'] . '&page=' . $page,
+          CURLOPT_RETURNTRANSFER => TRUE,
+        ]);
+        $starred_segments = curl_exec($curl);
+        $starred_segments = json_decode($starred_segments, TRUE);
+
+        if (empty($starred_segments)) {
+          $processing = FALSE;
+          continue;
+        }
+
+        // Insert the starred segment if it doesn't exist.
+        foreach ($starred_segments as $starred_segment) {
+          if (!in_array($starred_segment['id'], $existing_starred_segments)) {
+            try {
+              $app['db']->insert('starred_segments', [
+                'athlete_id' => $user['id'],
+                'segment_id' => $starred_segment['id'],
+                'starred_date' => str_replace('Z', '', $starred_segment['starred_date']),
+              ]);
+              $starred_segments_added++;
+            }
+            catch (Exception $e) {
+              // Something went wrong. Stop processing.
+              $processing = FALSE;
+              break;
+            }
+          }
+        }
+        curl_close($curl);
+      }
+    }
 
     // Generate output.
     $output = 'Added ' . $activities_added . ' activities.';
     if (!empty($activities_updated)) {
       $output .= ' Updated ' . $activities_updated . ' activities.';
+    }
+    if (!empty($starred_segments_added)) {
+      $output .= ' Added ' . $starred_segments_added . ' starred segments.';
     }
   }
 
@@ -471,10 +533,7 @@ $app->get('/user', function (Request $request) use ($app) {
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => [
-        'Running' => 'Run',
-        'Cycling' => 'Ride',
-      ],
+      'choices' => $app['strava']->getActivityTypes(),
       'label' => 'Activity Type',
     ])
     ->add('format', ChoiceType::class, [
@@ -501,7 +560,7 @@ $app->post('/user', function (Request $request) use ($app) {
   }
 
   // Get the form submissions.
-  $type = $request->get('type')  ?: $user['activity_type'];
+  $type = $request->get('type') ?: $user['activity_type'];
   $format = $request->get('format') ?: $user['format'];
 
   // Update the database.
@@ -535,23 +594,28 @@ $app->get('/activities', function (Request $request) use ($app) {
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => $user['activity_type'],
-    'format' => $user['format'],
-    'workout' => $app['strava']->runWorkoutChoices,
+    'type' => $user['activity_type'] ?: 'All',
+    'format' => $user['format'] ?: 'imperial',
+    'name' => '',
+    'workout' => $app['strava']->getRunWorkouts(),
     'sort' => NULL,
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => $app['strava']->activityTypeChoices,
+      'choices' => $app['strava']->getActivityTypes(),
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->formatChoices,
+      'choices' => $app['strava']->getFormats(),
       'label' => FALSE,
+    ])
+    ->add('name', TextType::class, [
+      'label' => FALSE,
+      'required' => FALSE,
     ]);
   if ($params['type'] == 'Run') {
     $form = $form->add('workout', ChoiceType::class, [
-      'choices' => $app['strava']->runWorkoutChoices,
+      'choices' => $app['strava']->getRunWorkouts(),
       'expanded' => TRUE,
       'multiple' => TRUE,
       'label' => FALSE,
@@ -574,34 +638,33 @@ $app->get('/activities', function (Request $request) use ($app) {
       break;
   }
 
+  // Query params and types.
+  $query_params = [
+    $user['id'],
+    '%' . $params['name'] . '%',
+  ];
+  $query_types = [
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
+  ];
+
   // Build the query.
   $sql = 'SELECT * ';
   $sql .= 'FROM activities ';
-  $sql .= 'WHERE type = ? AND athlete_id = ? ';
+  $sql .= 'WHERE athlete_id = ? ';
+  $sql .= 'AND name LIKE ? ';
+  if ($params['type'] != 'All') {
+    $sql .= 'AND type = ? ';
+    $query_params[] = $params['type'];
+    $query_types[] = \PDO::PARAM_INT;
+  }
   if ($params['type'] == 'Run') {
     $sql .= 'AND workout_type IN (?) ';
+    $query_params[] = $params['workout'];
+    $query_types[] = Connection::PARAM_INT_ARRAY;
   }
   $sql .= $sort;
-  if ($params['type'] == 'Run') {
-    $datapoints = $app['db']->executeQuery($sql,
-      [
-        $params['type'],
-        $user['id'],
-        $params['workout'],
-      ],
-      [
-        \PDO::PARAM_STR,
-        \PDO::PARAM_INT,
-        Connection::PARAM_INT_ARRAY,
-      ]
-    );
-  }
-  else {
-    $datapoints = $app['db']->executeQuery($sql, [
-      $params['type'],
-      $user['id'],
-    ]);
-  }
+  $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
 
   // Get the current page and build the pagination.
   $page = $request->query->get('page') ?: 1;
@@ -625,8 +688,111 @@ $app->get('/activities', function (Request $request) use ($app) {
   return $app['twig']->render('activities.twig', [
     'form' => $form->createView(),
     'activities' => $activities,
+    'type' => $params['type'],
     'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
     'gain_format' => ($params['format'] == 'imperial') ? 'ft' : 'm',
+    'pages' => $pages,
+    'current' => $pagination->currentPage(),
+    'current_params_minus_page' => $app['strava']->getCurrentParams(['page']),
+    'current_params_minus_sort' => $app['strava']->getCurrentParams(['sort']),
+  ]);
+})
+->value('page', 1)
+->convert(
+  'page',
+  function ($page) {
+    return (int) $page;
+  }
+);
+
+// My segments.
+$app->get('/segments', function (Request $request) use ($app) {
+  // Check the session.
+  $user = $app['session']->get('user');
+  if (empty($user)) {
+    return $app->redirect('/');
+  }
+
+  // Build the form.
+  $params = $request->query->all();
+  $params += [
+    'type' => $user['activity_type'] ?: 'All',
+    'name' => '',
+    'format' => $user['format'] ?: 'imperial',
+    'sort' => NULL,
+  ];
+  $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
+    ->add('type', ChoiceType::class, [
+      'choices' => $app['strava']->getActivityTypes(),
+      'label' => FALSE,
+    ])
+    ->add('name', TextType::class, [
+      'label' => FALSE,
+      'required' => FALSE,
+    ]);
+  $form = $form->getForm();
+
+  // Sort.
+  switch ($params['sort']) {
+    case 'segment':
+      $sort = 'ORDER BY s.name';
+      break;
+
+    case 'distance':
+      $sort = 'ORDER BY s.distance DESC';
+      break;
+
+    default:
+      $sort = 'ORDER BY ss.starred_date DESC';
+      break;
+  }
+
+  // Query params and types.
+  $query_params = [
+    $user['id'],
+    '%' . $params['name'] . '%',
+  ];
+  $query_types = [
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
+  ];
+
+  // Build the query.
+  $sql = 'SELECT s.id, s.name, s.activity_type, s.distance, ss.starred_date ';
+  $sql .= 'FROM starred_segments ss ';
+  $sql .= 'JOIN segments s ON (ss.segment_id = s.id) ';
+  $sql .= 'WHERE ss.athlete_id = ? ';
+  $sql .= 'AND s.name LIKE ? ';
+  if ($params['type'] != 'All') {
+    $sql .= 'AND s.activity_type = ? ';
+    $query_params[] = $params['type'];
+    $query_types[] = \PDO::PARAM_STR;
+  }
+  $sql .= $sort;
+  $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
+
+  // Get the current page and build the pagination.
+  $page = $request->query->get('page') ?: 1;
+  $pagination = $app['pagination']($datapoints->rowCount(), $page);
+  $pages = $pagination->build();
+
+  // Trim the datapoints to just the results we want for this page.
+  $datapoints = $datapoints->fetchAll();
+  $datapoints = array_slice($datapoints, ($page - 1) * $app['pagination.per_page'], $app['pagination.per_page']);
+
+  $segments = [];
+  foreach ($datapoints as $point) {
+    $point['distance'] = $app['strava']->convertDistance($point['distance'], $user['format']);
+    $point['starred_date'] = $app['strava']->convertDateFormat($point['starred_date']);
+    $segments[] = $point;
+  }
+
+  // Render the page.
+  return $app['twig']->render('segments.twig', [
+    'form' => $form->createView(),
+    'segments' => $segments,
+    'type' => $params['type'],
+    'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
     'pages' => $pages,
     'current' => $pagination->currentPage(),
     'current_params_minus_page' => $app['strava']->getCurrentParams(['page']),
@@ -652,10 +818,10 @@ $app->get('/data', function (Request $request) use ($app) {
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => $user['activity_type'],
-    'format' => $user['format'],
+    'type' => $user['activity_type'] ?: 'All',
+    'format' => $user['format'] ?: 'imperial',
     'group' => 'month',
-    'workout' => $app['strava']->runWorkoutChoices,
+    'workout' => $app['strava']->getRunWorkouts(),
   ];
   $params += $app['strava']->getBeginAndEndDates($params['group']);
   if (is_string($params['begin_date'])) {
@@ -666,15 +832,15 @@ $app->get('/data', function (Request $request) use ($app) {
   }
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => $app['strava']->activityTypeChoices,
+      'choices' => $app['strava']->getActivityTypes(),
       'label' => FALSE,
     ])
     ->add('group', ChoiceType::class, [
-      'choices' => $app['strava']->groupChoices,
+      'choices' => $app['strava']->getGroups(),
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->formatChoices,
+      'choices' => $app['strava']->getFormats(),
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -687,7 +853,7 @@ $app->get('/data', function (Request $request) use ($app) {
     ]);
   if ($params['type'] == 'Run') {
     $form = $form->add('workout', ChoiceType::class, [
-      'choices' => $app['strava']->runWorkoutChoices,
+      'choices' => $app['strava']->getRunWorkouts(),
       'expanded' => TRUE,
       'multiple' => TRUE,
       'label' => FALSE,
@@ -705,41 +871,37 @@ $app->get('/data', function (Request $request) use ($app) {
   else {
     $group = $order_by_group = 'YEAR(start_date_local)';
   }
+
+  // Query params and types.
+  $query_params = [
+    $user['id'],
+    $params['begin_date']->format('Y-m-d'),
+    $params['end_date']->format('Y-m-d'),
+  ];
+  $query_types = [
+    \PDO::PARAM_INT,
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
+  ];
+
+  // Build the query.
   $sql = 'SELECT ' . $group . ' grp, SUM(distance) distance, SUM(total_elevation_gain) elevation_gain, ';
   $sql .= 'SUM(elapsed_time) elapsed_time, SUM(moving_time) moving_time ';
   $sql .= 'FROM activities ';
-  $sql .= 'WHERE type = ? AND athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
+  $sql .= 'WHERE athlete_id = ? AND start_date_local BETWEEN ? AND ? ';
+  if ($params['type'] != 'All') {
+    $sql .= 'AND type = ? ';
+    $query_params[] = $params['type'];
+    $query_types[] = \PDO::PARAM_STR;
+  }
   if ($params['type'] == 'Run') {
     $sql .= 'AND workout_type IN (?) ';
+    $query_params[] = $params['workout'];
+    $query_types[] = Connection::PARAM_INT_ARRAY;
   }
   $sql .= 'GROUP BY ' . $group . ', ' . $order_by_group . ' ';
   $sql .= 'ORDER BY ' . $order_by_group;
-  if ($params['type'] == 'Run') {
-    $datapoints = $app['db']->executeQuery($sql,
-      [
-        $params['type'],
-        $user['id'],
-        $params['begin_date']->format('Y-m-d'),
-        $params['end_date']->format('Y-m-d'),
-        $params['workout'],
-      ],
-      [
-        \PDO::PARAM_STR,
-        \PDO::PARAM_INT,
-        \PDO::PARAM_STR,
-        \PDO::PARAM_STR,
-        Connection::PARAM_INT_ARRAY,
-      ]
-    );
-  }
-  else {
-    $datapoints = $app['db']->executeQuery($sql, [
-      $params['type'],
-      $user['id'],
-      $params['begin_date']->format('Y-m-d'),
-      $params['end_date']->format('Y-m-d'),
-    ]);
-  }
+  $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
 
   // Build the chart.
   $chart = new Highchart();
@@ -867,11 +1029,11 @@ $app->get('/column', function (Request $request) use ($app) {
   }
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('group', ChoiceType::class, [
-      'choices' => $app['strava']->groupChoices,
+      'choices' => $app['strava']->getGroups(),
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->formatChoices,
+      'choices' => $app['strava']->getFormats(),
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -1125,7 +1287,7 @@ $app->get('/records', function (Request $request) use ($app) {
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->formatChoices,
+      'choices' => $app['strava']->getFormats(),
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -1169,6 +1331,20 @@ $app->get('/records', function (Request $request) use ($app) {
       break;
   }
 
+  // Query params and types.
+  $query_params = [
+    $params['type'],
+    $user['id'],
+    $params['begin_date']->format('Y-m-d'),
+    $params['end_date']->format('Y-m-d'),
+  ];
+  $query_types = [
+    \PDO::PARAM_STR,
+    \PDO::PARAM_INT,
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
+  ];
+
   // Build the query.
   $sql = 'SELECT s.name, se.id effort_id, se.segment_id, se.activity_id, ';
   $sql .= 's.distance, se.elapsed_time time, s.average_grade, s.maximum_grade, ';
@@ -1178,12 +1354,7 @@ $app->get('/records', function (Request $request) use ($app) {
   $sql .= 'JOIN segments s ON (s.id = se.segment_id) ';
   $sql .= 'WHERE (' . $record_query . ') AND a.type = ? AND a.athlete_id = ? AND a.start_date_local BETWEEN ? AND ? ';
   $sql .= $sort;
-  $datapoints = $app['db']->executeQuery($sql, [
-    $params['type'],
-    $user['id'],
-    $params['begin_date']->format('Y-m-d'),
-    $params['end_date']->format('Y-m-d'),
-  ]);
+  $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
 
   // Get the current page and build the pagination.
   $page = $request->query->get('page') ?: 1;
@@ -1235,18 +1406,15 @@ $app->get('/big', function (Request $request) use ($app) {
   $params = $request->query->all();
   $generating = !empty($params['stat_type']);
   $params += [
-    'type' => $user['activity_type'],
+    'type' => $user['activity_type'] ?: 'Run',
     'stat_type' => 'distance',
     'duration' => 7,
-    'excluding_races' => array(),
+    'excluding_races' => [],
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => [
-        'Running' => 'Run',
-        'Cycling' => 'Ride',
-      ],
-      'label' => 'Activity Type',
+      'choices' => $app['strava']->getActivityTypes(FALSE),
+      'label' => FALSE,
     ])
     ->add('stat_type', ChoiceType::class, [
       'choices' => [
@@ -1254,7 +1422,7 @@ $app->get('/big', function (Request $request) use ($app) {
         'Elevation Gain' => 'total_elevation_gain',
         'Time' => 'elapsed_time',
       ],
-      'label' => 'Stat Type',
+      'label' => FALSE,
     ])
     ->add('duration', TextType::class, [
       'label' => 'Days',
@@ -1282,7 +1450,7 @@ $app->get('/big', function (Request $request) use ($app) {
       $user['id'],
       $params['type'],
     ])->fetchAll();
-    $days = array();
+    $days = [];
     foreach ($results as $result) {
       $days[$result['day']] = $result['stat'];
     }
@@ -1353,9 +1521,7 @@ $app->get('/big', function (Request $request) use ($app) {
   $sql .= 'FROM stats ';
   $sql .= 'WHERE athlete_id = ? ';
   $sql .= 'ORDER BY activity_type, stat_type, duration';
-  $stats = $app['db']->executeQuery($sql, [
-    $user['id'],
-  ])->fetchAll();
+  $stats = $app['db']->executeQuery($sql, [$user['id']], [\PDO::PARAM_INT])->fetchAll();
 
   foreach ($stats as &$stat) {
     if ($stat['stat_type'] == 'distance') {
@@ -1403,6 +1569,10 @@ $app->get('/big/update/{id}', function (Request $request, $id) use ($app) {
   $stat = $app['db']->executeQuery($sql, [
     $user['id'],
     $id,
+  ],
+  [
+    \PDO::PARAM_INT,
+    \PDO::PARAM_INT,
   ])->fetch();
 
   // Update the stat.
@@ -1410,14 +1580,14 @@ $app->get('/big/update/{id}', function (Request $request, $id) use ($app) {
     $subRequest = Request::create(
       '/big',
       'GET',
-      array(
+      [
         'type' => $stat['type'],
         'stat_type' => $stat['stat_type'],
         'duration' => $stat['duration'],
-        'excluding_races' => $stat['excluding_races'] ? array('excluding_races') : array(),
-      ),
+        'excluding_races' => $stat['excluding_races'] ? ['excluding_races'] : [],
+      ],
       $request->cookies->all(),
-      array(),
+      [],
       $request->server->all()
     );
     if ($request->getSession()) {
@@ -1497,6 +1667,12 @@ $app->get('/jon', function (Request $request) use ($app) {
     $user['id'],
     $params['begin_date']->format('Y-m-d'),
     $params['end_date']->format('Y-m-d'),
+  ],
+  [
+    \PDO::PARAM_STR,
+    \PDO::PARAM_INT,
+    \PDO::PARAM_STR,
+    \PDO::PARAM_STR,
   ]);
 
   // Build the chart.

@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
+{% block title %}Biggest Stats{% endblock %}
+
 {% block content %}
+  <h1>Biggest Stats</h1>
   <p>Curious about what your biggest seven day period was? You can find out stats like that by submitting the form on this page. Just choose what activity type, stat type (distance, elevation gain, or time), and the duration. You can also choose to exclude races if you are more interested in your biggest training period rather than a period that involves a race.</p>
   <p>Stats on this page are static once generated. If you want to update the stats, simply re-submit the form and it will update the entry.</p>
   <form action="/big" method="get">

@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
+{% block title %}Column Charts{% endblock %}
+
 {% block content %}
+  <h1>Column Charts</h1>
   <form action="/column" method="get">
     {{ form_widget(form) }}
     <input type="submit" name="submit" />

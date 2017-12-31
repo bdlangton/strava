@@ -18,7 +18,8 @@ class Strava {
    *
    * @var array
    */
-  public $activityTypeChoices = [
+  protected $activityTypeChoices = [
+    'All' => 'All',
     'Running' => 'Run',
     'Cycling' => 'Ride',
     'Swimming' => 'Swim',
@@ -61,14 +62,14 @@ class Strava {
    *
    * @var array
    */
-  public $formatChoices = ['Imperial' => 'imperial', 'Metric' => 'metric'];
+  protected $formatChoices = ['Imperial' => 'imperial', 'Metric' => 'metric'];
 
   /**
    * Group form choices.
    *
    * @var array
    */
-  public $groupChoices = [
+  protected $groupChoices = [
     'Monthly' => 'month',
     'Weekly' => 'week',
     'Yearly' => 'year',
@@ -79,7 +80,7 @@ class Strava {
    *
    * @var array
    */
-  public $runWorkoutChoices = [
+  protected $runWorkoutChoices = [
     'Default' => 0,
     'Race' => 1,
     'Long Run' => 2,
@@ -87,7 +88,7 @@ class Strava {
   ];
 
   /**
-   * Convert distance depending on format.
+   * Converts distance depending on format.
    *
    * @param float $distance
    *   Distance provided by Strava.
@@ -96,10 +97,10 @@ class Strava {
    * @param bool $number_format
    *   Whether or not to use the number_format function.
    *
-   * @return float
+   * @return string|float
    *   Returns the distance in miles or meters.
    */
-  public function convertDistance($distance, $format, $number_format = TRUE) {
+  public function convertDistance(float $distance, string $format, bool $number_format = TRUE) {
     if ($format == 'imperial') {
       $distance = round($distance * DISTANCE_TO_MILES, 1);
     }
@@ -110,7 +111,7 @@ class Strava {
   }
 
   /**
-   * Convert elevation gain depending on format.
+   * Converts elevation gain depending on format.
    *
    * @param float $elevation_gain
    *   Elevation gain provided by Strava.
@@ -122,7 +123,7 @@ class Strava {
    * @return float
    *   Returns the elevation gain in feet or meters.
    */
-  public function convertElevationGain($elevation_gain, $format, $number_format = TRUE) {
+  public function convertElevationGain(float $elevation_gain, string $format, bool $number_format = TRUE) : float {
     if ($format == 'imperial') {
       $elevation_gain = round($elevation_gain * GAIN_TO_FEET);
     }
@@ -133,7 +134,7 @@ class Strava {
   }
 
   /**
-   * Convert time in seconds to a readable format.
+   * Converts time in seconds to a readable format.
    *
    * @param int $time
    *   The time in seconds.
@@ -143,12 +144,12 @@ class Strava {
    * @return string
    *   Returns the time formatted.
    */
-  public function convertTimeFormat($time, $format = 'H:i:s') {
+  public function convertTimeFormat(int $time, string $format = 'H:i:s') : string {
     return gmdate($format, $time);
   }
 
   /**
-   * Convert a provided date to a certain format.
+   * Converts a provided date to a certain format.
    *
    * @param string $date
    *   The date in 'Y-m-d' format.
@@ -156,27 +157,74 @@ class Strava {
    *   The format that we want the date in.
    *
    * @return string
-   *   Return the date in string format.
+   *   Returns the date in string format.
    */
-  public function convertDateFormat($date, $format = 'M d, Y') {
+  public function convertDateFormat(string $date, string $format = 'M d, Y') : string {
     $datetime = new DateTime($date);
     return $datetime->format($format);
   }
 
   /**
-   * Get the begin and end dates based on the grouping option selected.
+   * Gets activity type choices.
+   *
+   * @param bool $include_all
+   *   Whether or not to include All.
+   *
+   * @return array
+   *   Returns an array of activity types.
+   */
+  public function getActivityTypes(bool $include_all = TRUE) : array {
+    $choices = $this->activityTypeChoices;
+    if (!$include_all) {
+      unset($choices['All']);
+    }
+    return $choices;
+  }
+
+  /**
+   * Gets format choices.
+   *
+   * @return array
+   *   Returns an array of formats.
+   */
+  public function getFormats() : array {
+    return $this->formatChoices;
+  }
+
+  /**
+   * Gets group choices.
+   *
+   * @return array
+   *   Returns an array of groups.
+   */
+  public function getGroups() : array {
+    return $this->groupChoices;
+  }
+
+  /**
+   * Gets run workout choices.
+   *
+   * @return array
+   *   Returns an array of run workouts.
+   */
+  public function getRunWorkouts() : array {
+    return $this->runWorkoutChoices;
+  }
+
+  /**
+   * Gets the begin and end dates based on the grouping option selected.
    *
    * @param string $group
    *   Group by year, month, or week.
    *
    * @return array
-   *   Return array of begin date and end date.
+   *   Returns array of begin date and end date.
    */
-  public function getBeginAndEndDates($group = 'month') {
-    $dates = array(
+  public function getBeginAndEndDates(string $group = 'month') : array {
+    $dates = [
       'begin_date' => NULL,
       'end_date' => new DateTime('now'),
-    );
+    ];
     if ($group == 'month' || $group == 'week') {
       $dates['begin_date'] = new DateTime('first day of this month - 1 year');
     }
@@ -187,7 +235,7 @@ class Strava {
   }
 
   /**
-   * Get the current URL params.
+   * Gets the current URL params.
    *
    * @param array $exclude
    *   Optional array of params to exclude from the return. Used if you want to
@@ -196,8 +244,8 @@ class Strava {
    * @return string
    *   Returns a string of params joined by "&".
    */
-  public function getCurrentParams(array $exclude = array()) {
-    $current_params = !empty($_SERVER['QUERY_STRING']) ? html_entity_decode($_SERVER['QUERY_STRING']) : NULL;
+  public function getCurrentParams(array $exclude = []) : string {
+    $current_params = !empty($_SERVER['QUERY_STRING']) ? html_entity_decode($_SERVER['QUERY_STRING']) : '';
     if (!empty($current_params) && !empty($exclude)) {
       $params_array = explode('&', $current_params);
       foreach ($params_array as $key => $param) {
