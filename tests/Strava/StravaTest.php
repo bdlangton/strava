@@ -117,6 +117,19 @@ class StravaTest extends WebTestCase {
   }
 
   /**
+   * Test the segments page.
+   */
+  public function testSegmentPage() {
+    $this->login();
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/segments');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedInHeader($crawler);
+    $this->verifyFormExists($crawler);
+  }
+
+  /**
    * Test the graphs page.
    */
   public function testGraphsPage() {

@@ -1414,7 +1414,7 @@ $app->get('/big', function (Request $request) use ($app) {
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
       'choices' => $app['strava']->getActivityTypes(FALSE),
-      'label' => 'Activity Type',
+      'label' => FALSE,
     ])
     ->add('stat_type', ChoiceType::class, [
       'choices' => [
@@ -1422,7 +1422,7 @@ $app->get('/big', function (Request $request) use ($app) {
         'Elevation Gain' => 'total_elevation_gain',
         'Time' => 'elapsed_time',
       ],
-      'label' => 'Stat Type',
+      'label' => FALSE,
     ])
     ->add('duration', TextType::class, [
       'label' => 'Days',
