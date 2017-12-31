@@ -18,7 +18,7 @@ class Strava {
    *
    * @var array
    */
-  public $activityTypeChoices = [
+  protected $activityTypeChoices = [
     'All' => 'All',
     'Running' => 'Run',
     'Cycling' => 'Ride',
@@ -62,14 +62,14 @@ class Strava {
    *
    * @var array
    */
-  public $formatChoices = ['Imperial' => 'imperial', 'Metric' => 'metric'];
+  protected $formatChoices = ['Imperial' => 'imperial', 'Metric' => 'metric'];
 
   /**
    * Group form choices.
    *
    * @var array
    */
-  public $groupChoices = [
+  protected $groupChoices = [
     'Monthly' => 'month',
     'Weekly' => 'week',
     'Yearly' => 'year',
@@ -80,7 +80,7 @@ class Strava {
    *
    * @var array
    */
-  public $runWorkoutChoices = [
+  protected $runWorkoutChoices = [
     'Default' => 0,
     'Race' => 1,
     'Long Run' => 2,
@@ -179,6 +179,36 @@ class Strava {
       unset($choices['All']);
     }
     return $choices;
+  }
+
+  /**
+   * Gets format choices.
+   *
+   * @return array
+   *   Returns an array of formats.
+   */
+  public function getFormats() : array {
+    return $this->formatChoices;
+  }
+
+  /**
+   * Gets group choices.
+   *
+   * @return array
+   *   Returns an array of groups.
+   */
+  public function getGroups() : array {
+    return $this->groupChoices;
+  }
+
+  /**
+   * Gets run workout choices.
+   *
+   * @return array
+   *   Returns an array of run workouts.
+   */
+  public function getRunWorkouts() : array {
+    return $this->runWorkoutChoices;
   }
 
   /**

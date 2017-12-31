@@ -472,10 +472,7 @@ $app->get('/user', function (Request $request) use ($app) {
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => [
-        'Running' => 'Run',
-        'Cycling' => 'Ride',
-      ],
+      'choices' => $app['strava']->getActivityTypes(),
       'label' => 'Activity Type',
     ])
     ->add('format', ChoiceType::class, [
@@ -539,16 +536,16 @@ $app->get('/activities', function (Request $request) use ($app) {
     'type' => $user['activity_type'] ?: 'All',
     'format' => $user['format'] ?: 'imperial',
     'name' => '',
-    'workout' => $app['strava']->runWorkoutChoices,
+    'workout' => $app['strava']->getRunWorkouts(),
     'sort' => NULL,
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => $app['strava']->activityTypeChoices,
+      'choices' => $app['strava']->getActivityTypes(),
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->formatChoices,
+      'choices' => $app['strava']->getFormats(),
       'label' => FALSE,
     ])
     ->add('name', TextType::class, [
@@ -557,7 +554,7 @@ $app->get('/activities', function (Request $request) use ($app) {
     ]);
   if ($params['type'] == 'Run') {
     $form = $form->add('workout', ChoiceType::class, [
-      'choices' => $app['strava']->runWorkoutChoices,
+      'choices' => $app['strava']->getRunWorkouts(),
       'expanded' => TRUE,
       'multiple' => TRUE,
       'label' => FALSE,
@@ -694,7 +691,7 @@ $app->get('/segments', function (Request $request) use ($app) {
   ];
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => $app['strava']->activityTypeChoices,
+      'choices' => $app['strava']->getActivityTypes(),
       'label' => FALSE,
     ])
     ->add('name', TextType::class, [
@@ -792,7 +789,7 @@ $app->get('/data', function (Request $request) use ($app) {
     'type' => $user['activity_type'] ?: 'All',
     'format' => $user['format'] ?: 'imperial',
     'group' => 'month',
-    'workout' => $app['strava']->runWorkoutChoices,
+    'workout' => $app['strava']->getRunWorkouts(),
   ];
   $params += $app['strava']->getBeginAndEndDates($params['group']);
   if (is_string($params['begin_date'])) {
@@ -803,15 +800,15 @@ $app->get('/data', function (Request $request) use ($app) {
   }
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
-      'choices' => $app['strava']->activityTypeChoices,
+      'choices' => $app['strava']->getActivityTypes(),
       'label' => FALSE,
     ])
     ->add('group', ChoiceType::class, [
-      'choices' => $app['strava']->groupChoices,
+      'choices' => $app['strava']->getGroups(),
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->formatChoices,
+      'choices' => $app['strava']->getFormats(),
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -824,7 +821,7 @@ $app->get('/data', function (Request $request) use ($app) {
     ]);
   if ($params['type'] == 'Run') {
     $form = $form->add('workout', ChoiceType::class, [
-      'choices' => $app['strava']->runWorkoutChoices,
+      'choices' => $app['strava']->getRunWorkouts(),
       'expanded' => TRUE,
       'multiple' => TRUE,
       'label' => FALSE,
@@ -1000,11 +997,11 @@ $app->get('/column', function (Request $request) use ($app) {
   }
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('group', ChoiceType::class, [
-      'choices' => $app['strava']->groupChoices,
+      'choices' => $app['strava']->getGroups(),
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->formatChoices,
+      'choices' => $app['strava']->getFormats(),
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
@@ -1258,7 +1255,7 @@ $app->get('/records', function (Request $request) use ($app) {
       'label' => FALSE,
     ])
     ->add('format', ChoiceType::class, [
-      'choices' => $app['strava']->formatChoices,
+      'choices' => $app['strava']->getFormats(),
       'label' => FALSE,
     ])
     ->add('begin_date', DateType::class, [
