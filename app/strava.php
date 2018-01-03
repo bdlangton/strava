@@ -1256,7 +1256,7 @@ $app->get('/records', function (Request $request) use ($app) {
   // Build the form.
   $params = $request->query->all();
   $params += [
-    'type' => $user['activity_type'],
+    'type' => $user['activity_type'] ?: 'All',
     'format' => $user['format'],
     'record' => NULL,
     'begin_date' => new DateTime('now - 1 year'),
@@ -1272,6 +1272,7 @@ $app->get('/records', function (Request $request) use ($app) {
   $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
     ->add('type', ChoiceType::class, [
       'choices' => [
+        'All' => 'All',
         'Running' => 'Run',
         'Cycling' => 'Ride',
       ],
@@ -1333,13 +1334,11 @@ $app->get('/records', function (Request $request) use ($app) {
 
   // Query params and types.
   $query_params = [
-    $params['type'],
     $user['id'],
     $params['begin_date']->format('Y-m-d'),
     $params['end_date']->format('Y-m-d'),
   ];
   $query_types = [
-    \PDO::PARAM_STR,
     \PDO::PARAM_INT,
     \PDO::PARAM_STR,
     \PDO::PARAM_STR,
@@ -1348,11 +1347,16 @@ $app->get('/records', function (Request $request) use ($app) {
   // Build the query.
   $sql = 'SELECT s.name, se.id effort_id, se.segment_id, se.activity_id, ';
   $sql .= 's.distance, se.elapsed_time time, s.average_grade, s.maximum_grade, ';
-  $sql .= 'se.pr_rank, se.kom_rank, s.city, s.state, a.start_date_local date ';
+  $sql .= 'se.pr_rank, se.kom_rank, s.city, s.state, a.start_date_local date, a.type ';
   $sql .= 'FROM activities a ';
   $sql .= 'JOIN segment_efforts se ON (a.athlete_id = se.athlete_id AND a.id = se.activity_id) ';
   $sql .= 'JOIN segments s ON (s.id = se.segment_id) ';
-  $sql .= 'WHERE (' . $record_query . ') AND a.type = ? AND a.athlete_id = ? AND a.start_date_local BETWEEN ? AND ? ';
+  $sql .= 'WHERE (' . $record_query . ') AND a.athlete_id = ? AND a.start_date_local BETWEEN ? AND ? ';
+  if ($params['type'] != 'All') {
+    $sql .= 'AND a.type = ? ';
+    $query_params[] = $params['type'];
+    $query_types[] = \PDO::PARAM_STR;
+  }
   $sql .= $sort;
   $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
 
@@ -1380,6 +1384,7 @@ $app->get('/records', function (Request $request) use ($app) {
     'form' => $form->createView(),
     'efforts' => $efforts,
     'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
+    'type' => $params['type'],
     'pages' => $pages,
     'current' => $pagination->currentPage(),
     'current_params_minus_page' => $app['strava']->getCurrentParams(['page']),

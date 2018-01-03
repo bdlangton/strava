@@ -21,7 +21,7 @@
     {% for segment in segments %}
     <tr>
       <td>
-        <a href="https://www.strava.com/segments/?{{ segment.id }}">{{ segment.name }}</a>
+        <a href="https://www.strava.com/segments/{{ segment.id }}">{{ segment.name }}</a>
       </td>
       {% if type == 'All' %}
         <td>{{ segment.activity_type }}</td>

@@ -120,10 +120,10 @@ class Strava {
    * @param bool $number_format
    *   Whether or not to use the number_format function.
    *
-   * @return float
+   * @return string
    *   Returns the elevation gain in feet or meters.
    */
-  public function convertElevationGain(float $elevation_gain, string $format, bool $number_format = TRUE) : float {
+  public function convertElevationGain(float $elevation_gain, string $format, bool $number_format = TRUE) : string {
     if ($format == 'imperial') {
       $elevation_gain = round($elevation_gain * GAIN_TO_FEET);
     }

@@ -14,6 +14,9 @@
         <a href="/records?{{ current_params_minus_sort }}&sort=date">Date</a>
       </th>
       <th>Segment</th>
+      {% if type == 'All' %}
+        <th>Type</th>
+      {% endif %}
       <th>
         <a href="/records?{{ current_params_minus_sort }}&sort=distance">Distance ({{ format }})</a>
       </th>
@@ -31,6 +34,9 @@
       <tr>
         <td>{{ effort.date }}</td>
         <td><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.effort_id }}">{{ effort.name }}</a></td>
+        {% if type == 'All' %}
+          <td>{{ effort.type }}</td>
+        {% endif %}
         <td>{{ effort.distance }}</td>
         <td>{{ effort.time }}</td>
         <td>{{ effort.average_grade }}%</td>
