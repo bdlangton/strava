@@ -988,7 +988,7 @@ $app->get('/data', function (Request $request) use ($app) {
     $chart->xAxis->categories[] = $point['grp'];
     $chart->series[0]['data'][] = $point['distance'];
     $chart2->xAxis->categories[] = $point['grp'];
-    $chart2->series[0]['data'][] = $point['elevation_gain'];
+    $chart2->series[0]['data'][] = (int) $point['elevation_gain'];
     $chart3->xAxis->categories[] = $point['grp'];
     $chart3->series[0]['data'][] = (!empty($point['distance']) ? round($point['elevation_gain'] / $point['distance']) : 0);
     $chart4->xAxis->categories[] = $point['grp'];
