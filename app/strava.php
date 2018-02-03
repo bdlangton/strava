@@ -281,6 +281,12 @@ $app->get('/import', function (Request $request) use ($app) {
         }
 
         try {
+          // Convert some data to how we need it stored.
+          $activity['start_date'] = str_replace('Z', '', $activity['start_date']);
+          $activity['start_date_local'] = str_replace('Z', '', $activity['start_date_local']);
+          $activity['manual'] = $activity['manual'] ? 1 : 0;
+          $activity['private'] = $activity['private'] ? 1 : 0;
+
           // Check if we're importing an activity that already exists.
           if (in_array($activity['id'], $activity_results)) {
             // If we're just importing new activities, then since we found an
@@ -323,7 +329,7 @@ $app->get('/import', function (Request $request) use ($app) {
               $activities_updated++;
             }
 
-            // We don't both updating segment efforts for activities that are
+            // We don't bother updating segment efforts for activities that are
             // just being updated.
             continue;
           }
@@ -385,6 +391,10 @@ $app->get('/import', function (Request $request) use ($app) {
           if (!empty($activity['segment_efforts'])) {
             // Go through each segment effort.
             foreach ($activity['segment_efforts'] as $segment_effort) {
+              // Convert some data to how we need it stored.
+              $segment_effort['start_date'] = str_replace('Z', '', $segment_effort['start_date']);
+              $segment_effort['start_date_local'] = str_replace('Z', '', $segment_effort['start_date_local']);
+
               // Insert the segment effort if it doesn't already exist.
               if (!in_array($segment_effort['id'], $segment_effort_results)) {
                 $app['db']->insert('segment_efforts', [
@@ -417,6 +427,10 @@ $app->get('/import', function (Request $request) use ($app) {
               // Insert the segment related to the segment effort if it doesn't
               // already exist.
               if (empty($result)) {
+                // Convert some data to how we need it stored.
+                $segment['private'] = $segment['private'] ? 1 : 0;
+                $segment['hazardous'] = $segment['hazardous'] ? 1 : 0;
+
                 $app['db']->insert('segments', [
                   'id' => $segment['id'],
                   'name' => $segment['name'],
