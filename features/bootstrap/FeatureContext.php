@@ -3,7 +3,7 @@ use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Behat\Tester\Exception\PendingException;
 use Behat\Gherkin\Node\PyStringNode;
 use Symfony\Component\HttpKernel\Client;
-use \PHPUnit_Framework_Assert as Assert;
+use PHPUnit\Framework\Assert as Assert;
 
 /**
  * Features context.
@@ -25,15 +25,12 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function setup($event)
     {
+        putenv('APP_ENV=test');
         $app = require __DIR__ . '/../../app/strava.php';
-        $app['debug'] = true;
+        $app['debug'] = TRUE;
         unset($app['exception_handler']);
         $this->app = $app;
         $this->client = new Client($app);
-        // Load the test php file (used for login/logout).
-        if (file_exists(__DIR__ . "/../../../config/test.php")) {
-            require_once __DIR__ . "/../../../config/test.php";
-        }
     }
 
     /**
@@ -41,9 +38,20 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function userIsLoggedIn()
     {
-        if (function_exists('test_login')) {
-            test_login($this->app);
-        }
+        $this->app['session']->set('user', [
+            'id' => getenv('strava_test_user_id'),
+            'access_token' => getenv('strava_test_access_token'),
+            'activity_type' => getenv('strava_test_user_activity_type') ?: 'Run',
+            'format' => getenv('strava_test_user_format') ?: 'imperial',
+        ]);
+    }
+
+    /**
+     * @Given user is logged out
+     */
+    public function userIsLoggedOut()
+    {
+        $this->app['session']->set('user', []);
     }
 
     /**
@@ -60,7 +68,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function callWithParameters($method, $endpoint, PyStringNode $postParametersStringNode)
     {
-        $postParameters = json_decode($postParametersStringNode->getRaw(), true);
+        $postParameters = json_decode($postParametersStringNode->getRaw(), TRUE);
         $this->client->request($method, $endpoint, $postParameters);
     }
 
@@ -77,7 +85,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function collectionHavingTheFollowingData($collectionName, PyStringNode $dataStringNode)
     {
-        $data = json_decode($dataStringNode->getRaw(), true);
+        $data = json_decode($dataStringNode->getRaw(), TRUE);
         foreach ($data as $document) {
             $this->app->storage[$collectionName][] = $document;
         }
@@ -104,8 +112,8 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function jsonResponseShouldBe(PyStringNode $expectedResponseStringNode)
     {
-        $clientResponse = json_decode($this->client->getResponse()->getContent(), true);
-        $expectedResponse = json_decode($expectedResponseStringNode->getRaw(), true);
+        $clientResponse = json_decode($this->client->getResponse()->getContent(), TRUE);
+        $expectedResponse = json_decode($expectedResponseStringNode->getRaw(), TRUE);
         Assert::assertEquals($expectedResponse, $clientResponse);
     }
 

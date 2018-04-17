@@ -28,6 +28,8 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler;
+use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeSessionHandler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -35,15 +37,16 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 $app = new Application();
 unset($app['exception_handler']);
 
+// Get the app environment from the Apache config.
+$env = getenv('APP_ENV') ?: 'dev';
+
 // Register the session provider.
 $app->register(new SessionServiceProvider(), [
+  'session.storage.handler' => ($env == 'test' ? new NativeSessionHandler() : new NativeFileSessionHandler()),
   'session.storage.options' => [
     'cookie_lifetime' => 0,
   ],
 ]);
-
-// Get the app environment from the Apache config.
-$env = getenv('APP_ENV') ?: 'dev';
 
 // Include the environment specific settings file.
 if (file_exists(__DIR__ . "/../config/$env.php")) {
@@ -947,7 +950,7 @@ $app->get('/data', function (Request $request) use ($app) {
   ];
   $chart->plotOptions->area->marker->enabled = FALSE;
   $chart->plotOptions->area->lineWidth = 1;
-  $chart->plotOptions->area->dataLabels->enabled = (count($datapoints) <= 50 ? TRUE : FALSE);
+  $chart->plotOptions->area->dataLabels->enabled = ($datapoints->rowCount() <= 50 ? TRUE : FALSE);
   $chart->plotOptions->area->states->hover->lineWidth = 1;
   $chart->tooltip->formatter = new HighchartJsExpr("function() { return '<b>' + this.series.name + '</b><br/>' + this.x + ': ' + this.y; }");
   $chart->series[] = [

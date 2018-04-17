@@ -1,14 +1,14 @@
-@group charts
-Feature: View Charts
+@group segments
+Feature: Segments
 
   @group user
-  Scenario: Charts logged in
+  Scenario: Segments logged in
     Given user is logged in
-    When call "GET" "/"
+    When call "GET" "/segments"
     Then response status should be "200"
 
   @group visitor
-  Scenario: Charts logged out
+  Scenario: Segments logged out
     Given user is logged out
-    When call "GET" "/"
+    When call "GET" "/segments"
     Then response status should be "302"

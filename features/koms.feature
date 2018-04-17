@@ -1,14 +1,14 @@
-@group charts
-Feature: View Charts
+@group koms
+Feature: KOMs
 
   @group user
-  Scenario: Charts logged in
+  Scenario: KOMs logged in
     Given user is logged in
-    When call "GET" "/"
+    When call "GET" "/records"
     Then response status should be "200"
 
   @group visitor
-  Scenario: Charts logged out
+  Scenario: KOMs logged out
     Given user is logged out
-    When call "GET" "/"
+    When call "GET" "/records"
     Then response status should be "302"

@@ -1,14 +1,14 @@
-@group charts
-Feature: View Charts
+@group home
+Feature: Home
 
   @group user
-  Scenario: Charts logged in
+  Scenario: Homepage logged in
     Given user is logged in
     When call "GET" "/"
     Then response status should be "200"
 
   @group visitor
-  Scenario: Charts logged out
+  Scenario: Homepage logged out
     Given user is logged out
     When call "GET" "/"
-    Then response status should be "302"
+    Then response status should be "200"
