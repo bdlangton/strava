@@ -1,10 +1,10 @@
 language: php
 
 php:
-  - 7.0
+  - 7.2
 
 env:
-  - APP_ENV=dev
+  - APP_ENV=test
 
 services:
   - mysql
@@ -12,3 +12,7 @@ services:
 before_script:
   - composer install --dev
   - ./tests/setup_mysql.php
+
+script:
+  - phpunit
+  - ./vendor/bin/behat
