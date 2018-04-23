@@ -8,7 +8,6 @@ namespace Strava;
 
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
-use Strava\Strava;
 
 /**
  * Strava Service Provider.

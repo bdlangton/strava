@@ -2,8 +2,6 @@
 
 namespace Strava;
 
-use DateTime;
-
 define("DISTANCE_TO_MILES", 0.00062137);
 define("DISTANCE_TO_KM", 0.001);
 define("GAIN_TO_FEET", 3.28084);
@@ -160,7 +158,7 @@ class Strava {
    *   Returns the date in string format.
    */
   public function convertDateFormat(string $date, string $format = 'M d, Y') : string {
-    $datetime = new DateTime($date);
+    $datetime = new \DateTime($date);
     return $datetime->format($format);
   }
 
@@ -223,13 +221,13 @@ class Strava {
   public function getBeginAndEndDates(string $group = 'month') : array {
     $dates = [
       'begin_date' => NULL,
-      'end_date' => new DateTime('now'),
+      'end_date' => new \DateTime('now'),
     ];
     if ($group == 'month' || $group == 'week') {
-      $dates['begin_date'] = new DateTime('first day of this month - 1 year');
+      $dates['begin_date'] = new \DateTime('first day of this month - 1 year');
     }
     elseif ($group == 'year') {
-      $dates['begin_date'] = new DateTime('first day of this year - 5 years');
+      $dates['begin_date'] = new \DateTime('first day of this year - 5 years');
     }
     return $dates;
   }
@@ -245,7 +243,10 @@ class Strava {
    *   Returns a string of params joined by "&".
    */
   public function getCurrentParams(array $exclude = []) : string {
-    $current_params = !empty($_SERVER['QUERY_STRING']) ? html_entity_decode($_SERVER['QUERY_STRING']) : '';
+    $current_params = '';
+    if (!empty($_SERVER['QUERY_STRING'])) {
+      $current_params = html_entity_decode($_SERVER['QUERY_STRING']);
+    }
     if (!empty($current_params) && !empty($exclude)) {
       $params_array = explode('&', $current_params);
       foreach ($params_array as $key => $param) {
