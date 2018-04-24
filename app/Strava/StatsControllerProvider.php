@@ -128,6 +128,13 @@ class StatsControllerProvider implements ControllerProviderInterface
             'end_date' => $end_date->format('Y-m-d'),
             'excluding_races' => !empty($params['excluding_races']) ? 1 : 0,
           ]);
+          $result = $app['db']->executeQuery($sql, [
+            $user['id'],
+            $params['type'],
+            $params['duration'],
+            $params['stat_type'],
+            !empty($params['excluding_races']),
+          ])->fetchAll();
         }
         else {
           $result = $app['db']->update('stats', [
@@ -184,7 +191,7 @@ class StatsControllerProvider implements ControllerProviderInterface
     });
 
     // Update a biggest stat result.
-    $app->get('/big/update/{id}', function (Request $request, $id) use ($app) {
+    $stats->get('/big/update/{id}', function (Request $request, $id) use ($app) {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
@@ -210,7 +217,7 @@ class StatsControllerProvider implements ControllerProviderInterface
           '/big',
           'GET',
           [
-            'type' => $stat['type'],
+            'type' => $stat['activity_type'],
             'stat_type' => $stat['stat_type'],
             'duration' => $stat['duration'],
             'excluding_races' => $stat['excluding_races'] ? ['excluding_races'] : [],
@@ -234,7 +241,7 @@ class StatsControllerProvider implements ControllerProviderInterface
     });
 
     // Delete a biggest stat result.
-    $app->get('/big/delete/{id}', function (Request $request, $id) use ($app) {
+    $stats->get('/big/delete/{id}', function (Request $request, $id) use ($app) {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
