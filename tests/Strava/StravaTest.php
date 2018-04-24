@@ -3,6 +3,7 @@
 namespace Tests\Strava;
 
 use Silex\WebTestCase;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * The StravaTest class.
@@ -150,6 +151,64 @@ class StravaTest extends WebTestCase {
   }
 
   /**
+   * Test the stats page.
+   */
+  public function testStatsPage() {
+    $this->login();
+    $client = $this->createClient();
+    $crawler = $client->request('GET', '/big');
+
+    $this->assertTrue($client->getResponse()->isOk());
+    $this->verifyLoggedInHeader($crawler);
+    $this->verifyFormExists($crawler);
+    $this->assertCount(2, $crawler->filter('form select'));
+    $this->assertCount(3, $crawler->filter('form input'));
+
+    // Test the form by creating a new entry.
+    $form = $crawler->selectButton('submit')->form();
+    $form['type'] = 'Run';
+    $form['stat_type'] = 'distance';
+    $form['duration'] = '22';
+    $crawler = $client->submit($form);
+
+    // Create an expected row array and a column array to specify what each
+    // entry corresponds to.
+    $expected_row = [
+      'Run',
+      'Distance',
+      '',
+      '22 days',
+    ];
+    $columns = [
+      'activity_type',
+      'stat_type',
+      'excluding_races',
+      'duration',
+    ];
+
+    // Verify that the new entry shows up in the table.
+    $rows = $crawler->filter('table tr');
+    $match_row = $this->findRowInTable($rows, $expected_row, $columns);
+    $this->assertNotEquals($match_row, FALSE);
+
+    // Update the row that was just added and verify that it is still there.
+    $link = $rows->eq($match_row)->filter('td.operations a.update')->link();
+    $client->click($link);
+    $crawler = $client->followRedirect();
+    $rows = $crawler->filter('table tr');
+    $match_row = $this->findRowInTable($rows, $expected_row, $columns);
+    $this->assertNotEquals($match_row, FALSE);
+
+    // Delete the row that was just added and verify that it is removed.
+    $link = $rows->eq($match_row)->filter('td.operations a.delete')->link();
+    $client->click($link);
+    $crawler = $client->followRedirect();
+    $rows = $crawler->filter('table tr');
+    $match_row = $this->findRowInTable($rows, $expected_row, $columns);
+    $this->assertEquals($match_row, FALSE);
+  }
+
+  /**
    * Test the charts page.
    */
   public function testChartsPage() {
@@ -256,6 +315,35 @@ class StravaTest extends WebTestCase {
   private function verifyFormExists($crawler) {
     $this->assertCount(1, $crawler->filter('form'));
     $this->assertCount(1, $crawler->filter('form input[name="submit"]'));
+  }
+
+  /**
+   * Finds a matching row in a table.
+   *
+   * @param Symfony\Component\DomCrawler\Crawler $rows
+   *   The rows of the table.
+   * @param array $expected_row
+   *   The expected results to get from the row.
+   * @param array $columns
+   *   Array indicating which column each row entry aligns with.
+   *
+   * @return mixed
+   *   The row number if a row was found, FALSE if not found.
+   */
+  private function findRowInTable(Crawler $rows, array $expected_row, array $columns) {
+    // Loop through each table row to find a match.
+    foreach ($rows as $row_index => $values) {
+      if ($rows->eq($row_index)->filter('td')->count() > 0) {
+        $row = [];
+        foreach ($columns as $key => $column) {
+          $row[$key] = $rows->eq($row_index)->filter('td.' . $columns[$key])->text();
+        }
+        if (!array_diff($row, $expected_row)) {
+          return $row_index;
+        }
+      }
+    }
+    return FALSE;
   }
 
 }

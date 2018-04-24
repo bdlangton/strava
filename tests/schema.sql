@@ -108,6 +108,12 @@ CREATE TABLE `stats` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 LOCK TABLES `activities` WRITE;
+INSERT INTO `activities` (`athlete_id`, `name`, `description`, `distance`, `moving_time`, `elapsed_time`, `total_elevation_gain`, `type`, `start_date`, `start_date_local`, `timezone`, `location_city`, `location_state`, `location_country`, `trainer`, `commute`, `manual`, `private`, `workout_type`, `average_speed`, `max_speed`, `calories`, `average_cadence`, `average_watts`, `average_heartrate`, `max_heartrate`, `id`)
+VALUES
+	(391930,'04/12/2012 Amarillo, TX',NULL,9651.7,2968,2968,67.5,'Run','2012-04-12','2012-04-12','(GMT-06:00) America/Chicago','Amarillo','TX','United States',0,0,0,0,0,3.252,3.88,NULL,NULL,NULL,NULL,NULL,6682930),
+	(391930,'04/03/2012 Amarillo, TX',NULL,6433.4,2054,2054,36.8,'Run','2012-04-03','2012-04-03','(GMT-06:00) America/Chicago','Amarillo','TX','United States',0,0,0,0,0,3.132,3.722,NULL,NULL,NULL,NULL,NULL,6682932),
+	(391930,'04/11/2012 Amarillo, TX',NULL,14468.3,2292,2292,64.2,'Ride','2012-04-11','2012-04-11','(GMT-06:00) America/Chicago','Amarillo','TX','United States',0,0,0,0,0,6.313,12.381,NULL,NULL,NULL,NULL,NULL,6682935),
+	(391930,'04/01/2012 Amarillo, TX',NULL,21559.1,3208,3269,117.1,'Ride','2012-04-01','2012-04-01','(GMT-06:00) America/Chicago','Amarillo','TX','United States',0,0,0,0,0,6.72,11.824,NULL,NULL,106.1,NULL,NULL,6682936);
 UNLOCK TABLES;
 
 LOCK TABLES `athletes` WRITE;
