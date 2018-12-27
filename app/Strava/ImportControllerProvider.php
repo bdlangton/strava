@@ -101,184 +101,39 @@ class ImportControllerProvider implements ControllerProviderInterface {
               }
             }
 
-            try {
-              // Convert some data to how we need it stored.
-              $activity['start_date'] = str_replace('Z', '', $activity['start_date']);
-              $activity['start_date_local'] = str_replace('Z', '', $activity['start_date_local']);
-              $activity['manual'] = $activity['manual'] ? 1 : 0;
-              $activity['private'] = $activity['private'] ? 1 : 0;
+            // Convert some data to how we need it stored.
+            $activity['start_date'] = str_replace('Z', '', $activity['start_date']);
+            $activity['start_date_local'] = str_replace('Z', '', $activity['start_date_local']);
+            $activity['manual'] = $activity['manual'] ? 1 : 0;
+            $activity['private'] = $activity['private'] ? 1 : 0;
 
-              // Check if we're importing an activity that already exists.
-              if (in_array($activity['id'], $activity_results)) {
-                // If we're just importing new activities, then since we found
-                // an activity already in our db, we need to stop importing.
-                if ($import_type == 'new') {
-                  $processing = FALSE;
-                  break;
-                }
-
-                // Update the existing activity.
-                $result = $app['db']->update('activities',
-                  [
-                    'athlete_id' => $activity['athlete']['id'],
-                    'name' => $activity['name'],
-                    'description' => !empty($activity['description']) ? $activity['description'] : NULL,
-                    'distance' => $activity['distance'],
-                    'moving_time' => $activity['moving_time'],
-                    'elapsed_time' => $activity['elapsed_time'],
-                    'total_elevation_gain' => $activity['total_elevation_gain'],
-                    'type' => $activity['type'],
-                    'start_date' => $activity['start_date'],
-                    'start_date_local' => $activity['start_date_local'],
-                    'timezone' => $activity['timezone'],
-                    'trainer' => $activity['trainer'],
-                    'commute' => $activity['commute'],
-                    'manual' => $activity['manual'],
-                    'private' => $activity['private'],
-                    'workout_type' => empty($activity['workout_type']) ? 0 : $activity['workout_type'],
-                    'average_speed' => !empty($activity['average_speed']) ? $activity['average_speed'] : NULL,
-                    'max_speed' => $activity['max_speed'],
-                    'calories' => !empty($activity['calories']) ? $activity['calories'] : NULL,
-                    'average_cadence' => !empty($activity['average_cadence']) ? $activity['average_cadence'] : NULL,
-                    'average_watts' => !empty($activity['average_watts']) ? $activity['average_watts'] : NULL,
-                    'average_heartrate' => !empty($activity['average_heartrate']) ? $activity['average_heartrate'] : NULL,
-                    'max_heartrate' => !empty($activity['max_heartrate']) ? $activity['max_heartrate'] : NULL,
-                  ],
-                  ['id' => $activity['id']]
-                );
-                if ($result) {
-                  $activities_updated++;
-                }
-
-                // We don't bother updating segment efforts for activities that
-                // are just being updated.
-                continue;
-              }
-              else {
-                // Insert a new activity that wasn't already in our database.
-                $app['db']->insert('activities', [
-                  'id' => $activity['id'],
-                  'athlete_id' => $activity['athlete']['id'],
-                  'name' => $activity['name'],
-                  'description' => !empty($activity['description']) ? $activity['description'] : NULL,
-                  'distance' => $activity['distance'],
-                  'moving_time' => $activity['moving_time'],
-                  'elapsed_time' => $activity['elapsed_time'],
-                  'total_elevation_gain' => $activity['total_elevation_gain'],
-                  'type' => $activity['type'],
-                  'start_date' => $activity['start_date'],
-                  'start_date_local' => $activity['start_date_local'],
-                  'timezone' => $activity['timezone'],
-                  'trainer' => !empty($activity['trainer']) ? $activity['trainer'] : NULL,
-                  'commute' => !empty($activity['commute']) ? $activity['commute'] : NULL,
-                  'manual' => $activity['manual'],
-                  'private' => $activity['private'],
-                  'workout_type' => empty($activity['workout_type']) ? 0 : $activity['workout_type'],
-                  'average_speed' => !empty($activity['average_speed']) ? $activity['average_speed'] : NULL,
-                  'max_speed' => !empty($activity['max_speed']) ? $activity['max_speed'] : NULL,
-                  'calories' => !empty($activity['calories']) ? $activity['calories'] : NULL,
-                  'average_cadence' => !empty($activity['average_cadence']) ? $activity['average_cadence'] : NULL,
-                  'average_watts' => !empty($activity['average_watts']) ? $activity['average_watts'] : NULL,
-                  'average_heartrate' => !empty($activity['average_heartrate']) ? $activity['average_heartrate'] : NULL,
-                  'max_heartrate' => !empty($activity['max_heartrate']) ? $activity['max_heartrate'] : NULL,
-                ]);
-                $activities_added++;
+            // Check if we're importing an activity that already exists.
+            if (in_array($activity['id'], $activity_results)) {
+              // If we're just importing new activities, then since we found
+              // an activity already in our db, we need to stop importing.
+              if ($import_type == 'new') {
+                $processing = FALSE;
+                break;
               }
 
-              // Query the individual activity so we can get the detailed
-              // representation that includes segment efforts.
-              $activity = $app['strava']->getActivity($activity['id'], $user['access_token']);
-
-              // If no segment efforts are found, then we are done with this
-              // activity.
-              if (empty($activity['segment_efforts'])) {
-                continue;
+              // Update the existing activity.
+              $result = $app['strava']->updateActivity($activity, $app);
+              if ($result) {
+                $activities_updated++;
               }
 
-              // Check if we already have any segment efforts in our db.
-              $segment_effort_ids = array_column($activity['segment_efforts'], 'id');
-              $segment_effort_results = $app['db']->executeQuery(
-                'SELECT id FROM segment_efforts WHERE id IN (?) ',
-                [$segment_effort_ids],
-                [Connection::PARAM_INT_ARRAY]
-              )->fetchAll(\PDO::FETCH_COLUMN);
-
-              // Process segments.
-              if (!empty($activity['segment_efforts'])) {
-                // Go through each segment effort.
-                foreach ($activity['segment_efforts'] as $segment_effort) {
-                  // Convert some data to how we need it stored.
-                  $segment_effort['start_date'] = str_replace('Z', '', $segment_effort['start_date']);
-                  $segment_effort['start_date_local'] = str_replace('Z', '', $segment_effort['start_date_local']);
-
-                  // Insert the segment effort if it doesn't already exist.
-                  if (!in_array($segment_effort['id'], $segment_effort_results)) {
-                    $app['db']->insert('segment_efforts', [
-                      'id' => $segment_effort['id'],
-                      'segment_id' => $segment_effort['segment']['id'],
-                      'name' => $segment_effort['name'],
-                      'activity_id' => $segment_effort['activity']['id'],
-                      'athlete_id' => $segment_effort['athlete']['id'],
-                      'elapsed_time' => $segment_effort['elapsed_time'],
-                      'moving_time' => $segment_effort['moving_time'],
-                      'start_date' => $segment_effort['start_date'],
-                      'start_date_local' => $segment_effort['start_date_local'],
-                      'distance' => $segment_effort['distance'],
-                      'average_cadence' => !empty($segment_effort['average_cadence']) ? $segment_effort['average_cadence'] : NULL,
-                      'average_watts' => !empty($segment_effort['average_watts']) ? $segment_effort['average_watts'] : NULL,
-                      'average_heartrate' => !empty($segment_effort['average_heartrate']) ? $segment_effort['average_heartrate'] : NULL,
-                      'max_heartrate' => !empty($segment_effort['max_heartrate']) ? $segment_effort['max_heartrate'] : NULL,
-                      'kom_rank' => !empty($segment_effort['kom_rank']) ? $segment_effort['kom_rank'] : NULL,
-                      'pr_rank' => !empty($segment_effort['pr_rank']) ? $segment_effort['pr_rank'] : NULL,
-                    ]);
-                  }
-
-                  // Check if we already have the segment in our db.
-                  $segment = $segment_effort['segment'];
-                  $result = $app['db']->executeQuery(
-                    'SELECT id FROM segments WHERE id = ? ',
-                    [$segment['id']]
-                  )->fetchAll();
-
-                  // Insert the segment related to the segment effort if it
-                  // doesn't already exist.
-                  if (empty($result)) {
-                    // Convert some data to how we need it stored.
-                    $segment['private'] = $segment['private'] ? 1 : 0;
-                    $segment['hazardous'] = $segment['hazardous'] ? 1 : 0;
-
-                    $app['db']->insert('segments', [
-                      'id' => $segment['id'],
-                      'name' => $segment['name'],
-                      'activity_type' => $segment['activity_type'],
-                      'distance' => $segment['distance'],
-                      'average_grade' => $segment['average_grade'],
-                      'maximum_grade' => $segment['maximum_grade'],
-                      'elevation_high' => $segment['elevation_high'],
-                      'elevation_low' => $segment['elevation_low'],
-                      'city' => $segment['city'],
-                      'state' => $segment['state'],
-                      'country' => $segment['country'],
-                      'climb_category' => $segment['climb_category'],
-                      'private' => $segment['private'],
-                      // Note: total_elevation_gain, effort_count, and
-                      // athlete_count is not included in the activity endpoint.
-                      // We would need to query the segment itself to get that.
-                      // For now, we are avoiding that extra API call.
-                      'total_elevation_gain' => !empty($segment['total_elevation_gain']) ? $segment['total_elevation_gain'] : NULL,
-                      'effort_count' => !empty($segment['effort_count']) ? $segment['effort_count'] : NULL,
-                      'athlete_count' => !empty($segment['athlete_count']) ? $segment['athlete_count'] : NULL,
-                      'hazardous' => $segment['hazardous'],
-                    ]);
-                  }
-                }
-              }
+              // We don't bother updating segment efforts for activities that
+              // are just being updated.
+              continue;
             }
-            catch (Exception $e) {
-              // Something went wrong. Stop processing.
-              $processing = FALSE;
-              break;
+            else {
+              // Insert a new activity that wasn't already in our database.
+              $app['strava']->insertActivity($activity, $app);
+              $activities_added++;
             }
+
+            // Insert any segment efforst associated with the activity.
+            $app['strava']->insertSegmentEfforts($activity, $user['access_token'], $app);
           }
         }
 
