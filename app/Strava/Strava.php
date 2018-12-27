@@ -330,6 +330,24 @@ class Strava {
   }
 
   /**
+   * Get the user's access token.
+   *
+   * @param int $user_id
+   *   The user ID.
+   *
+   * @return string
+   *   Return the access token.
+   */
+  public function getAccessToken(int $user_id) : string {
+    $access_token = $app['db']->executeQuery(
+      'SELECT access_token FROM athletes WHERE id = ?',
+      $user_id
+    )->fetch();
+
+    return $access_token;
+  }
+
+  /**
    * Update an activity.
    *
    * @param array $activity
