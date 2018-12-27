@@ -17,7 +17,7 @@ class ImportControllerProvider implements ControllerProviderInterface
 {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
   public function connect(Application $app)
   {
@@ -69,13 +69,7 @@ class ImportControllerProvider implements ControllerProviderInterface
         $processing = TRUE;
         for ($page = 1; $processing; $page++) {
           // Query for activities.
-          $curl = curl_init();
-          curl_setopt_array($curl, [
-            CURLOPT_URL => 'https://www.strava.com/api/v3/athlete/activities?access_token=' . $user['access_token'] . '&page=' . $page,
-            CURLOPT_RETURNTRANSFER => TRUE,
-          ]);
-          $activities = curl_exec($curl);
-          $activities = json_decode($activities, TRUE);
+          $activities = $app['strava']->getActivities($user['access_token'], $page);
 
           // If no activities are found, then we've reached the end.
           if (empty($activities)) {
@@ -96,14 +90,14 @@ class ImportControllerProvider implements ControllerProviderInterface
             if (is_numeric($import_type)) {
               $start_year = (int) $app['strava']->convertDateFormat($activity['start_date_local'], 'Y');
 
-              // If the activity is for a year that is earlier than the import year,
-              // then we need to stop importing.
+              // If the activity is for a year that is earlier than the import
+              // year, then we need to stop importing.
               if ($start_year < $import_type) {
                 $processing = FALSE;
                 break;
               }
-              // If the activity is for a year that is later than the import year,
-              // then we need to skip this activity.
+              // If the activity is for a year that is later than the import
+              // year, then we need to skip this activity.
               if ($start_year > $import_type) {
                 continue;
               }
@@ -118,8 +112,8 @@ class ImportControllerProvider implements ControllerProviderInterface
 
               // Check if we're importing an activity that already exists.
               if (in_array($activity['id'], $activity_results)) {
-                // If we're just importing new activities, then since we found an
-                // activity already in our db, we need to stop importing.
+                // If we're just importing new activities, then since we found
+                // an activity already in our db, we need to stop importing.
                 if ($import_type == 'new') {
                   $processing = FALSE;
                   break;
@@ -158,8 +152,8 @@ class ImportControllerProvider implements ControllerProviderInterface
                   $activities_updated++;
                 }
 
-                // We don't bother updating segment efforts for activities that are
-                // just being updated.
+                // We don't bother updating segment efforts for activities that
+                // are just being updated.
                 continue;
               }
               else {
@@ -195,12 +189,7 @@ class ImportControllerProvider implements ControllerProviderInterface
 
               // Query the individual activity so we can get the detailed
               // representation that includes segment efforts.
-              curl_setopt_array($curl, [
-                CURLOPT_URL => 'https://www.strava.com/api/v3/activities/' . $activity['id'] . '?access_token=' . $user['access_token'],
-                CURLOPT_RETURNTRANSFER => TRUE,
-              ]);
-              $activity = curl_exec($curl);
-              $activity = json_decode($activity, TRUE);
+              $activity = $app['strava']->getActivity($activity['id'], $user['access_token']);
 
               // If no segment efforts are found, then we are done with this
               // activity.
@@ -253,8 +242,8 @@ class ImportControllerProvider implements ControllerProviderInterface
                     [$segment['id']]
                   )->fetchAll();
 
-                  // Insert the segment related to the segment effort if it doesn't
-                  // already exist.
+                  // Insert the segment related to the segment effort if it
+                  // doesn't already exist.
                   if (empty($result)) {
                     // Convert some data to how we need it stored.
                     $segment['private'] = $segment['private'] ? 1 : 0;
@@ -274,10 +263,10 @@ class ImportControllerProvider implements ControllerProviderInterface
                       'country' => $segment['country'],
                       'climb_category' => $segment['climb_category'],
                       'private' => $segment['private'],
-                      // Note: total_elevation_gain, effort_count, and athlete_count
-                      // is not included in the activity endpoint. We would need to
-                      // query the segment itself to get that. For now, we are
-                      // avoiding that extra API call.
+                      // Note: total_elevation_gain, effort_count, and
+                      // athlete_count is not included in the activity endpoint.
+                      // We would need to query the segment itself to get that.
+                      // For now, we are avoiding that extra API call.
                       'total_elevation_gain' => !empty($segment['total_elevation_gain']) ? $segment['total_elevation_gain'] : NULL,
                       'effort_count' => !empty($segment['effort_count']) ? $segment['effort_count'] : NULL,
                       'athlete_count' => !empty($segment['athlete_count']) ? $segment['athlete_count'] : NULL,
@@ -293,7 +282,6 @@ class ImportControllerProvider implements ControllerProviderInterface
               break;
             }
           }
-          curl_close($curl);
         }
 
         // Importing starred segments.
@@ -309,13 +297,7 @@ class ImportControllerProvider implements ControllerProviderInterface
           $processing = TRUE;
           for ($page = 1; $processing; $page++) {
             // Query for starred segments.
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-              CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?access_token=' . $user['access_token'] . '&page=' . $page,
-              CURLOPT_RETURNTRANSFER => TRUE,
-            ]);
-            $starred_segments = curl_exec($curl);
-            $starred_segments = json_decode($starred_segments, TRUE);
+            $starred_segments = $app['strava']->getStarredSegments($user['access_token'], $page);
 
             if (empty($starred_segments)) {
               $processing = FALSE;
@@ -340,7 +322,6 @@ class ImportControllerProvider implements ControllerProviderInterface
                 }
               }
             }
-            curl_close($curl);
           }
         }
 

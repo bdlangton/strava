@@ -260,4 +260,72 @@ class Strava {
     return $current_params;
   }
 
+  /**
+   * Get an individual activity from the Strava API.
+   *
+   * @param int $activity_id
+   *   The activity ID.
+   * @param string $access_token
+   *   The user's access token.
+   *
+   * @return array
+   *   Return the activity information.
+   */
+  public function getActivity(int $activity_id, string $access_token) : array {
+    curl_setopt_array($curl, [
+      CURLOPT_URL => 'https://www.strava.com/api/v3/activities/' . $activity_id . '?access_token=' . $access_token,
+      CURLOPT_RETURNTRANSFER => TRUE,
+    ]);
+    $activity = curl_exec($curl);
+    curl_close($curl);
+
+    return json_decode($activity, TRUE);
+  }
+
+  /**
+   * Get multiple activities from the Strava API.
+   *
+   * @param string $access_token
+   *   The user's access token.
+   * @param int $page
+   *   The page number.
+   *
+   * @return array
+   *   Return the activities.
+   */
+  public function getActivities(string $access_token, int $page = 1) : array {
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+      CURLOPT_URL => 'https://www.strava.com/api/v3/athlete/activities?access_token=' . $access_token . '&page=' . $page,
+      CURLOPT_RETURNTRANSFER => TRUE,
+    ]);
+    $activities = curl_exec($curl);
+    curl_close($curl);
+
+    return json_decode($activities, TRUE);
+  }
+
+  /**
+   * Get starred segments by the user.
+   *
+   * @param string $access_token
+   *   The user's access token.
+   * @param int $page
+   *   The page number.
+   *
+   * @return array
+   *   Return the starred segments.
+   */
+  public function getStarredSegments(string $access_token, int $page = 1) : array {
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+      CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?access_token=' . $access_token . '&page=' . $page,
+      CURLOPT_RETURNTRANSFER => TRUE,
+    ]);
+    $starred_segments = curl_exec($curl);
+    curl_close($curl);
+
+    return json_decode($starred_segments, TRUE);
+  }
+
 }
