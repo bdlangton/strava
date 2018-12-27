@@ -11,14 +11,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * User controller.
  */
-class UserControllerProvider implements ControllerProviderInterface
-{
+class UserControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $user = $app['controllers_factory'];
 
     // User profile settings.
@@ -68,7 +66,7 @@ class UserControllerProvider implements ControllerProviderInterface
       $format = $request->get('format') ?: $user['format'];
 
       // Update the database.
-      $result = $app['db']->update('athletes',
+      $app['db']->update('athletes',
         [
           'default_activity_type' => $type,
           'default_format' => $format,

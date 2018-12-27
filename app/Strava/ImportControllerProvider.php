@@ -13,14 +13,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Import functionality controller.
  */
-class ImportControllerProvider implements ControllerProviderInterface
-{
+class ImportControllerProvider implements ControllerProviderInterface {
 
   /**
    * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $import = $app['controllers_factory'];
 
     // Import user activities.

@@ -13,14 +13,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Jon score controller.
  */
-class JonControllerProvider implements ControllerProviderInterface
-{
+class JonControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $jon = $app['controllers_factory'];
 
     // Display the Jon score chart.

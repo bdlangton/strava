@@ -1,9 +1,5 @@
 <?php
 
-/**
- * This file provides a Strava Service Provider.
- */
-
 namespace Strava;
 
 use Pimple\Container;

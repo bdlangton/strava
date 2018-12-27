@@ -9,14 +9,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Webhook functionality controller.
  */
-class WebhookControllerProvider implements ControllerProviderInterface
-{
+class WebhookControllerProvider implements ControllerProviderInterface {
 
   /**
    * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $webhook = $app['controllers_factory'];
 
     // Webhook callback to validate the callback challenge. Just for creating a

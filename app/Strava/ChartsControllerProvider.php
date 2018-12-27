@@ -14,14 +14,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Column charts controller.
  */
-class ChartsControllerProvider implements ControllerProviderInterface
-{
+class ChartsControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $charts = $app['controllers_factory'];
 
     // Stacked column charts.

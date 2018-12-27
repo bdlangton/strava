@@ -13,14 +13,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Stats controller.
  */
-class StatsControllerProvider implements ControllerProviderInterface
-{
+class StatsControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $stats = $app['controllers_factory'];
 
     // Display the Biggest Stats page.
@@ -229,7 +227,7 @@ class StatsControllerProvider implements ControllerProviderInterface
         if ($request->getSession()) {
           $subRequest->setSession($request->getSession());
         }
-        $response = $app->handle($subRequest, HttpKernelInterface::SUB_REQUEST, FALSE);
+        $app->handle($subRequest, HttpKernelInterface::SUB_REQUEST, FALSE);
         $app['session']->getFlashBag()->add('strava', 'Your strava stat was updated!');
       }
       else {

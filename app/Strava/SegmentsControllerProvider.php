@@ -12,14 +12,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Segments controller.
  */
-class SegmentsControllerProvider implements ControllerProviderInterface
-{
+class SegmentsControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $segments = $app['controllers_factory'];
 
     // My segments.
