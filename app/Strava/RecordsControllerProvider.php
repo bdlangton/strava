@@ -12,14 +12,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * KOM and PR records controller.
  */
-class RecordsControllerProvider implements ControllerProviderInterface
-{
+class RecordsControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $records = $app['controllers_factory'];
 
     // Display PRs and CRs.

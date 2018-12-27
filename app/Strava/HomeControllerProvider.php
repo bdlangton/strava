@@ -8,14 +8,12 @@ use Silex\Api\ControllerProviderInterface;
 /**
  * Home page controller.
  */
-class HomeControllerProvider implements ControllerProviderInterface
-{
+class HomeControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $home = $app['controllers_factory'];
 
     // Home page.

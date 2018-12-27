@@ -10,14 +10,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Authentication controller.
  */
-class AuthControllerProvider implements ControllerProviderInterface
-{
+class AuthControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $auth = $app['controllers_factory'];
 
     // Logout.
@@ -81,7 +79,7 @@ class AuthControllerProvider implements ControllerProviderInterface
       if ($request->getSession()) {
         $subRequest->setSession($request->getSession());
       }
-      $response = $app->handle($subRequest, HttpKernelInterface::SUB_REQUEST, FALSE);
+      $app->handle($subRequest, HttpKernelInterface::SUB_REQUEST, FALSE);
 
       // Return the user to the homepage.
       return $app->redirect('/');

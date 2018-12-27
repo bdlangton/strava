@@ -15,14 +15,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Graphs controller.
  */
-class GraphsControllerProvider implements ControllerProviderInterface
-{
+class GraphsControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $graphs = $app['controllers_factory'];
 
     // General graphs.

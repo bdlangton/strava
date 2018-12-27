@@ -13,14 +13,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Activities controller.
  */
-class ActivitiesControllerProvider implements ControllerProviderInterface
-{
+class ActivitiesControllerProvider implements ControllerProviderInterface {
 
   /**
-   * @{inheritdoc}
+   * {@inheritdoc}
    */
-  public function connect(Application $app)
-  {
+  public function connect(Application $app) {
     $activities = $app['controllers_factory'];
 
     // My activities.
