@@ -15,6 +15,7 @@ use Silex\Provider\AssetServiceProvider;
 use Silex\Provider\DoctrineServiceProvider;
 use Silex\Provider\FormServiceProvider;
 use Silex\Provider\LocaleServiceProvider;
+use Silex\Provider\MonologServiceProvider;
 use Silex\Provider\SessionServiceProvider;
 use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\TwigServiceProvider;
@@ -31,6 +32,7 @@ use Strava\SegmentsControllerProvider;
 use Strava\StatsControllerProvider;
 use Strava\StravaServiceProvider;
 use Strava\UserControllerProvider;
+use Strava\WebhookControllerProvider;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeSessionHandler;
 use Symfony\Component\HttpFoundation\Request;
@@ -76,6 +78,10 @@ $app->register(new AssetServiceProvider(), [
   ],
 ]);
 
+$app->register(new MonologServiceProvider(), [
+  'monolog.logfile' => '../../logs/monolog.log',
+]);
+
 // Register the form provider.
 $app->register(new FormServiceProvider());
 $app->register(new ValidatorServiceProvider());
@@ -107,6 +113,7 @@ $app->register(new DoctrineServiceProvider(), []);
 $app->mount('/', new HomeControllerProvider());
 $app->mount('/', new AuthControllerProvider());
 $app->mount('/', new ImportControllerProvider());
+$app->mount('/', new WebhookControllerProvider());
 $app->mount('/', new UserControllerProvider());
 $app->mount('/', new ActivitiesControllerProvider());
 $app->mount('/', new SegmentsControllerProvider());
