@@ -15,6 +15,7 @@ use Silex\Provider\AssetServiceProvider;
 use Silex\Provider\DoctrineServiceProvider;
 use Silex\Provider\FormServiceProvider;
 use Silex\Provider\LocaleServiceProvider;
+use Silex\Provider\MonologServiceProvider;
 use Silex\Provider\SessionServiceProvider;
 use Silex\Provider\TranslationServiceProvider;
 use Silex\Provider\TwigServiceProvider;
@@ -75,6 +76,10 @@ $app->register(new AssetServiceProvider(), [
   'assets.named_packages' => [
     'css' => ['version' => 'css2', 'base_path' => '/css'],
   ],
+]);
+
+$app->register(new MonologServiceProvider(), [
+  'monolog.logfile' => '../../logs/monolog.log',
 ]);
 
 // Register the form provider.
