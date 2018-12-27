@@ -4,7 +4,6 @@ namespace Strava;
 
 use Silex\Application;
 use Silex\Api\ControllerProviderInterface;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -73,13 +72,6 @@ class AuthControllerProvider implements ControllerProviderInterface {
       }
       catch (Exception $e) {
       }
-
-      // Import new activities for the user.
-      $subRequest = Request::create('/import', 'GET', ['type' => 'new'], $request->cookies->all(), [], $request->server->all());
-      if ($request->getSession()) {
-        $subRequest->setSession($request->getSession());
-      }
-      $app->handle($subRequest, HttpKernelInterface::SUB_REQUEST, FALSE);
 
       // Return the user to the homepage.
       return $app->redirect('/');

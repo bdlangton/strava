@@ -32,14 +32,14 @@ class WebhookControllerProvider implements ControllerProviderInterface {
     $webhook->post('/webhook', function (Request $request) use ($app) {
       $params = $request->getContent();
       $params = (array) json_decode($params);
-      $access_token = $app['strava']->getAccessToken($params['owner_id']);
+      $access_token = $app['strava']->getAccessToken($params['owner_id'], $app);
 
       // Activity type.
       if ($params['object_type'] == 'activity') {
         // Check if it's a create/update/delete.
         if ($params['aspect_type'] == 'create') {
           $activity = $app['strava']->getActivity($params['object_id'], $access_token);
-          $app['strava']->insertActivity($activity);
+          $app['strava']->insertActivity($activity, $app);
         }
         elseif ($params['aspect_type'] == 'update') {
           // Set the updates to the appropriate field names and don't include
@@ -55,7 +55,7 @@ class WebhookControllerProvider implements ControllerProviderInterface {
           }
 
           // Update the existing activity.
-          if ($app['strava']->activityExists($params['object_id'])) {
+          if ($app['strava']->activityExists($params['object_id'], $app)) {
             $app['db']->update('activities',
               $updates,
               ['id' => $params['object_id']]
@@ -65,7 +65,7 @@ class WebhookControllerProvider implements ControllerProviderInterface {
             // Even though it's an update, we don't have the activity so we have
             // to create it.
             $activity = $app['strava']->getActivity($params['object_id'], $access_token);
-            $app['strava']->insertActivity($activity);
+            $app['strava']->insertActivity($activity, $app);
           }
         }
         elseif ($params['aspect_type'] == 'delete') {
