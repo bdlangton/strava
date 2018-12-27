@@ -330,19 +330,41 @@ class Strava {
   }
 
   /**
+   * Check if an activity exists locally.
+   *
+   * @param int $activity_id
+   *   The activity ID.
+   * @param mixed $app
+   *   The Silex app.
+   *
+   * @return bool
+   *   Return TRUE if the activity exists, FALSE otherwise.
+   */
+  public function activityExists(int $activity_id, $app) : bool {
+    $result = $app['db']->executeQuery(
+      'SELECT id FROM activities WHERE id = ?',
+      [$activity_id]
+    )->fetchColumn();
+
+    return !empty($result);
+  }
+
+  /**
    * Get the user's access token.
    *
    * @param int $user_id
    *   The user ID.
+   * @param mixed $app
+   *   The Silex app.
    *
    * @return string
    *   Return the access token.
    */
-  public function getAccessToken(int $user_id) : string {
+  public function getAccessToken(int $user_id, $app) : string {
     $access_token = $app['db']->executeQuery(
       'SELECT access_token FROM athletes WHERE id = ?',
-      $user_id
-    )->fetch();
+      [$user_id]
+    )->fetchColumn();
 
     return $access_token;
   }
