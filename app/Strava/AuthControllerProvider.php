@@ -86,6 +86,84 @@ class AuthControllerProvider implements ControllerProviderInterface {
       return $app->redirect('/');
     });
 
+    // Refresh token.
+    $auth->get('/refresh_token', function (Request $request) use ($app) {
+      // Check that the user is logged in.
+      $user = $app['session']->get('user');
+      if (!empty($user)) {
+        return $app->redirect('/');
+      }
+
+      // Finish the token exchange.
+      $ch = curl_init();
+      $params = $request->query->all();
+      curl_setopt($ch, CURLOPT_URL, 'https://www.strava.com/oauth/token');
+      curl_setopt($ch, CURLOPT_POST, 3);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=refresh_token&refresh_token=' . $user['refresh_token'] . '&client_id=' . $app['client_id'] . '&client_secret=' . $app['client_secret']);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+      $result = curl_exec($ch);
+      $data = json_decode($result, TRUE);
+      curl_close($ch);
+      try {
+        $result = $app['db']->executeQuery(
+          'SELECT id FROM athletes WHERE id = ?',
+          [$data['athlete']['id']]
+        )->fetchAll();
+        if (!empty($result)) {
+          $app['db']->executeQuery(
+            'UPDATE athletes set access_token = ?, refresh_token = ?, token_expires = ? WHERE id = ?',
+            [
+              $data['access_token'],
+              $data['refresh_token'],
+              $data['expires_at'],
+              $user['id'],
+            ]
+          );
+          $athlete_data = $app['db']->executeQuery(
+            'SELECT default_activity_type, default_format
+            FROM athletes WHERE id = ?',
+            [$data['athlete']['id']]
+          )->fetch();
+          $app['session']->set('user', [
+            'id' => $user['id'],
+            'access_token' => $data['access_token'],
+            'refresh_token' => $data['refresh_token'],
+            'token_expires' => $data['expires_at'],
+            'activity_type' => $athlete_data['default_activity_type'],
+            'format' => $athlete_data['default_format'],
+          ]);
+        }
+      }
+      catch (Exception $e) {
+      }
+
+      // Return the user to the homepage.
+      return $app->redirect('/');
+    });
+
+    // Refresh token.
+    $auth->get('/deauthorize', function (Request $request) use ($app) {
+      // Check that the user is logged in.
+      $user = $app['session']->get('user');
+      if (empty($user)) {
+        return $app->redirect('/');
+      }
+
+      // Finish the token exchange.
+      $ch = curl_init();
+      $params = $request->query->all();
+      curl_setopt($ch, CURLOPT_URL, 'https://www.strava.com/oauth/deauthorize');
+      curl_setopt($ch, CURLOPT_POST, 3);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, 'access_token=' . $user['access_token']);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+      $result = curl_exec($ch);
+      $data = json_decode($result, TRUE);
+      curl_close($ch);
+
+      // Return the user to the homepage.
+      return $app->redirect('/');
+    });
+
     return $auth;
   }
 
