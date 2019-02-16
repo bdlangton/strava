@@ -2,6 +2,8 @@
 
 namespace Strava;
 
+use Doctrine\DBAL\Connection;
+
 define("DISTANCE_TO_MILES", 0.00062137);
 define("DISTANCE_TO_KM", 0.001);
 define("GAIN_TO_FEET", 3.28084);
@@ -263,7 +265,7 @@ class Strava {
   /**
    * Get an individual activity from the Strava API.
    *
-   * @param int $activity_id
+   * @param float $activity_id
    *   The activity ID.
    * @param string $access_token
    *   The user's access token.
@@ -271,10 +273,12 @@ class Strava {
    * @return array
    *   Return the activity information.
    */
-  public function getActivity(int $activity_id, string $access_token) : array {
+  public function getActivity(float $activity_id, string $access_token) : array {
     $curl = curl_init();
+    $header = ['Authorization: Bearer ' . $access_token];
     curl_setopt_array($curl, [
-      CURLOPT_URL => 'https://www.strava.com/api/v3/activities/' . $activity_id . '?access_token=' . $access_token,
+      CURLOPT_URL => 'https://www.strava.com/api/v3/activities/' . $activity_id,
+      CURLOPT_HTTPHEADER => $header,
       CURLOPT_RETURNTRANSFER => TRUE,
     ]);
     $activity = curl_exec($curl);
@@ -296,8 +300,10 @@ class Strava {
    */
   public function getActivities(string $access_token, int $page = 1) : array {
     $curl = curl_init();
+    $header = ['Authorization: Bearer ' . $access_token];
     curl_setopt_array($curl, [
-      CURLOPT_URL => 'https://www.strava.com/api/v3/athlete/activities?access_token=' . $access_token . '&page=' . $page,
+      CURLOPT_URL => 'https://www.strava.com/api/v3/athlete/activities?page=' . $page,
+      CURLOPT_HTTPHEADER => $header,
       CURLOPT_RETURNTRANSFER => TRUE,
     ]);
     $activities = curl_exec($curl);
@@ -319,8 +325,10 @@ class Strava {
    */
   public function getStarredSegments(string $access_token, int $page = 1) : array {
     $curl = curl_init();
+    $header = ['Authorization: Bearer ' . $access_token];
     curl_setopt_array($curl, [
-      CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?access_token=' . $access_token . '&page=' . $page,
+      CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?page=' . $page,
+      CURLOPT_HTTPHEADER => $header,
       CURLOPT_RETURNTRANSFER => TRUE,
     ]);
     $starred_segments = curl_exec($curl);
@@ -332,7 +340,7 @@ class Strava {
   /**
    * Check if an activity exists locally.
    *
-   * @param int $activity_id
+   * @param float $activity_id
    *   The activity ID.
    * @param mixed $app
    *   The Silex app.
@@ -340,7 +348,7 @@ class Strava {
    * @return bool
    *   Return TRUE if the activity exists, FALSE otherwise.
    */
-  public function activityExists(int $activity_id, $app) : bool {
+  public function activityExists(float $activity_id, $app) : bool {
     $result = $app['db']->executeQuery(
       'SELECT id FROM activities WHERE id = ?',
       [$activity_id]
