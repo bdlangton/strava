@@ -31,7 +31,6 @@ class ActivitiesController extends AbstractController {
     // Build the form.
     $request = $requestStack->getCurrentRequest();
     $params = $request->query->get('form');
-    echo serialize($params);
     $params += [
       'type' => $user['activity_type'] ?: 'All',
       'format' => $user['format'] ?: 'imperial',
@@ -39,7 +38,6 @@ class ActivitiesController extends AbstractController {
       'workout' => $strava->getRunWorkouts(),
       'sort' => NULL,
     ];
-    echo serialize($params);
     $form = $formFactory->createBuilder(FormType::class, $params)
       ->add('type', ChoiceType::class, [
         'choices' => $strava->getActivityTypes(),

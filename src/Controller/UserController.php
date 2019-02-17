@@ -2,9 +2,14 @@
 
 namespace App\Controller;
 
+use App\Strava\Strava;
+use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -13,24 +18,24 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController {
 
   /**
-   * @Route("/user", methods={"GET"})
+   * @Route("/user", name="profile", methods={"GET"})
    */
-  public function profile() {
+  public function profile(SessionInterface $session, Strava $strava, FormFactoryInterface $formFactory) {
     // Check the session.
-    $user = $app['session']->get('user');
+    $user = $session->get('user');
     if (empty($user)) {
       return $this->redirectToRoute('/');
     }
 
     // Build the form.
-    $params = $request->query->all();
-    $params += [
+    $params = [
       'type' => $user['activity_type'],
       'format' => $user['format'],
     ];
-    $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
+    echo serialize($params);
+    $form = $formFactory->createBuilder(FormType::class, $params)
       ->add('type', ChoiceType::class, [
-        'choices' => $app['strava']->getActivityTypes(),
+        'choices' => $strava->getActivityTypes(),
         'label' => 'Activity Type',
       ])
       ->add('format', ChoiceType::class, [
@@ -51,19 +56,21 @@ class UserController extends AbstractController {
   /**
    * @Route("/user", methods={"POST"})
    */
-  public function profileSave() {
+  public function profileSave(SessionInterface $session, RequestStack $requestStack, Connection $connection) {
     // Check the session.
-    $user = $app['session']->get('user');
+    $user = $session->get('user');
     if (empty($user)) {
       return $this->redirectToRoute('/');
     }
 
     // Get the form submissions.
-    $type = $request->get('type') ?: $user['activity_type'];
-    $format = $request->get('format') ?: $user['format'];
+    $request = $requestStack->getCurrentRequest();
+    $params = $request->request->get('form');
+    $type = $params['type'] ?: $user['activity_type'];
+    $format = $params['format'] ?: $user['format'];
 
     // Update the database.
-    $app['db']->update('athletes',
+    $connection->update('athletes',
       [
         'default_activity_type' => $type,
         'default_format' => $format,
@@ -76,10 +83,10 @@ class UserController extends AbstractController {
     // Update the user session.
     $user['activity_type'] = $type;
     $user['format'] = $format;
-    $app['session']->set('user', $user);
+    $session->set('user', $user);
 
     // Redirect to the user page.
-    return $app->redirect('/user');
+    return $this->redirectToRoute('profile');
   }
 
 }
