@@ -5,10 +5,10 @@ namespace App\Controller;
 use App\Strava\Strava;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ActivitiesController extends AbstractController {
 
   /**
-   * @Route("/activities")
+   * @Route("/activities", name="activities")
    */
   public function activities(SessionInterface $session, RequestStack $requestStack, Strava $strava, FormFactoryInterface $formFactory, Connection $connection) {
     // Check the session.
@@ -30,7 +30,7 @@ class ActivitiesController extends AbstractController {
 
     // Build the form.
     $request = $requestStack->getCurrentRequest();
-    $params = $request->query->get('form');
+    $params = $request->query->get('form') ?? [];
     $params += [
       'type' => $user['activity_type'] ?: 'All',
       'format' => $user['format'] ?: 'imperial',
@@ -124,12 +124,5 @@ class ActivitiesController extends AbstractController {
       'current_params_minus_sort' => $strava->getCurrentParams(['sort']),
     ]);
   }
-  // ->value('page', 1)
-  // ->convert(
-  //   'page',
-  //   function ($page) {
-  //     return (int) $page;
-  //   }
-  // );
 
 }

@@ -31,23 +31,4 @@
     </tr>
     {% endfor %}
   </table>
-  <ul class="pagination">
-    {% for number, position in pages %} {% if position == 'first' %}
-    <li>
-      <a href="/segments?{{ current_params_minus_page }}&page={{ number }}">&laquo;</a>
-    </li>
-    {% elseif position == 'less' or position == 'more' %}
-    <li>...</li>
-    {% elseif position == 'previous' or position == 'next' %}
-    <li>
-      <a href="/segments?{{ current_params_minus_page }}&page={{ number }}">{{ number }}</a>
-    </li>
-    {% elseif position == 'current' %}
-    <li>{{ number }}</li>
-    {% elseif position == 'last' %}
-    <li>
-      <a href="/segments?{{ current_params_minus_page }}&page={{ number }}">&raquo;</a>
-    </li>
-    {% endif %} {% endfor %}
-  </ul>
 {% endblock %}
