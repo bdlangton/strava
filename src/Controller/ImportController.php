@@ -1,10 +1,9 @@
 <?php
 
-namespace Strava;
+namespace App\Controller;
 
 use Doctrine\DBAL\Connection;
-use Silex\Application;
-use Silex\Api\ControllerProviderInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -13,12 +12,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Import functionality controller.
  */
-class ImportControllerProvider implements ControllerProviderInterface {
+class ImportController extends AbstractController {
 
   /**
    * {@inheritdoc}
    */
-  public function connect(Application $app) {
+  public function connect() {
     $import = $app['controllers_factory'];
 
     // Import user activities.
@@ -26,7 +25,7 @@ class ImportControllerProvider implements ControllerProviderInterface {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
-        return $app->redirect('/');
+        return $this->redirectToRoute('/');
       }
       $output = '';
 

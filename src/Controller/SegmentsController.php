@@ -1,41 +1,38 @@
 <?php
 
-namespace Strava;
+namespace App\Controller;
 
-use Doctrine\DBAL\Connection;
-use Silex\Application;
-use Silex\Api\ControllerProviderInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Activities controller.
+ * Segments controller.
  */
-class ActivitiesControllerProvider implements ControllerProviderInterface {
+class SegmentsController extends AbstractController {
 
   /**
    * {@inheritdoc}
    */
-  public function connect(Application $app) {
-    $activities = $app['controllers_factory'];
+  public function connect() {
+    $segments = $app['controllers_factory'];
 
-    // My activities.
-    $activities->get('/activities', function (Request $request) use ($app) {
+    // My segments.
+    $segments->get('/segments', function (Request $request) use ($app) {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
-        return $app->redirect('/');
+        return $this->redirectToRoute('/');
       }
 
       // Build the form.
       $params = $request->query->all();
       $params += [
         'type' => $user['activity_type'] ?: 'All',
-        'format' => $user['format'] ?: 'imperial',
         'name' => '',
-        'workout' => $app['strava']->getRunWorkouts(),
+        'format' => $user['format'] ?: 'imperial',
         'sort' => NULL,
       ];
       $form = $app['form.factory']->createNamedBuilder(NULL, FormType::class, $params)
@@ -43,36 +40,24 @@ class ActivitiesControllerProvider implements ControllerProviderInterface {
           'choices' => $app['strava']->getActivityTypes(),
           'label' => FALSE,
         ])
-        ->add('format', ChoiceType::class, [
-          'choices' => $app['strava']->getFormats(),
-          'label' => FALSE,
-        ])
         ->add('name', TextType::class, [
           'label' => FALSE,
           'required' => FALSE,
         ]);
-      if ($params['type'] == 'Run') {
-        $form = $form->add('workout', ChoiceType::class, [
-          'choices' => $app['strava']->getRunWorkouts(),
-          'expanded' => TRUE,
-          'multiple' => TRUE,
-          'label' => FALSE,
-        ]);
-      }
       $form = $form->getForm();
 
-      // Determine the sort order.
+      // Sort.
       switch ($params['sort']) {
-        case 'gain':
-          $sort = 'ORDER BY total_elevation_gain DESC';
+        case 'segment':
+          $sort = 'ORDER BY s.name';
           break;
 
         case 'distance':
-          $sort = 'ORDER BY distance DESC';
+          $sort = 'ORDER BY s.distance DESC';
           break;
 
         default:
-          $sort = 'ORDER BY start_date_local DESC';
+          $sort = 'ORDER BY ss.starred_date DESC';
           break;
       }
 
@@ -87,19 +72,15 @@ class ActivitiesControllerProvider implements ControllerProviderInterface {
       ];
 
       // Build the query.
-      $sql = 'SELECT * ';
-      $sql .= 'FROM activities ';
-      $sql .= 'WHERE athlete_id = ? ';
-      $sql .= 'AND name LIKE ? ';
+      $sql = 'SELECT s.id, s.name, s.activity_type, s.distance, ss.starred_date ';
+      $sql .= 'FROM starred_segments ss ';
+      $sql .= 'JOIN segments s ON (ss.segment_id = s.id) ';
+      $sql .= 'WHERE ss.athlete_id = ? ';
+      $sql .= 'AND s.name LIKE ? ';
       if ($params['type'] != 'All') {
-        $sql .= 'AND type = ? ';
+        $sql .= 'AND s.activity_type = ? ';
         $query_params[] = $params['type'];
-        $query_types[] = \PDO::PARAM_INT;
-      }
-      if ($params['type'] == 'Run') {
-        $sql .= 'AND workout_type IN (?) ';
-        $query_params[] = $params['workout'];
-        $query_types[] = Connection::PARAM_INT_ARRAY;
+        $query_types[] = \PDO::PARAM_STR;
       }
       $sql .= $sort;
       $datapoints = $app['db']->executeQuery($sql, $query_params, $query_types);
@@ -113,22 +94,19 @@ class ActivitiesControllerProvider implements ControllerProviderInterface {
       $datapoints = $datapoints->fetchAll();
       $datapoints = array_slice($datapoints, ($page - 1) * $app['pagination.per_page'], $app['pagination.per_page']);
 
-      $activities = [];
+      $segments = [];
       foreach ($datapoints as $point) {
-        $point['distance'] = $app['strava']->convertDistance($point['distance'], $params['format']);
-        $point['date'] = $app['strava']->convertDateFormat($point['start_date_local']);
-        $point['elapsed_time'] = $app['strava']->convertTimeFormat($point['elapsed_time']);
-        $point['total_elevation_gain'] = $app['strava']->convertElevationGain($point['total_elevation_gain'], $params['format']);
-        $activities[] = $point;
+        $point['distance'] = $app['strava']->convertDistance($point['distance'], $user['format']);
+        $point['starred_date'] = $app['strava']->convertDateFormat($point['starred_date']);
+        $segments[] = $point;
       }
 
       // Render the page.
-      return $app['twig']->render('activities.twig', [
+      return $app['twig']->render('segments.twig', [
         'form' => $form->createView(),
-        'activities' => $activities,
+        'segments' => $segments,
         'type' => $params['type'],
         'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
-        'gain_format' => ($params['format'] == 'imperial') ? 'ft' : 'm',
         'pages' => $pages,
         'current' => $pagination->currentPage(),
         'current_params_minus_page' => $app['strava']->getCurrentParams(['page']),
@@ -143,7 +121,7 @@ class ActivitiesControllerProvider implements ControllerProviderInterface {
       }
     );
 
-    return $activities;
+    return $segments;
   }
 
 }

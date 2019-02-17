@@ -1,12 +1,11 @@
 <?php
 
-namespace Strava;
+namespace App\Controller;
 
 use Doctrine\DBAL\Connection;
 use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
-use Silex\Application;
-use Silex\Api\ControllerProviderInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -15,12 +14,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Graphs controller.
  */
-class GraphsControllerProvider implements ControllerProviderInterface {
+class GraphsController extends AbstractController {
 
   /**
    * {@inheritdoc}
    */
-  public function connect(Application $app) {
+  public function connect() {
     $graphs = $app['controllers_factory'];
 
     // General graphs.
@@ -28,7 +27,7 @@ class GraphsControllerProvider implements ControllerProviderInterface {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
-        return $app->redirect('/');
+        return $this->redirectToRoute('/');
       }
 
       // Build the form.

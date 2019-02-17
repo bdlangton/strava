@@ -1,11 +1,10 @@
 <?php
 
-namespace Strava;
+namespace App\Controller;
 
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
-use Silex\Application;
-use Silex\Api\ControllerProviderInterface;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +12,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Jon score controller.
  */
-class JonControllerProvider implements ControllerProviderInterface {
+class JonController extends AbstractController {
 
   /**
    * {@inheritdoc}
    */
-  public function connect(Application $app) {
+  public function connect() {
     $jon = $app['controllers_factory'];
 
     // Display the Jon score chart.
@@ -26,7 +25,7 @@ class JonControllerProvider implements ControllerProviderInterface {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
-        return $app->redirect('/');
+        return $this->redirectToRoute('/');
       }
 
       // Build the form.

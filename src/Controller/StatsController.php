@@ -1,9 +1,8 @@
 <?php
 
-namespace Strava;
+namespace App\Controller;
 
-use Silex\Application;
-use Silex\Api\ControllerProviderInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -13,12 +12,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Stats controller.
  */
-class StatsControllerProvider implements ControllerProviderInterface {
+class StatsController extends AbstractController {
 
   /**
    * {@inheritdoc}
    */
-  public function connect(Application $app) {
+  public function connect() {
     $stats = $app['controllers_factory'];
 
     // Display the Biggest Stats page.
@@ -26,7 +25,7 @@ class StatsControllerProvider implements ControllerProviderInterface {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
-        return $app->redirect('/');
+        return $this->redirectToRoute('/');
       }
 
       // Build the form.
@@ -193,7 +192,7 @@ class StatsControllerProvider implements ControllerProviderInterface {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
-        return $app->redirect('/');
+        return $this->redirectToRoute('/');
       }
 
       // Find the stat.
@@ -243,7 +242,7 @@ class StatsControllerProvider implements ControllerProviderInterface {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
-        return $app->redirect('/');
+        return $this->redirectToRoute('/');
       }
 
       // Only let the user delete the stat if they own it.

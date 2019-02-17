@@ -1,11 +1,10 @@
 <?php
 
-namespace Strava;
+namespace App\Controller;
 
 use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
-use Silex\Application;
-use Silex\Api\ControllerProviderInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -14,12 +13,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * Column charts controller.
  */
-class ChartsControllerProvider implements ControllerProviderInterface {
+class ChartsController extends AbstractController {
 
   /**
    * {@inheritdoc}
    */
-  public function connect(Application $app) {
+  public function connect() {
     $charts = $app['controllers_factory'];
 
     // Stacked column charts.
@@ -27,7 +26,7 @@ class ChartsControllerProvider implements ControllerProviderInterface {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
-        return $app->redirect('/');
+        return $this->redirectToRoute('/');
       }
 
       // Build the form.

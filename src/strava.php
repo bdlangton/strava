@@ -5,34 +5,6 @@
  * Contains the majority of the strava app functionality.
  */
 
-require_once __DIR__ . '/../app/Strava/StravaServiceProvider.php';
-require_once __DIR__ . '/../app/Strava/Strava.php';
-
-use Igorw\Silex\ConfigServiceProvider;
-use Kilte\Silex\Pagination\PaginationServiceProvider;
-use Silex\Application;
-use Silex\Provider\AssetServiceProvider;
-use Silex\Provider\DoctrineServiceProvider;
-use Silex\Provider\FormServiceProvider;
-use Silex\Provider\LocaleServiceProvider;
-use Silex\Provider\MonologServiceProvider;
-use Silex\Provider\SessionServiceProvider;
-use Silex\Provider\TranslationServiceProvider;
-use Silex\Provider\TwigServiceProvider;
-use Silex\Provider\ValidatorServiceProvider;
-use Strava\ActivitiesControllerProvider;
-use Strava\AuthControllerProvider;
-use Strava\ChartsControllerProvider;
-use Strava\GraphsControllerProvider;
-use Strava\HomeControllerProvider;
-use Strava\ImportControllerProvider;
-use Strava\JonControllerProvider;
-use Strava\RecordsControllerProvider;
-use Strava\SegmentsControllerProvider;
-use Strava\StatsControllerProvider;
-use Strava\StravaServiceProvider;
-use Strava\UserControllerProvider;
-use Strava\WebhookControllerProvider;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler;
 use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeSessionHandler;
 use Symfony\Component\HttpFoundation\Request;
@@ -108,20 +80,6 @@ else {
 
 // Register the doctrine service provider.
 $app->register(new DoctrineServiceProvider(), []);
-
-// Mount all of the controller providers.
-$app->mount('/', new HomeControllerProvider());
-$app->mount('/', new AuthControllerProvider());
-$app->mount('/', new ImportControllerProvider());
-$app->mount('/', new WebhookControllerProvider());
-$app->mount('/', new UserControllerProvider());
-$app->mount('/', new ActivitiesControllerProvider());
-$app->mount('/', new SegmentsControllerProvider());
-$app->mount('/', new GraphsControllerProvider());
-$app->mount('/', new ChartsControllerProvider());
-$app->mount('/', new RecordsControllerProvider());
-$app->mount('/', new StatsControllerProvider());
-$app->mount('/', new JonControllerProvider());
 
 // Handle errors.
 $app->error(function (\Exception $e, Request $request, $code) use ($app) {

@@ -1,9 +1,8 @@
 <?php
 
-namespace Strava;
+namespace App\Controller;
 
-use Silex\Application;
-use Silex\Api\ControllerProviderInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -12,12 +11,12 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * KOM and PR records controller.
  */
-class RecordsControllerProvider implements ControllerProviderInterface {
+class RecordsController extends AbstractController {
 
   /**
    * {@inheritdoc}
    */
-  public function connect(Application $app) {
+  public function connect() {
     $records = $app['controllers_factory'];
 
     // Display PRs and CRs.
@@ -25,7 +24,7 @@ class RecordsControllerProvider implements ControllerProviderInterface {
       // Check the session.
       $user = $app['session']->get('user');
       if (empty($user)) {
-        return $app->redirect('/');
+        return $this->redirectToRoute('/');
       }
 
       // Build the form.
