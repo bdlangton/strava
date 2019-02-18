@@ -1,5 +1,4 @@
 ###> custom ###
-.env*
 .ddev
 .docksal
 config
