@@ -10,6 +10,13 @@ use Doctrine\DBAL\Connection;
 class Strava {
 
   /**
+   * Database connection.
+   *
+   * @var \Doctrin\DBAL\Connection
+   */
+  private $connection;
+
+  /**
    * Activity type form choices.
    *
    * @var array
@@ -82,6 +89,16 @@ class Strava {
     'Long Run' => 2,
     'Intervals' => 3,
   ];
+
+  /**
+   * Constructor.
+   *
+   * @param \Doctrine\DBAL\Connection $connection
+   *   The database connection service.
+   */
+  public function __construct(Connection $connection) {
+    $this->connection = $connection;
+  }
 
   /**
    * Converts distance depending on format.
@@ -335,17 +352,14 @@ class Strava {
 
   /**
    * Refresh user tokens that need refreshed.
-   *
-   * @param mixed $app
-   *   The silex app.
    */
-  public function refreshTokens($app) {
+  public function refreshTokens() {
     // Get list of tokens that expire within one hour.
-    $refresh_list = $app['db']->executeQuery(
+    $refresh_list = $this->connection->executeQuery(
       'SELECT id, access_token, refresh_token FROM athletes WHERE token_expires < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 HOUR)) OR refresh_token IS NULL'
     )->fetchAll();
     foreach ($refresh_list as $refresh) {
-      $this->refreshToken($refresh, $app);
+      $this->refreshToken($refresh);
     }
   }
 
@@ -354,10 +368,8 @@ class Strava {
    *
    * @param array $refresh
    *   Array with the user's tokens.
-   * @param mixed $app
-   *   The silex app.
    */
-  protected function refreshToken($refresh, $app) {
+  protected function refreshToken($refresh) {
     // If the refresh token isn't set, then this user hasn't been migrated to
     // the new short-lived tokens. They can use their access token as the
     // refresh token.
@@ -369,7 +381,7 @@ class Strava {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, 'https://www.strava.com/oauth/token');
     curl_setopt($ch, CURLOPT_POST, 3);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=refresh_token&refresh_token=' . $refresh['refresh_token'] . '&client_id=' . $app['client_id'] . '&client_secret=' . $app['client_secret']);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=refresh_token&refresh_token=' . $refresh['refresh_token'] . '&client_id=' . getenv('CLIENT_ID') . '&client_secret=' . getenv('CLIENT_SECRET'));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
     $result = curl_exec($ch);
     $data = json_decode($result, TRUE);
@@ -377,12 +389,12 @@ class Strava {
 
     // Update the database with the new tokens.
     try {
-      $result = $app['db']->executeQuery(
+      $result = $this->connection->executeQuery(
         'SELECT id FROM athletes WHERE id = ?',
         [$refresh['id']]
       )->fetchAll();
       if (!empty($result)) {
-        $app['db']->executeQuery(
+        $this->connection->executeQuery(
           'UPDATE athletes set access_token = ?, refresh_token = ?, token_expires = ? WHERE id = ?',
           [
             $data['access_token'],
@@ -402,14 +414,12 @@ class Strava {
    *
    * @param float $activity_id
    *   The activity ID.
-   * @param mixed $app
-   *   The Silex app.
    *
    * @return bool
    *   Return TRUE if the activity exists, FALSE otherwise.
    */
-  public function activityExists(float $activity_id, $app) : bool {
-    $result = $app['db']->executeQuery(
+  public function activityExists(float $activity_id) : bool {
+    $result = $this->connection->executeQuery(
       'SELECT id FROM activities WHERE id = ?',
       [$activity_id]
     )->fetchColumn();

@@ -117,7 +117,7 @@ class ImportController extends AbstractController {
             }
 
             // Update the existing activity.
-            $result = $strava->updateActivity($activity, $app);
+            $result = $strava->updateActivity($activity);
             if ($result) {
               $activities_updated++;
             }
@@ -128,12 +128,12 @@ class ImportController extends AbstractController {
           }
           else {
             // Insert a new activity that wasn't already in our database.
-            $strava->insertActivity($activity, $app);
+            $strava->insertActivity($activity);
             $activities_added++;
           }
 
           // Insert any segment efforst associated with the activity.
-          $strava->insertSegmentEfforts($activity, $user['access_token'], $app);
+          $strava->insertSegmentEfforts($activity, $user['access_token']);
         }
       }
 
