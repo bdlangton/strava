@@ -1,7 +1,8 @@
 ###> custom ###
 .ddev
 .docksal
-config
+config/*.json
+config/*.php
 tags
 ###< custom ###
 
