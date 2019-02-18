@@ -31,7 +31,7 @@ class ImportController extends AbstractController {
 
     // Build the form.
     $request = $requestStack->getCurrentRequest();
-    $params = $request->query->all() ?? [];
+    $params = $request->query->get('form') ?? [];
     $import_type = !empty($params['type']) ? $params['type'] : NULL;
     $params += [
       'type' => 'new',
@@ -42,6 +42,7 @@ class ImportController extends AbstractController {
       ->add('type', ChoiceType::class, [
         'choices' => [
           'New Activities' => 'new',
+          '2019 Activities' => '2019',
           '2018 Activities' => '2018',
           '2017 Activities' => '2017',
           '2016 Activities' => '2016',

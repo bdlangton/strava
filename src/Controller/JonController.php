@@ -31,7 +31,7 @@ class JonController extends AbstractController {
 
     // Build the form.
     $request = $requestStack->getCurrentRequest();
-    $params = $request->query->all() ?? [];
+    $params = $request->query->get('form') ?? [];
     $params += $strava->getBeginAndEndDates();
     if (is_string($params['begin_date'])) {
       $params['begin_date'] = new \DateTime($params['begin_date']);
