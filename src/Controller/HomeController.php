@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class HomeController extends AbstractController {
 
   /**
-   * @Route("/")
+   * @Route("/", name="home")
    */
   public function home(SessionInterface $session, Connection $connection) {
     $user = $session->get('user');
