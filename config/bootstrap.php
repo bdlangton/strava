@@ -21,8 +21,8 @@ $_SERVER['APP_DEBUG'] = $_SERVER['APP_DEBUG'] ?? $_ENV['APP_DEBUG'] ?? 'prod' !=
 $_SERVER['APP_DEBUG'] = $_ENV['APP_DEBUG'] = (int) $_SERVER['APP_DEBUG'] || filter_var($_SERVER['APP_DEBUG'], FILTER_VALIDATE_BOOLEAN) ? '1' : '0';
 
 // Include the environment specific settings file.
-if (file_exists(__DIR__ . "/../config/{$_ENV['APP_ENV']}.php")) {
-  require_once __DIR__ . "/../config/{$_ENV['APP_ENV']}.php";
+if (file_exists(__DIR__ . "/../.env.{$_ENV['APP_ENV']}.php")) {
+  require_once __DIR__ . "/../.env.{$_ENV['APP_ENV']}.php";
 }
 
 define("DISTANCE_TO_MILES", 0.00062137);
