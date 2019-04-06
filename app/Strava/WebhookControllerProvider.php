@@ -22,8 +22,8 @@ class WebhookControllerProvider implements ControllerProviderInterface {
     $webhook->get('/webhook', function (Request $request) use ($app) {
       $output = [];
       $params = $request->query->all();
-      if ($params['hub.mode'] == 'subscribe' && $params['hub.verify_token'] == 'STRAVA') {
-        $output = ['hub.challenge' => $params['hub.challenge']];
+      if ($params['hub_mode'] == 'subscribe' && $params['hub_verify_token'] == 'STRAVA') {
+        $output = ['hub.challenge' => $params['hub_challenge']];
       }
       return $app->json($output);
     });
