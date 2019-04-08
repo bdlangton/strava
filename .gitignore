@@ -3,6 +3,7 @@
 .docksal
 .env.*.php
 tags
+.tags
 ###< custom ###
 
 ###> symfony/framework-bundle ###
