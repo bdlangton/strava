@@ -338,6 +338,70 @@ class Strava {
   }
 
   /**
+   * Refresh user tokens that need refreshed.
+   *
+   * @param mixed $app
+   *   The silex app.
+   */
+  public function refreshTokens($app) {
+    // Get list of tokens that expire within one hour.
+    $refresh_list = $app['db']->executeQuery(
+      'SELECT id, access_token, refresh_token FROM athletes WHERE token_expires < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 HOUR)) OR refresh_token IS NULL'
+    )->fetchAll();
+    foreach ($refresh_list as $refresh) {
+      $this->refreshToken($refresh, $app);
+    }
+  }
+
+  /**
+   * Refresh a token for an individual user.
+   *
+   * @param array $refresh
+   *   Array with the user's tokens.
+   * @param mixed $app
+   *   The silex app.
+   */
+  protected function refreshToken($refresh, $app) {
+    // If the refresh token isn't set, then this user hasn't been migrated to
+    // the new short-lived tokens. They can use their access token as the
+    // refresh token.
+    if (empty($refresh['refresh_token'])) {
+      $refresh['refresh_token'] = $refresh['access_token'];
+    }
+
+    // Submit for a new token.
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://www.strava.com/oauth/token');
+    curl_setopt($ch, CURLOPT_POST, 3);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=refresh_token&refresh_token=' . $refresh['refresh_token'] . '&client_id=' . $app['client_id'] . '&client_secret=' . $app['client_secret']);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    $result = curl_exec($ch);
+    $data = json_decode($result, TRUE);
+    curl_close($ch);
+
+    // Update the database with the new tokens.
+    try {
+      $result = $app['db']->executeQuery(
+        'SELECT id FROM athletes WHERE id = ?',
+        [$refresh['id']]
+      )->fetchAll();
+      if (!empty($result)) {
+        $app['db']->executeQuery(
+          'UPDATE athletes set access_token = ?, refresh_token = ?, token_expires = ? WHERE id = ?',
+          [
+            $data['access_token'],
+            $data['refresh_token'],
+            $data['expires_at'],
+            $refresh['id'],
+          ]
+        );
+      }
+    }
+    catch (Exception $e) {
+    }
+  }
+
+  /**
    * Check if an activity exists locally.
    *
    * @param float $activity_id
