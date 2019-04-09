@@ -38,4 +38,5 @@
       </tr>
     {% endfor %}
   </table>
+  {{ pagerfanta(pager, 'default', { 'omitFirstPage': true}) }}
 {% endblock %}

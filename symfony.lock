@@ -92,6 +92,9 @@
     "ocramius/proxy-manager": {
         "version": "2.2.2"
     },
+    "pagerfanta/pagerfanta": {
+        "version": "v2.1.2"
+    },
     "phar-io/manifest": {
         "version": "1.0.3"
     },
@@ -328,6 +331,9 @@
     },
     "webmozart/assert": {
         "version": "1.4.0"
+    },
+    "white-october/pagerfanta-bundle": {
+        "version": "v1.2.4"
     },
     "zendframework/zend-code": {
         "version": "3.3.1"

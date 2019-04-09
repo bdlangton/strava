@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Strava\Strava;
 use Doctrine\DBAL\Connection;
+use Pagerfanta\Adapter\ArrayAdapter;
+use Pagerfanta\Pagerfanta;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -30,7 +32,7 @@ class SegmentsController extends AbstractController {
 
     // Build the form.
     $request = $requestStack->getCurrentRequest();
-    $params = $request->query->get('form');
+    $params = $request->query->get('form') ?? [];
     $params += [
       'type' => $user['activity_type'] ?: 'All',
       'name' => '',
@@ -94,13 +96,21 @@ class SegmentsController extends AbstractController {
       $segments[] = $point;
     }
 
+    // Set up pagination.
+    $page = $request->query->get('page') ?? 1;
+    $adapter = new ArrayAdapter($segments);
+    $pagerfanta = new Pagerfanta($adapter);
+    $pagerfanta->setMaxPerPage(20);
+    $pagerfanta->setCurrentPage($page);
+    $segments = $pagerfanta->getCurrentPageResults();
+
     // Render the page.
     return $this->render('segments.twig', [
       'form' => $form->createView(),
       'segments' => $segments,
       'type' => $params['type'],
       'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
-      'current_params_minus_page' => $strava->getCurrentParams(['page']),
+      'pager' => $pagerfanta,
       'current_params_minus_sort' => $strava->getCurrentParams(['sort']),
     ]);
   }

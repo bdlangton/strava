@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Strava\Strava;
 use Doctrine\DBAL\Connection;
+use Pagerfanta\Adapter\ArrayAdapter;
+use Pagerfanta\Pagerfanta;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -146,13 +148,21 @@ class RecordsController extends AbstractController {
       $efforts[] = $point;
     }
 
+    // Set up pagination.
+    $page = $request->query->get('page') ?? 1;
+    $adapter = new ArrayAdapter($efforts);
+    $pagerfanta = new Pagerfanta($adapter);
+    $pagerfanta->setMaxPerPage(20);
+    $pagerfanta->setCurrentPage($page);
+    $efforts = $pagerfanta->getCurrentPageResults();
+
     // Render the page.
     return $this->render('records.twig', [
       'form' => $form->createView(),
       'efforts' => $efforts,
       'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
       'type' => $params['type'],
-      'current_params_minus_page' => $strava->getCurrentParams(['page']),
+      'pager' => $pagerfanta,
       'current_params_minus_sort' => $strava->getCurrentParams(['sort']),
     ]);
   }

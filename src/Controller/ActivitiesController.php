@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Strava\Strava;
 use Doctrine\DBAL\Connection;
+use Pagerfanta\Adapter\ArrayAdapter;
+use Pagerfanta\Pagerfanta;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
@@ -113,6 +115,14 @@ class ActivitiesController extends AbstractController {
       $activities[] = $point;
     }
 
+    // Set up pagination.
+    $page = $request->query->get('page') ?? 1;
+    $adapter = new ArrayAdapter($activities);
+    $pagerfanta = new Pagerfanta($adapter);
+    $pagerfanta->setMaxPerPage(20);
+    $pagerfanta->setCurrentPage($page);
+    $activities = $pagerfanta->getCurrentPageResults();
+
     // Render the page.
     return $this->render('activities.twig', [
       'form' => $form->createView(),
@@ -120,7 +130,7 @@ class ActivitiesController extends AbstractController {
       'type' => $params['type'],
       'format' => ($params['format'] == 'imperial') ? 'mi' : 'km',
       'gain_format' => ($params['format'] == 'imperial') ? 'ft' : 'm',
-      'current_params_minus_page' => $strava->getCurrentParams(['page']),
+      'pager' => $pagerfanta,
       'current_params_minus_sort' => $strava->getCurrentParams(['sort']),
     ]);
   }
