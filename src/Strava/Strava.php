@@ -10,6 +10,13 @@ use Doctrine\DBAL\Connection;
 class Strava {
 
   /**
+   * Database connection.
+   *
+   * @var \Doctrin\DBAL\Connection
+   */
+  private $connection;
+
+  /**
    * Activity type form choices.
    *
    * @var array
@@ -82,6 +89,16 @@ class Strava {
     'Long Run' => 2,
     'Intervals' => 3,
   ];
+
+  /**
+   * Constructor.
+   *
+   * @param \Doctrine\DBAL\Connection $connection
+   *   The database connection service.
+   */
+  public function __construct(Connection $connection) {
+    $this->connection = $connection;
+  }
 
   /**
    * Converts distance depending on format.
@@ -335,17 +352,14 @@ class Strava {
 
   /**
    * Refresh user tokens that need refreshed.
-   *
-   * @param mixed $app
-   *   The silex app.
    */
-  public function refreshTokens($app) {
+  public function refreshTokens() {
     // Get list of tokens that expire within one hour.
-    $refresh_list = $app['db']->executeQuery(
+    $refresh_list = $this->connection->executeQuery(
       'SELECT id, access_token, refresh_token FROM athletes WHERE token_expires < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 HOUR)) OR refresh_token IS NULL'
     )->fetchAll();
     foreach ($refresh_list as $refresh) {
-      $this->refreshToken($refresh, $app);
+      $this->refreshToken($refresh);
     }
   }
 
@@ -354,10 +368,8 @@ class Strava {
    *
    * @param array $refresh
    *   Array with the user's tokens.
-   * @param mixed $app
-   *   The silex app.
    */
-  protected function refreshToken($refresh, $app) {
+  protected function refreshToken($refresh) {
     // If the refresh token isn't set, then this user hasn't been migrated to
     // the new short-lived tokens. They can use their access token as the
     // refresh token.
@@ -369,7 +381,7 @@ class Strava {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, 'https://www.strava.com/oauth/token');
     curl_setopt($ch, CURLOPT_POST, 3);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=refresh_token&refresh_token=' . $refresh['refresh_token'] . '&client_id=' . $app['client_id'] . '&client_secret=' . $app['client_secret']);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=refresh_token&refresh_token=' . $refresh['refresh_token'] . '&client_id=' . getenv('CLIENT_ID') . '&client_secret=' . getenv('CLIENT_SECRET'));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
     $result = curl_exec($ch);
     $data = json_decode($result, TRUE);
@@ -377,12 +389,12 @@ class Strava {
 
     // Update the database with the new tokens.
     try {
-      $result = $app['db']->executeQuery(
+      $result = $this->connection->executeQuery(
         'SELECT id FROM athletes WHERE id = ?',
         [$refresh['id']]
       )->fetchAll();
       if (!empty($result)) {
-        $app['db']->executeQuery(
+        $this->connection->executeQuery(
           'UPDATE athletes set access_token = ?, refresh_token = ?, token_expires = ? WHERE id = ?',
           [
             $data['access_token'],
@@ -402,14 +414,12 @@ class Strava {
    *
    * @param float $activity_id
    *   The activity ID.
-   * @param mixed $app
-   *   The Silex app.
    *
    * @return bool
    *   Return TRUE if the activity exists, FALSE otherwise.
    */
-  public function activityExists(float $activity_id, $app) : bool {
-    $result = $app['db']->executeQuery(
+  public function activityExists(float $activity_id) : bool {
+    $result = $this->connection->executeQuery(
       'SELECT id FROM activities WHERE id = ?',
       [$activity_id]
     )->fetchColumn();
@@ -422,14 +432,12 @@ class Strava {
    *
    * @param int $user_id
    *   The user ID.
-   * @param mixed $app
-   *   The Silex app.
    *
    * @return string
    *   Return the access token.
    */
-  public function getAccessToken(int $user_id, $app) : string {
-    $access_token = $app['db']->executeQuery(
+  public function getAccessToken(int $user_id) : string {
+    $access_token = $this->connection->executeQuery(
       'SELECT access_token FROM athletes WHERE id = ?',
       [$user_id]
     )->fetchColumn();
@@ -442,13 +450,11 @@ class Strava {
    *
    * @param array $activity
    *   The activity.
-   * @param mixed $app
-   *   The Silex app.
    *
    * @return bool
    *   Return TRUE if it was updated, FALSE if there was an error.
    */
-  public function updateActivity(array $activity, $app) : bool {
+  public function updateActivity(array $activity) : bool {
     try {
       // Convert some data to how we need it stored.
       $activity['start_date'] = str_replace('Z', '', $activity['start_date']);
@@ -457,7 +463,7 @@ class Strava {
       $activity['private'] = $activity['private'] ? 1 : 0;
 
       // Update the existing activity.
-      $result = $app['db']->update('activities',
+      $result = $this->connection->update('activities',
         [
           'athlete_id' => $activity['athlete']['id'],
           'name' => $activity['name'],
@@ -470,8 +476,8 @@ class Strava {
           'start_date' => $activity['start_date'],
           'start_date_local' => $activity['start_date_local'],
           'timezone' => $activity['timezone'],
-          'trainer' => $activity['trainer'],
-          'commute' => $activity['commute'],
+          'trainer' => $activity['trainer'] ?: NULL,
+          'commute' => $activity['commute'] ?: NULL,
           'manual' => $activity['manual'],
           'private' => $activity['private'],
           'workout_type' => empty($activity['workout_type']) ? 0 : $activity['workout_type'],
@@ -503,13 +509,11 @@ class Strava {
    *
    * @param array $activity
    *   The activity.
-   * @param mixed $app
-   *   The Silex app.
    *
    * @return bool
    *   Return TRUE if it was inserted, FALSE if there was an error.
    */
-  public function insertActivity(array $activity, $app) : bool {
+  public function insertActivity(array $activity) : bool {
     try {
       // Convert some data to how we need it stored.
       $activity['start_date'] = str_replace('Z', '', $activity['start_date']);
@@ -518,7 +522,7 @@ class Strava {
       $activity['private'] = $activity['private'] ? 1 : 0;
 
       // Insert a new activity that wasn't already in our database.
-      $result = $app['db']->insert('activities', [
+      $result = $this->connection->insert('activities', [
         'id' => $activity['id'],
         'athlete_id' => $activity['athlete']['id'],
         'name' => $activity['name'],
@@ -531,8 +535,8 @@ class Strava {
         'start_date' => $activity['start_date'],
         'start_date_local' => $activity['start_date_local'],
         'timezone' => $activity['timezone'],
-        'trainer' => !empty($activity['trainer']) ? $activity['trainer'] : NULL,
-        'commute' => !empty($activity['commute']) ? $activity['commute'] : NULL,
+        'trainer' => $activity['trainer'] ?: NULL,
+        'commute' => $activity['commute'] ?: NULL,
         'manual' => $activity['manual'],
         'private' => $activity['private'],
         'workout_type' => empty($activity['workout_type']) ? 0 : $activity['workout_type'],
@@ -564,18 +568,16 @@ class Strava {
    *   The activity.
    * @param string $access_token
    *   The user's access token.
-   * @param mixed $app
-   *   The Silex app.
    *
    * @return bool
    *   Return TRUE if segment efforts were inserted, FALSE if there was an
    *   error.
    */
-  public function insertSegmentEfforts(array $activity, string $access_token, $app) : bool {
+  public function insertSegmentEfforts(array $activity, string $access_token) : bool {
     try {
       // Query the individual activity so we can get the detailed
       // representation that includes segment efforts.
-      $activity = $app['strava']->getActivity($activity['id'], $access_token);
+      $activity = $this->getActivity($activity['id'], $access_token);
 
       // If no segment efforts are found, then we are done with this
       // activity.
@@ -585,7 +587,7 @@ class Strava {
 
       // Check if we already have any segment efforts in our db.
       $segment_effort_ids = array_column($activity['segment_efforts'], 'id');
-      $segment_effort_results = $app['db']->executeQuery(
+      $segment_effort_results = $this->connection->executeQuery(
         'SELECT id FROM segment_efforts WHERE id IN (?) ',
         [$segment_effort_ids],
         [Connection::PARAM_INT_ARRAY]
@@ -601,7 +603,7 @@ class Strava {
 
           // Insert the segment effort if it doesn't already exist.
           if (!in_array($segment_effort['id'], $segment_effort_results)) {
-            $app['db']->insert('segment_efforts', [
+            $this->connection->insert('segment_efforts', [
               'id' => $segment_effort['id'],
               'segment_id' => $segment_effort['segment']['id'],
               'name' => $segment_effort['name'],
@@ -623,7 +625,7 @@ class Strava {
 
           // Check if we already have the segment in our db.
           $segment = $segment_effort['segment'];
-          $result = $app['db']->executeQuery(
+          $result = $this->connection->executeQuery(
             'SELECT id FROM segments WHERE id = ? ',
             [$segment['id']]
           )->fetchAll();
@@ -635,7 +637,7 @@ class Strava {
             $segment['private'] = $segment['private'] ? 1 : 0;
             $segment['hazardous'] = $segment['hazardous'] ? 1 : 0;
 
-            $app['db']->insert('segments', [
+            $this->connection->insert('segments', [
               'id' => $segment['id'],
               'name' => $segment['name'],
               'activity_type' => $segment['activity_type'],

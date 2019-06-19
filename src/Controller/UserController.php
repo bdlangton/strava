@@ -65,7 +65,7 @@ class UserController extends AbstractController {
 
     // Get the form submissions.
     $request = $requestStack->getCurrentRequest();
-    $params = $request->request->get('form');
+    $params = $request->request->get('form') ?? [];
     $type = $params['type'] ?: $user['activity_type'];
     $format = $params['format'] ?: $user['format'];
 

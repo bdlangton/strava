@@ -1,9 +1,9 @@
 ###> custom ###
 .ddev
 .docksal
-config/*.json
-config/*.php
+.env.*.php
 tags
+.tags
 ###< custom ###
 
 ###> symfony/framework-bundle ###

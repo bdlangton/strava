@@ -20,7 +20,8 @@
         "symfony/twig-bridge": "4.2.*",
         "symfony/twig-bundle": "4.2.*",
         "symfony/yaml": "4.2.*",
-        "twig/twig": "^2.6"
+        "twig/twig": "^2.6",
+        "white-october/pagerfanta-bundle": "^1.2"
     },
     "config": {
         "preferred-install": {

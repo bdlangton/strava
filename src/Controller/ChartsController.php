@@ -32,7 +32,7 @@ class ChartsController extends AbstractController {
 
     // Build the form.
     $request = $requestStack->getCurrentRequest();
-    $params = $request->query->all() ?? [];
+    $params = $request->query->get('form') ?? [];
     $params += [
       'group' => 'month',
       'format' => $user['format'],

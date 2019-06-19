@@ -32,7 +32,7 @@ class GraphsController extends AbstractController {
 
     // Build the form.
     $request = $requestStack->getCurrentRequest();
-    $params = $request->query->all() ?? [];
+    $params = $request->query->get('form') ?? [];
     $params += [
       'type' => $user['activity_type'] ?: 'All',
       'format' => $user['format'] ?: 'imperial',
