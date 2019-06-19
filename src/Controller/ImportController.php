@@ -69,8 +69,9 @@ class ImportController extends AbstractController {
         // Query for activities.
         $activities = $strava->getActivities($user['access_token'], $page);
 
-        // If no activities are found, then we've reached the end.
-        if (empty($activities)) {
+        // If no activities are found (or there was an error), then break the
+        // loop.
+        if (empty($activities) || !empty($activities['message'])) {
           break;
         }
 
