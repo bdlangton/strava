@@ -4,6 +4,10 @@
 .env.*.php
 tags
 .tags
+/config/dev*
+/config/test*
+/config/prod*
+/.env.prod
 ###< custom ###
 
 ###> symfony/framework-bundle ###
