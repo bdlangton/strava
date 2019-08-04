@@ -1,24 +1,25 @@
 ###> custom ###
 .ddev
 .docksal
-.env.*.php
+/docroot/.env.*.php
 tags
 .tags
-/config/dev*
-/config/test*
-/config/prod*
-/.env.prod
+.env
+/docroot/config/dev*
+/docroot/config/test*
+/docroot/config/prod*
+/docroot/.env.prod
 ###< custom ###
 
 ###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
-/public/bundles/
-/var/
-/vendor/
+/docroot/.env.local
+/docroot/.env.local.php
+/docroot/.env.*.local
+/docroot/public/bundles/
+/docroot/var/
+/docroot/vendor/
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
-/phpunit.xml
+/docroot/phpunit.xml
 ###< phpunit/phpunit ###
