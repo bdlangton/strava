@@ -5,6 +5,7 @@
 tags
 .tags
 .env
+db-backups
 /docroot/config/dev*
 /docroot/config/test*
 /docroot/config/prod*
