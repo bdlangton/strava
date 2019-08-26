@@ -1,4 +1,6 @@
 {
+    "name": "bdlangton/strava_app",
+    "description": "Displays user data in ways that strava.com doesn't",
     "type": "project",
     "license": "proprietary",
     "require": {
