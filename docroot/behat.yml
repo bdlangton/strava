@@ -1,0 +1,10 @@
+default:
+  suites:
+    services:
+      contexts:
+        - FeatureContext
+  extensions:
+    Behat\MinkExtension:
+      base_url: https://strava.langton.dev
+      selenium2: ~
+      default_session: selenium2

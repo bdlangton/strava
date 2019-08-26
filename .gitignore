@@ -1,5 +1,26 @@
-config
-vendor
+###> custom ###
 .ddev
 .docksal
-.vscode
+/docroot/.env.*.php
+tags
+.tags
+.env
+db-backups
+/docroot/config/dev*
+/docroot/config/test*
+/docroot/config/prod*
+/docroot/.env.prod
+###< custom ###
+
+###> symfony/framework-bundle ###
+/docroot/.env.local
+/docroot/.env.local.php
+/docroot/.env.*.local
+/docroot/public/bundles/
+/docroot/var/
+/docroot/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/docroot/phpunit.xml
+###< phpunit/phpunit ###

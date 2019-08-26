@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <title>{% block title %}{% endblock %} - Data Analytics</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% block head %}
+      <link rel="stylesheet" href="{{ asset('css/uniform.default.css') }}" media="screen" />
+      <link rel="stylesheet" href="{{ asset('css/strava.css') }}" media="screen" />
+      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+      <script type="text/javascript" src="https://code.highcharts.com/7.1.2/highcharts.js"></script>
+      <script src="{{ asset('js/jquery.uniform.min.js') }}"></script>
+      <script src="{{ asset('js/strava.js') }}"></script>
+    {% endblock %}
+  </head>
+  <body>
+    {% block header %}
+      <div class="header">
+        <nav class="mobile-menu">
+          <label for="show-menu" class="show-menu"><span>Data Analytics</span><div class="lines"></div></label>
+          <input type="checkbox" id="show-menu" class="no-uniform"/>
+          <ul id="menu">
+            {% if login is not defined or login == false %}
+              <li><a href="/">Home</a></li>
+              <li><a href="/activities">My Activities</a></li>
+              <li><a href="/data">Graphs</a></li>
+              <li><a href="/records">KOMs and PRs</a></li>
+              <li><a href="/segments">Segments</a></li>
+              <li><a href="/big">Biggest Stats</a></li>
+              <li><a href="/column">Column Charts</a></li>
+              <li><a href="/jon">Jon Score</a></li>
+              <li><a href="/user">Settings</a></li>
+              <li><a href="/logout">Logout</a></li>
+            {% else %}
+              <li><a href="/">Data Analytics</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
+    {% endblock %}
+    <div class="messages">
+    {% for message in app.session.flashbag.get('strava') %}
+      <div class="message"><strong>{{ message }}</strong></div>
+    {% endfor %}
+    </div>
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>

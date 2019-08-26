@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Activities{% endblock %}
+
+{% block content %}
+  <h1>Activities</h1>
+  <form action="/activities" method="get">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+  <table>
+    <tr>
+      <th>
+        <a href="/activities?{{ current_params_minus_sort }}&sort=date">Date</a>
+      </th>
+      <th>Activity</th>
+      {% if type == 'All' %}
+        <th>Type</th>
+      {% endif %}
+      <th>
+        <a href="/activities?{{ current_params_minus_sort }}&sort=distance">Distance ({{ format }})</a>
+      </th>
+      <th>Elapsed Time</th>
+      <th>
+        <a href="/activities?{{ current_params_minus_sort }}&sort=gain">Elevation Gain ({{ gain_format }})</a>
+      </th>
+    </tr>
+    {% for activity in activities %}
+      <tr>
+        <td>{{ activity.date }}</td>
+        <td><a href="https://www.strava.com/activities/{{ activity.id }}">{{ activity.name }}</a></td>
+        {% if type == 'All' %}
+          <td>{{ activity.type }}</td>
+        {% endif %}
+        <td>{{ activity.distance }}</td>
+        <td>{{ activity.elapsed_time }}</td>
+        <td>{{ activity.total_elevation_gain }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+  <div class="pagerfanta">
+    {{ pagerfanta(pager, 'default', { 'omitFirstPage': true}) }}
+  </div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Segments{% endblock %}
+
+{% block content %}
+  <h1>Segments</h1>
+  <p>List of your starred segments on Strava.</p>
+  <form action="/segments" method="get">
+    {{ form_widget(form) }}
+    <input type="submit" name="submit" />
+  </form>
+  <table>
+    <tr>
+      <th><a href="/segments?{{ current_params_minus_sort }}&sort=segment">Segment</a></th>
+      {% if type == 'All' %}
+        <th>Activity Type</th>
+      {% endif %}
+      <th><a href="/segments?{{ current_params_minus_sort }}&sort=distance">Distance ({{ format }})</a></th>
+      <th><a href="/segments?{{ current_params_minus_sort }}&sort=date">Starred Date</a></th>
+    </tr>
+    {% for segment in segments %}
+    <tr>
+      <td>
+        <a href="https://www.strava.com/segments/{{ segment.id }}">{{ segment.name }}</a>
+      </td>
+      {% if type == 'All' %}
+        <td>{{ segment.activity_type }}</td>
+      {% endif %}
+      <td>{{ segment.distance }}</td>
+      <td>{{ segment.starred_date }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <div class="pagerfanta">
+    {{ pagerfanta(pager, 'default', { 'omitFirstPage': true}) }}
+  </div>
+{% endblock %}

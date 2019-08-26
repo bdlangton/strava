@@ -1,0 +1,13 @@
+name: Composer CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Validate the composer file
+      run: composer validate --no-check-all --ansi
