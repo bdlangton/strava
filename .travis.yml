@@ -3,13 +3,11 @@ language: php
 php:
   - 7.2
 
-env:
-  - APP_ENV=test
-
 services:
   - mysql
 
 before_script:
+  - cd docroot
   - composer install --dev
   - ./tests/setup_mysql.php
 
