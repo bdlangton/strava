@@ -196,7 +196,7 @@ class StatsController extends AbstractController {
     // Check the session.
     $user = $session->get('user');
     if (empty($user)) {
-      return $this->redirectToRoute('/');
+      return $this->redirectToRoute('home');
     }
     $request = $requestStack->getCurrentRequest();
 
@@ -249,7 +249,7 @@ class StatsController extends AbstractController {
     // Check the session.
     $user = $session->get('user');
     if (empty($user)) {
-      return $this->redirectToRoute('/');
+      return $this->redirectToRoute('home');
     }
 
     // Only let the user delete the stat if they own it.

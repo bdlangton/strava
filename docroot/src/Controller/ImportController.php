@@ -25,7 +25,7 @@ class ImportController extends AbstractController {
     // Check the session.
     $user = $session->get('user');
     if (empty($user)) {
-      return $this->redirectToRoute('/');
+      return $this->redirectToRoute('home');
     }
     $output = '';
 

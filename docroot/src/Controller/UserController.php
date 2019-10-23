@@ -24,7 +24,7 @@ class UserController extends AbstractController {
     // Check the session.
     $user = $session->get('user');
     if (empty($user)) {
-      return $this->redirectToRoute('/');
+      return $this->redirectToRoute('home');
     }
 
     // Build the form.
@@ -60,7 +60,7 @@ class UserController extends AbstractController {
     // Check the session.
     $user = $session->get('user');
     if (empty($user)) {
-      return $this->redirectToRoute('/');
+      return $this->redirectToRoute('home');
     }
 
     // Get the form submissions.
