@@ -32,7 +32,6 @@ class UserController extends AbstractController {
       'type' => $user['activity_type'],
       'format' => $user['format'],
     ];
-    echo serialize($params);
     $form = $formFactory->createBuilder(FormType::class, $params)
       ->add('type', ChoiceType::class, [
         'choices' => $strava->getActivityTypes(),
