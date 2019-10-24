@@ -4,6 +4,10 @@ namespace App\Strava;
 
 use Doctrine\DBAL\Connection;
 
+define('DISTANCE_TO_MILES', 0.00062137);
+define('DISTANCE_TO_KM', 0.001);
+define('GAIN_TO_FEET', 3.28084);
+
 /**
  * Strava class.
  */

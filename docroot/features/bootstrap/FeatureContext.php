@@ -1,36 +1,58 @@
 <?php
-use Behat\Behat\Context\SnippetAcceptingContext;
-use Behat\Behat\Tester\Exception\PendingException;
-use Behat\Gherkin\Node\PyStringNode;
+
+use Behat\Behat\Context\Context;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Client;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use PHPUnit\Framework\Assert;
 
 /**
- * Features context.
+ * This context class contains the definitions of the steps used by the demo
+ * feature file. Learn how to get started with Behat and BDD on Behat's website.
+ *
+ * @see http://behat.org/en/latest/quick_start.html
  */
-class FeatureContext implements SnippetAcceptingContext
+class FeatureContext implements Context
 {
     /**
-     * @var Silex\Application
+     * @var KernelInterface
      */
-    protected $app;
+    private $kernel;
 
     /**
-     * @var \Symfony\Component\BrowserKit\Client
+     * @var SessionInterface
      */
-    protected $client;
+    private $session;
 
     /**
-     * @BeforeScenario
+     * @var Response|null
      */
-    public function setup($event)
+    private $response;
+
+    public function __construct(KernelInterface $kernel, SessionInterface $session)
     {
-        putenv('APP_ENV=test');
-        $app = require __DIR__ . '/../../app/strava.php';
-        $app['debug'] = TRUE;
-        unset($app['exception_handler']);
-        $this->app = $app;
-        $this->client = new Client($app);
+        $this->kernel = $kernel;
+        $this->session = $session;
+    }
+
+    /**
+     * @When a demo scenario sends a request to :path
+     */
+    public function aDemoScenarioSendsARequestTo(string $path)
+    {
+        $this->response = $this->kernel->handle(Request::create($path, 'GET'));
+    }
+
+    /**
+     * @Then the response should be received
+     */
+    public function theResponseShouldBeReceived()
+    {
+        if ($this->response === null) {
+            throw new \RuntimeException('No response received');
+        }
     }
 
     /**
@@ -38,7 +60,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function userIsLoggedIn()
     {
-        $this->app['session']->set('user', [
+        $this->session->set('user', [
             'id' => getenv('strava_test_user_id'),
             'access_token' => getenv('strava_test_access_token'),
             'activity_type' => getenv('strava_test_user_activity_type') ?: 'Run',
@@ -51,7 +73,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function userIsLoggedOut()
     {
-        $this->app['session']->set('user', []);
+        $this->session->set('user', []);
     }
 
     /**
@@ -59,8 +81,8 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function theUserCanViewCharts()
     {
-        $crawler = $this->client->request('GET', '/column');
-        $this->assertTrue($client->getResponse()->isOk());
+        $this->response = $this->kernel->handle(Request::create('/column', 'GET'));
+        $this->assertTrue($this->response->isOk());
     }
 
     /**
@@ -69,7 +91,7 @@ class FeatureContext implements SnippetAcceptingContext
     public function callWithParameters($method, $endpoint, PyStringNode $postParametersStringNode)
     {
         $postParameters = json_decode($postParametersStringNode->getRaw(), TRUE);
-        $this->client->request($method, $endpoint, $postParameters);
+        $this->response = $this->kernel->handle(Request::create($endpoint, $method, $postParameters));
     }
 
     /**
@@ -77,7 +99,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function responseStatusIs($statusCode)
     {
-        Assert::assertEquals($statusCode, $this->client->getResponse()->getStatusCode());
+        Assert::assertEquals($statusCode, $this->response->getStatusCode());
     }
 
     /**
@@ -96,7 +118,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function callWithResourceId($method, $endpoint, $resourceId)
     {
-        $this->client->request($method, "{$endpoint}/{$resourceId}");
+        $this->response = $this->kernel->handle(Request::create("$endpoint/{$resourceId}", $method));
     }
 
     /**
@@ -112,7 +134,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function jsonResponseShouldBe(PyStringNode $expectedResponseStringNode)
     {
-        $clientResponse = json_decode($this->client->getResponse()->getContent(), TRUE);
+        $clientResponse = json_decode($this->response->getContent(), TRUE);
         $expectedResponse = json_decode($expectedResponseStringNode->getRaw(), TRUE);
         Assert::assertEquals($expectedResponse, $clientResponse);
     }
@@ -122,7 +144,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function responseContentIsBlank()
     {
-        Assert::assertEmpty($this->client->getResponse()->getContent());
+        Assert::assertEmpty($this->response->getContent());
     }
 
     /**
@@ -130,7 +152,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function callEndpoint($method, $endpoint)
     {
-        $this->client->request($method, "{$endpoint}");
+        $this->response = $this->kernel->handle(Request::create($endpoint, $method));
     }
 
     /**
@@ -138,6 +160,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function responseContentIs($content)
     {
-        Assert::assertEquals($content, $this->client->getResponse()->getContent());
+        Assert::assertEquals($content, $this->response->getContent());
     }
+
 }

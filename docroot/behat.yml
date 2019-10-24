@@ -2,9 +2,20 @@ default:
   suites:
     services:
       contexts:
-        - FeatureContext
+        - FeatureContext:
+            kernel: '@kernel'
+            session: '@session'
+        - Behat\MinkExtension\Context\MinkContext
+        - behatch:context:json
+        - behatch:context:rest
   extensions:
+    Behat\Symfony2Extension:
+      kernel:
+        bootstrap: features/bootstrap/bootstrap.php
+        class: App\Kernel
     Behat\MinkExtension:
       base_url: https://strava.langton.dev
-      selenium2: ~
-      default_session: selenium2
+      sessions:
+        default:
+          symfony2: ~
+    Behatch\Extension: ~
