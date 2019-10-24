@@ -28,8 +28,6 @@ services:
     ports:
       - "8084:80"
 
-  # I need to get crontab installed by default on this image. For now, after the
-  # image is created, I just sh in and: apt update && apt install cron.
   php-fpm:
     build: phpdocker/php-fpm
     container_name: strava-php-fpm
