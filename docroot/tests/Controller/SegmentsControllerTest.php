@@ -18,6 +18,11 @@ class SegmentsControllerTest extends BaseControllerTestCase {
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
+    $this->assertCount(1, $crawler->filter('div.pagerfanta'));
+    $this->assertCount(1, $crawler->filter('th a:contains("Distance (mi)")'));
+    $this->markTestIncomplete(
+      'Test submitting the form.'
+    );
   }
 
 }

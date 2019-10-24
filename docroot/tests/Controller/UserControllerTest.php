@@ -17,6 +17,10 @@ class UserControllerTest extends BaseControllerTestCase {
 
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
+
+    $this->markTestIncomplete(
+      'Add tests for saving the user settings.'
+    );
   }
 
 }

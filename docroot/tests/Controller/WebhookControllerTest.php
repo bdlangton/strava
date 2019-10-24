@@ -8,9 +8,21 @@ namespace App\Tests\Controller;
 class WebhookControllerTest extends BaseControllerTestCase {
 
   /**
-   * Test webhooks.
+   * Test webhook GET.
    */
   public function testWebhook() {
+    $client = static::createClient();
+    $this->login($client);
+
+    $this->markTestIncomplete(
+      'This test has not been implemented yet.'
+    );
+  }
+
+  /**
+   * Test webhook POST.
+   */
+  public function testWebhookPost() {
     $client = static::createClient();
     $this->login($client);
 

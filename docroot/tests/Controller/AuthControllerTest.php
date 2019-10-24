@@ -8,9 +8,20 @@ namespace App\Tests\Controller;
 class AuthControllerTest extends BaseControllerTestCase {
 
   /**
-   * Test authentication.
+   * Test token exchange.
    */
-  public function testAuth() {
+  public function testTokenExchange() {
+    $client = static::createClient();
+
+    $this->markTestIncomplete(
+      'This test has not been implemented yet.'
+    );
+  }
+
+  /**
+   * Test logout.
+   */
+  public function testLogout() {
     $client = static::createClient();
     $this->login($client);
 
