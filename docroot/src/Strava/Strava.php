@@ -287,17 +287,9 @@ class Strava {
    *   Return the activity information.
    */
   public function getActivity(float $activity_id, string $access_token) : array {
-    $curl = curl_init();
     $header = ['Authorization: Bearer ' . $access_token];
-    curl_setopt_array($curl, [
-      CURLOPT_URL => 'https://www.strava.com/api/v3/activities/' . $activity_id,
-      CURLOPT_HTTPHEADER => $header,
-      CURLOPT_RETURNTRANSFER => TRUE,
-    ]);
-    $activity = curl_exec($curl);
-    curl_close($curl);
-
-    return json_decode($activity, TRUE);
+    $url = 'https://www.strava.com/api/v3/activities/' . $activity_id;
+    return $this->curlRequest($url, $header);
   }
 
   /**
@@ -312,17 +304,9 @@ class Strava {
    *   Return the activities.
    */
   public function getActivities(string $access_token, int $page = 1) : array {
-    $curl = curl_init();
     $header = ['Authorization: Bearer ' . $access_token];
-    curl_setopt_array($curl, [
-      CURLOPT_URL => 'https://www.strava.com/api/v3/athlete/activities?page=' . $page,
-      CURLOPT_HTTPHEADER => $header,
-      CURLOPT_RETURNTRANSFER => TRUE,
-    ]);
-    $activities = curl_exec($curl);
-    curl_close($curl);
-
-    return json_decode($activities, TRUE);
+    $url = 'https://www.strava.com/api/v3/athlete/activities?page=' . $page;
+    return $this->curlRequest($url, $header);
   }
 
   /**
@@ -337,17 +321,33 @@ class Strava {
    *   Return the starred segments.
    */
   public function getStarredSegments(string $access_token, int $page = 1) : array {
-    $curl = curl_init();
     $header = ['Authorization: Bearer ' . $access_token];
+    $url = 'https://www.strava.com/api/v3/segments/starred?page=' . $page;
+    return $this->curlRequest($url, $header);
+  }
+
+  /**
+   * Send a curl request.
+   *
+   * @param string $url
+   *   The URL to request.
+   * @param array $header
+   *   Array of header values.
+   *
+   * @return array
+   *   Return an array of results.
+   */
+  public function curlRequest(string $url, array $header) : array {
+    $curl = curl_init();
     curl_setopt_array($curl, [
-      CURLOPT_URL => 'https://www.strava.com/api/v3/segments/starred?page=' . $page,
+      CURLOPT_URL => $url,
       CURLOPT_HTTPHEADER => $header,
       CURLOPT_RETURNTRANSFER => TRUE,
     ]);
-    $starred_segments = curl_exec($curl);
+    $result = curl_exec($curl);
     curl_close($curl);
 
-    return json_decode($starred_segments, TRUE);
+    return json_decode($result, TRUE);
   }
 
   /**
@@ -369,7 +369,7 @@ class Strava {
    * @param array $refresh
    *   Array with the user's tokens.
    */
-  protected function refreshToken($refresh) {
+  protected function refreshToken(array $refresh) {
     // If the refresh token isn't set, then this user hasn't been migrated to
     // the new short-lived tokens. They can use their access token as the
     // refresh token.
