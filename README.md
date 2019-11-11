@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/bdlangton/strava.svg?branch=2.x)](https://travis-ci.org/bdlangton/strava)
 <a href="https://codeclimate.com/github/bdlangton/strava/maintainability"><img src="https://api.codeclimate.com/v1/badges/78dd906792a862eb8a77/maintainability" /></a>
 
 # strava
