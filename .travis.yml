@@ -3,6 +3,10 @@ language: php
 php:
   - 7.3
 
+branches:
+  only:
+    - 2.x
+
 services:
   - mysql
 
