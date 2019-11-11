@@ -1,0 +1,5 @@
+engines:
+  phpcodesniffer:
+    enabled: false
+  phpmd:
+    enabled: false

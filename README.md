@@ -1,3 +1,5 @@
+<a href="https://codeclimate.com/github/bdlangton/strava/maintainability"><img src="https://api.codeclimate.com/v1/badges/78dd906792a862eb8a77/maintainability" /></a>
+
 # strava
 Strava app built with Silex.
 
