@@ -287,13 +287,7 @@ class Charts extends Base {
     ];
     foreach ($this->cycling_data as $point) {
       $index = array_search($point['grp'], $xaxis);
-      $ride_type = 0;
-      if ($point['ride_type'] == '01') {
-        $ride_type = 1;
-      }
-      elseif ($point['ride_type'] == '10') {
-        $ride_type = 2;
-      }
+      $ride_type = $point['ride_type'] ? bindec($point['ride_type']) : 0;
       while ($index > count($series[$ride_type]['data'])) {
         $series[$ride_type]['data'][] = 0;
       }

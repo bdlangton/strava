@@ -66,20 +66,17 @@ class Activities extends Base {
     $this->form = $this->form->getForm();
   }
 
+  /**
+   * Query activities.
+   */
   private function query() {
     // Determine the sort order.
-    switch ($this->params['sort']) {
-      case 'gain':
-        $sort = 'ORDER BY total_elevation_gain DESC';
-        break;
-
-      case 'distance':
-        $sort = 'ORDER BY distance DESC';
-        break;
-
-      default:
-        $sort = 'ORDER BY start_date_local DESC';
-        break;
+    $sort = 'ORDER BY start_date_local DESC';
+    if ($this->params['sort'] == 'gain') {
+      $sort = 'ORDER BY total_elevation_gain DESC';
+    }
+    elseif ($this->params['sort'] == 'distance') {
+      $sort = 'ORDER BY distance DESC';
     }
 
     // Query params and types.
