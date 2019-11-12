@@ -47,15 +47,4 @@ abstract class Base {
    */
   private $strava;
 
-  /**
-   * Constructor.
-   */
-  public function __construct(RequestStack $request_stack, Connection $connection, FormFactoryInterface $form_factory, Strava $strava, SessionInterface $session) {
-    $this->requestStack = $request_stack;
-    $this->connection = $connection;
-    $this->formFactory = $form_factory;
-    $this->strava = $strava;
-    $this->session = $session;
-  }
-
 }
