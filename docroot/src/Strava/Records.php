@@ -41,7 +41,7 @@ class Records extends Base {
       'record' => NULL,
       'begin_date' => new \DateTime('now - 1 year'),
       'end_date' => new \DateTime('now'),
-      'sort' => NULL,
+      'sort' => $this->request->query->get('sort'),
     ];
     if (is_string($this->params['begin_date'])) {
       $this->params['begin_date'] = new \DateTime($this->params['begin_date']);

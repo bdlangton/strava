@@ -36,12 +36,12 @@ class Segments extends Base {
 
     // Build the form.
     $this->request = $this->requestStack->getCurrentRequest();
-    $this->params = $this->request->query->all() ?? [];
+    $this->params = $this->request->query->get('form') ?? [];
     $this->params += [
       'type' => $this->user['activity_type'] ?: 'All',
       'name' => '',
       'format' => $this->user['format'] ?: 'imperial',
-      'sort' => NULL,
+      'sort' => $this->request->query->get('sort'),
     ];
     $form = $this->formFactory->createBuilder(FormType::class, $this->params)
       ->add('type', ChoiceType::class, [

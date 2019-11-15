@@ -40,7 +40,7 @@ class Activities extends Base {
       'format' => $this->user['format'] ?: 'imperial',
       'name' => '',
       'workout' => $this->strava->getRunWorkouts(),
-      'sort' => NULL,
+      'sort' => $this->request->query->get('sort'),
     ];
     $this->form = $this->formFactory->createBuilder(FormType::class, $this->params)
       ->add('type', ChoiceType::class, [
