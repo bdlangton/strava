@@ -19,12 +19,7 @@ class Import extends Base {
    * Constructor.
    */
   public function __construct(RequestStack $request_stack, Connection $connection, FormFactoryInterface $form_factory, Strava $strava, SessionInterface $session) {
-    $this->requestStack = $request_stack;
-    $this->connection = $connection;
-    $this->formFactory = $form_factory;
-    $this->strava = $strava;
-    $this->session = $session;
-    $this->user = $session->get('user');
+    parent::__construct($request_stack, $connection, $form_factory, $strava, $session);
     $this->output = '';
   }
 
@@ -32,8 +27,8 @@ class Import extends Base {
    * Build the form.
    */
   public function buildForm() {
-    $request = $this->requestStack->getCurrentRequest();
-    $this->params = $request->query->get('form') ?? [];
+    $this->params = $this->request->query->get('form') ?? [];
+    $this->import_type = !empty($this->params['type']) ? $this->params['type'] : NULL;
     $this->params += [
       'type' => 'new',
       'starred_segments' => FALSE,
@@ -200,9 +195,12 @@ class Import extends Base {
     }
   }
 
+  /**
+   * Render.
+   */
   public function render() {
     $this->buildForm();
-    if (!empty($this->params['type'])) {
+    if (!empty($this->import_type)) {
       $this->import();
     }
     if (!empty($this->params['starred_segments'])) {

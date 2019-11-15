@@ -17,34 +17,61 @@ abstract class Base {
    *
    * @var \Doctrin\DBAL\Connection
    */
-  private $connection;
+  protected $connection;
 
   /**
    * Form Factory.
    *
    * @var \Symfony\Component\Form\FormFactoryInterface
    */
-  private $formFactory;
+  protected $formFactory;
+
+  /**
+   * The current request.
+   *
+   * @var \Symfony\Component\HttpFoundation\Request
+   */
+  protected $request;
 
   /**
    * Request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
-  private $requestStack;
+  protected $requestStack;
 
   /**
    * Session.
    *
    * @var \Symfony\Component\HttpFoundation\Session\SessionInterface
    */
-  private $session;
+  protected $session;
 
   /**
    * Strava.
    *
    * @var \App\Strava\Strava
    */
-  private $strava;
+  protected $strava;
+
+  /**
+   * The user from the session.
+   *
+   * @var mixed
+   */
+  protected $user;
+
+  /**
+   * Constructor.
+   */
+  public function __construct(RequestStack $request_stack, Connection $connection, FormFactoryInterface $form_factory, Strava $strava, SessionInterface $session) {
+    $this->requestStack = $request_stack;
+    $this->connection = $connection;
+    $this->formFactory = $form_factory;
+    $this->strava = $strava;
+    $this->session = $session;
+    $this->user = $this->session->get('user');
+    $this->request = $this->requestStack->getCurrentRequest();
+  }
 
 }

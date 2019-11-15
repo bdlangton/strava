@@ -8,9 +8,6 @@ use Pagerfanta\Pagerfanta;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * Activities class.
@@ -18,22 +15,9 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class Activities extends Base {
 
   /**
-   * Constructor.
-   */
-  public function __construct(RequestStack $request_stack, Connection $connection, FormFactoryInterface $form_factory, Strava $strava, SessionInterface $session) {
-    $this->requestStack = $request_stack;
-    $this->connection = $connection;
-    $this->formFactory = $form_factory;
-    $this->strava = $strava;
-    $this->session = $session;
-  }
-
-  /**
    * Build the form.
    */
   private function buildForm() {
-    $this->user = $this->session->get('user');
-    $this->request = $this->requestStack->getCurrentRequest();
     $this->params = $this->request->query->get('form') ?? [];
     $this->params += [
       'type' => $this->user['activity_type'] ?: 'All',
