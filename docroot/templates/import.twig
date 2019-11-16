@@ -4,9 +4,6 @@
 
 {% block content %}
   <h1>Import Strava Data</h1>
-  {% if output %}
-    {{ output }}
-  {% endif %}
   <p>Select which activities that you want to import.</p>
   <form action="/import" method="get">
     {{ form_widget(form) }}

@@ -6,22 +6,11 @@ use Doctrine\DBAL\Connection;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * Import.
  */
 class Import extends Base {
-
-  /**
-   * Constructor.
-   */
-  public function __construct(RequestStack $request_stack, Connection $connection, FormFactoryInterface $form_factory, Strava $strava, SessionInterface $session) {
-    parent::__construct($request_stack, $connection, $form_factory, $strava, $session);
-    $this->output = '';
-  }
 
   /**
    * Build the form.
@@ -73,15 +62,16 @@ class Import extends Base {
       // If no activities are found (or there was an error), then break the
       // loop.
       if (empty($activities) || !empty($activities['message'])) {
-        break;
+        $this->session->getFlashBag()->add('strava', $activities['message']);
+        return;
       }
 
       $processing = $this->importActivities($activities, $import_type, $activities_added, $activities_updated);
     }
 
-    $this->output = 'Added ' . $activities_added . ' activities.';
+    $this->session->getFlashBag()->add('strava', 'Added ' . $activities_added . ' activities.');
     if (!empty($activities_updated)) {
-      $this->output .= ' Updated ' . $activities_updated . ' activities.';
+      $this->session->getFlashBag()->add('strava', 'Updated ' . $activities_updated . ' activities.');
     }
   }
 
@@ -211,7 +201,7 @@ class Import extends Base {
     }
 
     if (!empty($starred_segments_added)) {
-      $this->output .= ' Added ' . $starred_segments_added . ' starred segments.';
+      $this->session->getFlashBag()->add('strava', 'Added ' . $starred_segments_added . ' starred segments.');
     }
   }
 
@@ -229,7 +219,6 @@ class Import extends Base {
 
     return [
       'form' => $this->form->createView(),
-      'output' => $this->output,
     ];
   }
 
