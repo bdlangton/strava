@@ -76,73 +76,93 @@ class Import extends Base {
         break;
       }
 
-      // Check if we have the activities in our db already.
-      $activity_ids = array_column($activities, 'id');
-      $activity_results = $this->connection->executeQuery(
-        'SELECT id FROM activities WHERE id IN (?) ',
-        [$activity_ids],
-        [Connection::PARAM_INT_ARRAY]
-      )->fetchAll(\PDO::FETCH_COLUMN);
-
-      // Loop through activities and add to the db.
-      foreach ($activities as $activity) {
-        // If we are importing a specific year.
-        if (is_numeric($import_type)) {
-          $start_year = (int) $this->strava->convertDateFormat($activity['start_date_local'], 'Y');
-
-          // If the activity is for a year that is earlier than the import
-          // year, then we need to stop importing.
-          if ($start_year < $import_type) {
-            $processing = FALSE;
-            break;
-          }
-          // If the activity is for a year that is later than the import
-          // year, then we need to skip this activity.
-          if ($start_year > $import_type) {
-            continue;
-          }
-        }
-
-        // Convert some data to how we need it stored.
-        $activity['start_date'] = str_replace('Z', '', $activity['start_date']);
-        $activity['start_date_local'] = str_replace('Z', '', $activity['start_date_local']);
-        $activity['manual'] = $activity['manual'] ? 1 : 0;
-        $activity['private'] = $activity['private'] ? 1 : 0;
-
-        // Check if we're importing an activity that already exists.
-        if (in_array($activity['id'], $activity_results)) {
-          // If we're just importing new activities, then since we found
-          // an activity already in our db, we need to stop importing.
-          if ($import_type == 'new') {
-            $processing = FALSE;
-            break;
-          }
-
-          // Update the existing activity.
-          $result = $this->strava->updateActivity($activity);
-          if ($result) {
-            $activities_updated++;
-          }
-
-          // We don't bother updating segment efforts for activities that
-          // are just being updated.
-          continue;
-        }
-        else {
-          // Insert a new activity that wasn't already in our database.
-          $this->strava->insertActivity($activity);
-          $activities_added++;
-        }
-
-        // Insert any segment efforst associated with the activity.
-        $this->strava->insertSegmentEfforts($activity, $this->user['access_token']);
-      }
+      $processing = $this->importActivities($activities, $import_type, $activities_added, $activities_updated);
     }
 
     $this->output = 'Added ' . $activities_added . ' activities.';
     if (!empty($activities_updated)) {
       $this->output .= ' Updated ' . $activities_updated . ' activities.';
     }
+  }
+
+  /**
+   * Import activities.
+   *
+   * @param array $activities
+   *   Activities to import.
+   * @param string $import_type
+   *   The import type ('new' or a specific year).
+   * @param int $activities_added
+   *   Count of activities added.
+   * @param int $activities_updated
+   *   Count of activities updated.
+   *
+   * @return bool
+   *   Return whether to continue processing the import or not.
+   */
+  private function importActivities(array $activities, $import_type, &$activities_added, &$activities_updated) {
+    // Check if we have the activities in our db already.
+    $activity_ids = array_column($activities, 'id');
+    $activity_results = $this->connection->executeQuery(
+      'SELECT id FROM activities WHERE id IN (?) ',
+      [$activity_ids],
+      [Connection::PARAM_INT_ARRAY]
+    )->fetchAll(\PDO::FETCH_COLUMN);
+
+    // Loop through activities and add to the db.
+    foreach ($activities as $activity) {
+      // If we are importing a specific year.
+      if (is_numeric($import_type)) {
+        $start_year = (int) $this->strava->convertDateFormat($activity['start_date_local'], 'Y');
+
+        // If the activity is for a year that is earlier than the import
+        // year, then we need to stop importing.
+        if ($start_year < $import_type) {
+          return FALSE;
+        }
+
+        // If the activity is for a year that is later than the import
+        // year, then we need to skip this activity.
+        if ($start_year > $import_type) {
+          continue;
+        }
+      }
+
+      // Convert some data to how we need it stored.
+      $activity['start_date'] = str_replace('Z', '', $activity['start_date']);
+      $activity['start_date_local'] = str_replace('Z', '', $activity['start_date_local']);
+      $activity['manual'] = $activity['manual'] ? 1 : 0;
+      $activity['private'] = $activity['private'] ? 1 : 0;
+
+      // Check if we're importing an activity that already exists.
+      if (in_array($activity['id'], $activity_results)) {
+        // If we're just importing new activities, then since we found
+        // an activity already in our db, we need to stop importing.
+        if ($import_type == 'new') {
+          return FALSE;
+        }
+
+        // Update the existing activity.
+        $result = $this->strava->updateActivity($activity);
+        if ($result) {
+          $activities_updated++;
+        }
+
+        // We don't bother updating segment efforts for activities that
+        // are just being updated.
+        continue;
+      }
+      else {
+        // Insert a new activity that wasn't already in our database.
+        $this->strava->insertActivity($activity);
+        $activities_added++;
+      }
+
+      // Insert any segment effort associated with the activity.
+      $this->strava->insertSegmentEfforts($activity, $this->user['access_token']);
+    }
+
+    return TRUE;
   }
 
   /**
