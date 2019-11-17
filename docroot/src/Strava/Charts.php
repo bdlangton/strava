@@ -2,11 +2,13 @@
 
 namespace App\Strava;
 
+use App\Constraints\AfterBeginDate;
 use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * Charts class.
@@ -23,12 +25,17 @@ class Charts extends Base {
       'format' => $this->user['format'],
     ];
     $this->params += $this->strava->getBeginAndEndDates($this->params['group']);
+
+    $begin_date = $end_date = '';
     if (is_string($this->params['begin_date'])) {
+      $begin_date = $this->params['begin_date'];
       $this->params['begin_date'] = new \DateTime($this->params['begin_date']);
     }
     if (is_string($this->params['end_date'])) {
+      $end_date = $this->params['end_date'];
       $this->params['end_date'] = new \DateTime($this->params['end_date']);
     }
+
     $form = $this->formFactory->createBuilder(FormType::class, $this->params)
       ->add('group', ChoiceType::class, [
         'choices' => $this->strava->getGroups(),
@@ -41,12 +48,25 @@ class Charts extends Base {
       ->add('begin_date', DateType::class, [
         'input' => 'datetime',
         'widget' => 'single_text',
+        'constraints' => new Date(),
       ])
       ->add('end_date', DateType::class, [
         'input' => 'datetime',
         'widget' => 'single_text',
+        'constraints' => [
+          new AfterBeginDate(['value' => $begin_date]),
+          new Date(),
+        ],
       ]);
+
     $this->form = $form->getForm();
+    $this->form->submit($this->request->query->get('form'));
+  }
+
+  /**
+   * Query all of the data needed.
+   */
+  private function query() {
     if ($this->params['group'] == 'month') {
       $this->group = 'CONCAT(MONTHNAME(start_date_local), " ", YEAR(start_date_local))';
       $this->order_by_group = 'DATE_FORMAT(start_date_local, "%Y%m")';
@@ -58,12 +78,7 @@ class Charts extends Base {
     else {
       $this->group = $this->order_by_group = 'YEAR(start_date_local)';
     }
-  }
 
-  /**
-   * Query all of the data needed.
-   */
-  private function query() {
     $this->queryRunningXAxis();
     $this->queryCyclingData();
     $this->queryWorkoutData();

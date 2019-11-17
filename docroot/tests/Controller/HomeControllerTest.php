@@ -34,6 +34,8 @@ class HomeControllerTest extends BaseControllerTestCase {
     $this->assertTrue($client->getResponse()->isRedirect('/'));
     $client->request('GET', '/import');
     $this->assertTrue($client->getResponse()->isRedirect('/'));
+    $client->request('GET', '/user');
+    $this->assertTrue($client->getResponse()->isRedirect('/'));
   }
 
   /**

@@ -2,12 +2,14 @@
 
 namespace App\Strava;
 
+use App\Constraints\AfterBeginDate;
 use Doctrine\DBAL\Connection;
 use Ghunti\HighchartsPHP\Highchart;
 use Ghunti\HighchartsPHP\HighchartJsExpr;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * Graphs class.
@@ -26,10 +28,14 @@ class Graphs extends Base {
       'workout' => $this->strava->getRunWorkouts(),
     ];
     $this->params += $this->strava->getBeginAndEndDates($this->params['group']);
+
+    $begin_date = $end_date = '';
     if (is_string($this->params['begin_date'])) {
+      $begin_date = $this->params['begin_date'];
       $this->params['begin_date'] = new \DateTime($this->params['begin_date']);
     }
     if (is_string($this->params['end_date'])) {
+      $end_date = $this->params['end_date'];
       $this->params['end_date'] = new \DateTime($this->params['end_date']);
     }
     $form = $this->formFactory->createBuilder(FormType::class, $this->params)
@@ -48,11 +54,17 @@ class Graphs extends Base {
       ->add('begin_date', DateType::class, [
         'input' => 'datetime',
         'widget' => 'single_text',
+        'constraints' => new Date(),
       ])
       ->add('end_date', DateType::class, [
         'input' => 'datetime',
         'widget' => 'single_text',
+        'constraints' => [
+          new AfterBeginDate(['value' => $begin_date]),
+          new Date(),
+        ],
       ]);
+
     if ($this->params['type'] == 'Run') {
       $form = $form->add('workout', ChoiceType::class, [
         'choices' => $this->strava->getRunWorkouts(),
@@ -61,7 +73,9 @@ class Graphs extends Base {
         'label' => FALSE,
       ]);
     }
+
     $this->form = $form->getForm();
+    $this->form->submit($this->request->query->get('form'));
   }
 
   /**

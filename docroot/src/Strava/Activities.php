@@ -26,7 +26,7 @@ class Activities extends Base {
       'workout' => $this->strava->getRunWorkouts(),
       'sort' => $this->request->query->get('sort'),
     ];
-    $this->form = $this->formFactory->createBuilder(FormType::class, $this->params)
+    $form = $this->formFactory->createBuilder(FormType::class, $this->params)
       ->add('type', ChoiceType::class, [
         'choices' => $this->strava->getActivityTypes(),
         'label' => FALSE,
@@ -40,14 +40,14 @@ class Activities extends Base {
         'required' => FALSE,
       ]);
     if ($this->params['type'] == 'Run') {
-      $this->form = $this->form->add('workout', ChoiceType::class, [
+      $form = $form->add('workout', ChoiceType::class, [
         'choices' => $this->strava->getRunWorkouts(),
         'expanded' => TRUE,
         'multiple' => TRUE,
         'label' => FALSE,
       ]);
     }
-    $this->form = $this->form->getForm();
+    $this->form = $form->getForm();
   }
 
   /**

@@ -50,6 +50,7 @@ class Strava {
     'Stand Up Paddleboard' => 'StandUpPaddling',
     'Surfing' => 'Surfing',
     'Virtual Ride' => 'VirtualRide',
+    'Virtual Run' => 'VirtualRun',
     'Walking' => 'Walk',
     // Deprecated.
     'Water Sports' => 'WaterSport',

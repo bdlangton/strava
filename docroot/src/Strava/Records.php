@@ -2,11 +2,13 @@
 
 namespace App\Strava;
 
+use App\Constraints\AfterBeginDate;
 use Pagerfanta\Adapter\ArrayAdapter;
 use Pagerfanta\Pagerfanta;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
+use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * Records class.
@@ -26,12 +28,17 @@ class Records extends Base {
       'end_date' => new \DateTime('now'),
       'sort' => $this->request->query->get('sort'),
     ];
+
+    $begin_date = $end_date = '';
     if (is_string($this->params['begin_date'])) {
+      $begin_date = $this->params['begin_date'];
       $this->params['begin_date'] = new \DateTime($this->params['begin_date']);
     }
     if (is_string($this->params['end_date'])) {
+      $end_date = $this->params['end_date'];
       $this->params['end_date'] = new \DateTime($this->params['end_date']);
     }
+
     $form = $this->formFactory->createBuilder(FormType::class, $this->params)
       ->add('type', ChoiceType::class, [
         'choices' => [
@@ -57,12 +64,19 @@ class Records extends Base {
       ->add('begin_date', DateType::class, [
         'input' => 'datetime',
         'widget' => 'single_text',
+        'constraints' => new Date(),
       ])
       ->add('end_date', DateType::class, [
         'input' => 'datetime',
         'widget' => 'single_text',
+        'constraints' => [
+          new AfterBeginDate(['value' => $begin_date]),
+          new Date(),
+        ],
       ]);
+
     $this->form = $form->getForm();
+    $this->form->submit($this->request->query->get('form'));
   }
 
   /**
