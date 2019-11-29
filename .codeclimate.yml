@@ -1,5 +1,21 @@
-engines:
+version: "2"
+checks:
+  method-complexity:
+    config:
+      threshold: 10
+  method-lines:
+    config:
+      threshold: 50
+plugins:
   phpcodesniffer:
     enabled: false
   phpmd:
     enabled: false
+exclude_patterns:
+  - "docroot/config/"
+  - "docroot/features/"
+  - "docroot/tests/"
+  - "docrootvendor/"
+  - "backup/"
+  - "db-backups/"
+  - "phpdocker/"
