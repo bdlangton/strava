@@ -59,6 +59,10 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "test": [
+            "docker exec -i strava-php-fpm sh -c 'APP_ENV=test ./vendor/bin/phpunit'",
+            "docker exec -i strava-php-fpm sh -c 'APP_ENV=test ./vendor/bin/behat'"
         ]
     },
     "conflict": {
