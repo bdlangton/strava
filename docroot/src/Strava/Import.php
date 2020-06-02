@@ -27,6 +27,7 @@ class Import extends Base {
       ->add('type', ChoiceType::class, [
         'choices' => [
           'New Activities' => 'new',
+          '2020 Activities' => '2020',
           '2019 Activities' => '2019',
           '2018 Activities' => '2018',
           '2017 Activities' => '2017',
