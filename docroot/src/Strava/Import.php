@@ -138,10 +138,6 @@ class Import extends Base {
         if ($result) {
           $activities_updated++;
         }
-
-        // We don't bother updating segment efforts for activities that
-        // are just being updated.
-        continue;
       }
       else {
         // Insert a new activity that wasn't already in our database.
