@@ -397,6 +397,11 @@ class Strava {
     $data = json_decode($result, TRUE);
     curl_close($ch);
 
+    // If access token is blank, then bail.
+    if (empty($data['access_token'])) {
+      return;
+    }
+
     // Update the database with the new tokens.
     try {
       $result = $this->connection->executeQuery(
@@ -452,7 +457,7 @@ class Strava {
       [$user_id]
     )->fetchColumn();
 
-    return $access_token;
+    return $access_token ?? '';
   }
 
   /**
@@ -465,6 +470,11 @@ class Strava {
    *   Return TRUE if it was updated, FALSE if there was an error.
    */
   public function updateActivity(array $activity) : bool {
+    // Skip if there is no start date (data isn't good).
+    if (empty($activity['start_date'])) {
+      return FALSE;
+    }
+
     try {
       // Convert some data to how we need it stored.
       $activity['start_date'] = str_replace('Z', '', $activity['start_date']);
@@ -524,6 +534,11 @@ class Strava {
    *   Return TRUE if it was inserted, FALSE if there was an error.
    */
   public function insertActivity(array $activity) : bool {
+    // Skip if there is no start date (data isn't good).
+    if (empty($activity['start_date'])) {
+      return FALSE;
+    }
+
     try {
       // Convert some data to how we need it stored.
       $activity['start_date'] = str_replace('Z', '', $activity['start_date']);
