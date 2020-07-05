@@ -617,6 +617,17 @@ class Strava {
           $segment_effort['start_date'] = str_replace('Z', '', $segment_effort['start_date']);
           $segment_effort['start_date_local'] = str_replace('Z', '', $segment_effort['start_date_local']);
 
+          // Find any KOM/CR achievements.
+          $kom_rank = NULL;
+          if (!empty($segment_effort['achievements'])) {
+            foreach ($segment_effort['achievements'] as $achievement) {
+              if ($achievement['type_id'] == 2 && $achievement['type'] == 'overall') {
+                $kom_rank = $achievement['rank'];
+                break;
+              }
+            }
+          }
+
           // Insert the segment effort if it doesn't already exist.
           if (!in_array($segment_effort['id'], $segment_effort_results)) {
             $this->connection->insert('segment_efforts', [
@@ -634,9 +645,22 @@ class Strava {
               'average_watts' => !empty($segment_effort['average_watts']) ? $segment_effort['average_watts'] : NULL,
               'average_heartrate' => !empty($segment_effort['average_heartrate']) ? $segment_effort['average_heartrate'] : NULL,
               'max_heartrate' => !empty($segment_effort['max_heartrate']) ? $segment_effort['max_heartrate'] : NULL,
-              'kom_rank' => !empty($segment_effort['kom_rank']) ? $segment_effort['kom_rank'] : NULL,
+              'kom_rank' => $kom_rank,
               'pr_rank' => !empty($segment_effort['pr_rank']) ? $segment_effort['pr_rank'] : NULL,
             ]);
+          }
+          else {
+            // Update the segment effort if there are KOM/CR or PRs attached to
+            // it, because maybe it was changed.
+            if (!empty($kom_rank) || !empty($segment_effort['pr_rank'])) {
+              $this->connection->update('segment_efforts',
+                [
+                  'kom_rank' => $kom_rank,
+                  'pr_rank' => !empty($segment_effort['pr_rank']) ? $segment_effort['pr_rank'] : NULL,
+                ],
+                ['id' => $segment_effort['id']]
+              );
+            }
           }
 
           // Check if we already have the segment in our db.

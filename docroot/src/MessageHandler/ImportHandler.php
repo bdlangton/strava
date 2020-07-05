@@ -139,10 +139,6 @@ class ImportHandler {
 
         // Update the existing activity.
         $result = $this->strava->updateActivity($activity);
-
-        // We don't bother updating segment efforts for activities that
-        // are just being updated.
-        continue;
       }
       else {
         // Insert a new activity that wasn't already in our database.
