@@ -3,7 +3,6 @@
 namespace App\Strava;
 
 use Doctrine\DBAL\Connection;
-use Psr\Log\LoggerInterface;
 
 /**
  * Strava class.
@@ -13,16 +12,9 @@ class Strava {
   /**
    * Database connection.
    *
-   * @var \Doctrine\DBAL\Connection
+   * @var \Doctrin\DBAL\Connection
    */
   private $connection;
-
-  /**
-   * Logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  private $logger;
 
   /**
    * Activity type form choices.
@@ -105,9 +97,8 @@ class Strava {
    * @param \Doctrine\DBAL\Connection $connection
    *   The database connection service.
    */
-  public function __construct(Connection $connection, LoggerInterface $logger) {
+  public function __construct(Connection $connection) {
     $this->connection = $connection;
-    $this->logger = $logger;
   }
 
   /**
