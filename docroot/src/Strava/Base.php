@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * Base class.
@@ -62,14 +63,22 @@ abstract class Base {
   protected $user;
 
   /**
+   * The message bus.
+   *
+   * @var \Symfony\Component\Messenger\MessageBus
+   */
+  protected $messageBus;
+
+  /**
    * Constructor.
    */
-  public function __construct(RequestStack $request_stack, Connection $connection, FormFactoryInterface $form_factory, Strava $strava, SessionInterface $session) {
+  public function __construct(RequestStack $request_stack, Connection $connection, FormFactoryInterface $form_factory, Strava $strava, SessionInterface $session, MessageBusInterface $message_bus) {
     $this->requestStack = $request_stack;
     $this->connection = $connection;
     $this->formFactory = $form_factory;
     $this->strava = $strava;
     $this->session = $session;
+    $this->messageBus = $message_bus;
     $this->user = $this->session->get('user');
     $this->request = $this->requestStack->getCurrentRequest();
   }

@@ -10,6 +10,7 @@ db-backups
 /docroot/config/test*
 /docroot/config/prod*
 /docroot/.env.prod
+rabbitmq-persistence/rabbitmq
 ###< custom ###
 
 ###> symfony/framework-bundle ###
