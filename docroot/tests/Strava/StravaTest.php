@@ -5,6 +5,7 @@ namespace Tests\Strava;
 use App\Strava\Strava;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * The StravaTest class.
@@ -16,7 +17,8 @@ class StravaTest extends TestCase {
    */
   public function testConvertDistance() {
     $connection = $this->createMock(Connection::class);
-    $strava = new Strava($connection);
+    $logger = $this->createMock(LoggerInterface::class);
+    $strava = new Strava($connection, $logger);
 
     $distance = 2500000;
     $result = $strava->convertDistance($distance, 'imperial');
@@ -32,7 +34,8 @@ class StravaTest extends TestCase {
    */
   public function testConvertElevationGain() {
     $connection = $this->createMock(Connection::class);
-    $strava = new Strava($connection);
+    $logger = $this->createMock(LoggerInterface::class);
+    $strava = new Strava($connection, $logger);
 
     $elevation_gain = 1000;
     $result = $strava->convertElevationGain($elevation_gain, 'imperial');
@@ -48,7 +51,8 @@ class StravaTest extends TestCase {
    */
   public function testConvertTimeFormat() {
     $connection = $this->createMock(Connection::class);
-    $strava = new Strava($connection);
+    $logger = $this->createMock(LoggerInterface::class);
+    $strava = new Strava($connection, $logger);
 
     $time = '12500';
     $result = $strava->convertTimeFormat($time, 'H:i:s');
@@ -63,7 +67,8 @@ class StravaTest extends TestCase {
    */
   public function testConvertDateFormat() {
     $connection = $this->createMock(Connection::class);
-    $strava = new Strava($connection);
+    $logger = $this->createMock(LoggerInterface::class);
+    $strava = new Strava($connection, $logger);
 
     $date = '2019-09-22 11:00:00PM';
     $result = $strava->convertDateFormat($date, 'M d, Y');
