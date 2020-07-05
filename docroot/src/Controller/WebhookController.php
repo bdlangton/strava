@@ -72,9 +72,11 @@ class WebhookController extends AbstractController {
       $strava->insertActivity($activity);
     }
     elseif ($params['aspect_type'] == 'update') {
-      // Set the updates to the appropriate field names and don't include
-      // the 'private' update.
+      // Set the updates to the appropriate field names. Valid updates are
+      // title, type, and privacy. If the privacy is changed at all, then we
+      // want to insert segment efforts if not already inserted.
       $updates = [];
+      $update_segment_efforts = FALSE;
       foreach ($params['updates'] as $key => $update) {
         if ($key == 'title') {
           $updates['name'] = $update;
@@ -82,20 +84,34 @@ class WebhookController extends AbstractController {
         elseif ($key == 'type') {
           $updates[$key] = $update;
         }
+        elseif ($key == 'private') {
+          $update_segment_efforts = TRUE;
+        }
       }
 
-      // Update the existing activity.
-      if ($strava->activityExists($params['object_id'])) {
-        $connection->update('activities',
-          $updates,
-          ['id' => $params['object_id']]
-        );
+      // If there are any updates to the activity: changing title or type.
+      if (!empty($updates)) {
+        // Update the existing activity.
+        if ($strava->activityExists($params['object_id'])) {
+          $connection->update('activities',
+            $updates,
+            ['id' => $params['object_id']]
+          );
+        }
+        else {
+          // Even though it's an update, we don't have the activity so we have
+          // to create it.
+          $activity = $strava->getActivity($params['object_id'], $access_token);
+          $strava->insertActivity($activity);
+        }
       }
-      else {
-        // Even though it's an update, we don't have the activity so we have
-        // to create it.
-        $activity = $strava->getActivity($params['object_id'], $access_token);
-        $strava->insertActivity($activity);
+
+      // Insert segment efforts if this activity was changed to public.
+      if ($update_segment_efforts) {
+        if (empty($activity)) {
+          $activity = $strava->getActivity($params['object_id'], $access_token);
+        }
+        $strava->insertSegmentEfforts($activity, $access_token);
       }
     }
     elseif ($params['aspect_type'] == 'delete') {
