@@ -2,5 +2,6 @@ monolog:
     handlers:
         main:
             type: rotating_file
-            action_level: error
+            level: error
+            path: '%kernel.logs_dir%/%kernel.environment%.log'
             max_files: 10
