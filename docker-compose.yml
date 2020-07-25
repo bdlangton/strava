@@ -43,6 +43,7 @@ services:
   rabbitmq:
     image: bitnami/rabbitmq:latest
     container_name: strava-rabbitmq
+    restart: always
     volumes:
     - ./rabbitmq-persistence:/bitnami
     ports:
