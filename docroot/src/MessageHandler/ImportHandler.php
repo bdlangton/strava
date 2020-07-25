@@ -144,9 +144,6 @@ class ImportHandler {
         // Insert a new activity that wasn't already in our database.
         $this->strava->insertActivity($activity);
       }
-
-      // Insert any segment effort associated with the activity.
-      $this->strava->insertSegmentEfforts($activity, $access_token);
     }
 
     return TRUE;
