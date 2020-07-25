@@ -237,13 +237,13 @@ class Strava {
   public function getBeginAndEndDates(string $group = 'month') : array {
     $dates = [
       'begin_date' => NULL,
-      'end_date' => new \DateTime('now'),
+      'end_date' => (new \DateTime('now'))->format('Y-m-d'),
     ];
     if ($group == 'month' || $group == 'week') {
-      $dates['begin_date'] = new \DateTime('first day of this month - 1 year');
+      $dates['begin_date'] = (new \DateTime('first day of this month - 1 year'))->format('Y-m-d');
     }
     elseif ($group == 'year') {
-      $dates['begin_date'] = new \DateTime('first day of this year - 5 years');
+      $dates['begin_date'] = (new \DateTime('first day of this year - 5 years'))->format('Y-m-d');
     }
     return $dates;
   }
