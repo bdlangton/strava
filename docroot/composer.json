@@ -63,9 +63,17 @@
         "post-update-cmd": [
             "@auto-scripts"
         ],
+        "deploy": [
+            "docker exec -i strava-php-fpm sh -c 'php bin/console cache:clear'"
+        ],
         "test": [
             "docker exec -i strava-php-fpm sh -c 'APP_ENV=test ./vendor/bin/phpunit'",
             "docker exec -i strava-php-fpm sh -c 'APP_ENV=test ./vendor/bin/behat'"
+        ],
+        "nuke": [
+            "rm -rf docroot/vendor docroot/composer.lock",
+            "@composer clearcache --ansi",
+            "@composer install --ansi"
         ]
     },
     "conflict": {
