@@ -26,14 +26,12 @@ class Charts extends Base {
     ];
     $this->params += $this->strava->getBeginAndEndDates($this->params['group']);
 
-    $begin_date = $end_date = '';
-    if (is_string($this->params['begin_date'])) {
-      $begin_date = $this->params['begin_date'];
-      $this->params['begin_date'] = new \DateTime($this->params['begin_date']);
+    // If begin and end date are blank, assign them values within this year.
+    if (empty($this->params['begin_date'])) {
+      $this->params['begin_date'] = (new \DateTime('now - 1 year'))->format('Y-m-d');
     }
-    if (is_string($this->params['end_date'])) {
-      $end_date = $this->params['end_date'];
-      $this->params['end_date'] = new \DateTime($this->params['end_date']);
+    if (empty($this->params['end_date'])) {
+      $this->params['end_date'] = (new \DateTime('now'))->format('Y-m-d');
     }
 
     $form = $this->formFactory->createBuilder(FormType::class, $this->params)
@@ -46,17 +44,19 @@ class Charts extends Base {
         'label' => FALSE,
       ])
       ->add('begin_date', DateType::class, [
-        'input' => 'datetime',
+        'input' => 'string',
         'widget' => 'single_text',
         'constraints' => new Date(),
+        'required' => FALSE,
       ])
       ->add('end_date', DateType::class, [
-        'input' => 'datetime',
+        'input' => 'string',
         'widget' => 'single_text',
         'constraints' => [
-          new AfterBeginDate(['value' => $begin_date]),
+          new AfterBeginDate(['value' => $this->params['begin_date']]),
           new Date(),
         ],
+        'required' => FALSE,
       ]);
 
     $this->form = $form->getForm();
@@ -100,8 +100,8 @@ class Charts extends Base {
     $this->running_xaxis = $this->connection->executeQuery($sql, [
       'Run',
       $this->user['id'],
-      $this->params['begin_date']->format('Y-m-d'),
-      $this->params['end_date']->format('Y-m-d'),
+      $this->params['begin_date'],
+      $this->params['end_date'],
     ]);
   }
 
@@ -120,8 +120,8 @@ class Charts extends Base {
     $this->workout_data = $this->connection->executeQuery($sql, [
       'Run',
       $this->user['id'],
-      $this->params['begin_date']->format('Y-m-d'),
-      $this->params['end_date']->format('Y-m-d'),
+      $this->params['begin_date'],
+      $this->params['end_date'],
     ]);
   }
 
@@ -140,8 +140,8 @@ class Charts extends Base {
     $this->treadmill_data = $this->connection->executeQuery($sql, [
       'Run',
       $this->user['id'],
-      $this->params['begin_date']->format('Y-m-d'),
-      $this->params['end_date']->format('Y-m-d'),
+      $this->params['begin_date'],
+      $this->params['end_date'],
     ]);
   }
 
@@ -159,8 +159,8 @@ class Charts extends Base {
     $this->cycling_xaxis = $this->connection->executeQuery($sql, [
       'Ride',
       $this->user['id'],
-      $this->params['begin_date']->format('Y-m-d'),
-      $this->params['end_date']->format('Y-m-d'),
+      $this->params['begin_date'],
+      $this->params['end_date'],
     ]);
   }
 
@@ -179,8 +179,8 @@ class Charts extends Base {
     $this->cycling_data = $this->connection->executeQuery($sql, [
       'Ride',
       $this->user['id'],
-      $this->params['begin_date']->format('Y-m-d'),
-      $this->params['end_date']->format('Y-m-d'),
+      $this->params['begin_date'],
+      $this->params['end_date'],
     ]);
   }
 

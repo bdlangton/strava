@@ -24,19 +24,15 @@ class Records extends Base {
       'type' => $this->user['activity_type'] ?: 'All',
       'format' => $this->user['format'],
       'record' => NULL,
-      'begin_date' => new \DateTime('now - 1 year'),
-      'end_date' => new \DateTime('now'),
       'sort' => $this->request->query->get('sort'),
     ];
 
-    $begin_date = $end_date = '';
-    if (is_string($this->params['begin_date'])) {
-      $begin_date = $this->params['begin_date'];
-      $this->params['begin_date'] = new \DateTime($this->params['begin_date']);
+    // If begin and end date are blank, assign them values within this year.
+    if (empty($this->params['begin_date'])) {
+      $this->params['begin_date'] = (new \DateTime('now - 1 year'))->format('Y-m-d');
     }
-    if (is_string($this->params['end_date'])) {
-      $end_date = $this->params['end_date'];
-      $this->params['end_date'] = new \DateTime($this->params['end_date']);
+    if (empty($this->params['end_date'])) {
+      $this->params['end_date'] = (new \DateTime('now'))->format('Y-m-d');
     }
 
     $form = $this->formFactory->createBuilder(FormType::class, $this->params)
@@ -62,17 +58,19 @@ class Records extends Base {
         'label' => FALSE,
       ])
       ->add('begin_date', DateType::class, [
-        'input' => 'datetime',
+        'input' => 'string',
         'widget' => 'single_text',
         'constraints' => new Date(),
+        'required' => FALSE,
       ])
       ->add('end_date', DateType::class, [
-        'input' => 'datetime',
+        'input' => 'string',
         'widget' => 'single_text',
         'constraints' => [
-          new AfterBeginDate(['value' => $begin_date]),
+          new AfterBeginDate(['value' => $this->params['begin_date']]),
           new Date(),
         ],
+        'required' => FALSE,
       ]);
 
     $this->form = $form->getForm();
@@ -115,16 +113,24 @@ class Records extends Base {
     }
 
     // Query params and types.
-    $query_params = [
-      $this->user['id'],
-      $this->params['begin_date']->format('Y-m-d'),
-      $this->params['end_date']->format('Y-m-d'),
-    ];
-    $query_types = [
-      \PDO::PARAM_INT,
-      \PDO::PARAM_STR,
-      \PDO::PARAM_STR,
-    ];
+    if (!empty($this->params['begin_date']) && !empty($this->params['end_date'])) {
+      $date_sql = ' AND a.start_date_local BETWEEN ? AND ? ';
+      $query_params = [
+        $this->user['id'],
+        $this->params['begin_date'],
+        $this->params['end_date'],
+      ];
+      $query_types = [
+        \PDO::PARAM_INT,
+        \PDO::PARAM_STR,
+        \PDO::PARAM_STR,
+      ];
+    }
+    else {
+      $date_sql = '';
+      $query_params = [$this->user['id']];
+      $query_types = [\PDO::PARAM_INT];
+    }
 
     // Build the query.
     $sql = 'SELECT s.name, se.id effort_id, se.segment_id, se.activity_id, ';
@@ -133,7 +139,7 @@ class Records extends Base {
     $sql .= 'FROM activities a ';
     $sql .= 'JOIN segment_efforts se ON (a.athlete_id = se.athlete_id AND a.id = se.activity_id) ';
     $sql .= 'JOIN segments s ON (s.id = se.segment_id) ';
-    $sql .= 'WHERE (' . $record_query . ') AND a.athlete_id = ? AND a.start_date_local BETWEEN ? AND ? ';
+    $sql .= 'WHERE (' . $record_query . ') AND a.athlete_id = ? ' . $date_sql;
     if ($this->params['type'] != 'All') {
       $sql .= 'AND a.type = ? ';
       $query_params[] = $this->params['type'];
