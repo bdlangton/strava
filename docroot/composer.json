@@ -53,18 +53,9 @@
         "symfony/polyfill-php56": "*"
     },
     "scripts": {
-        "auto-scripts": {
-            "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd"
-        },
-        "post-install-cmd": [
-            "@auto-scripts"
-        ],
-        "post-update-cmd": [
-            "@auto-scripts"
-        ],
         "deploy": [
-            "docker exec -i strava-php-fpm sh -c 'php bin/console cache:clear'"
+            "docker exec -i strava-php-fpm sh -c 'php bin/console cache:clear'",
+            "docker exec -i strava-php-fpm sh -c 'php bin/console assets:install /application/public'"
         ],
         "test": [
             "docker exec -i strava-php-fpm sh -c 'APP_ENV=test ./vendor/bin/phpunit'",
