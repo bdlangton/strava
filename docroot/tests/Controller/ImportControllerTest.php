@@ -18,8 +18,13 @@ class ImportControllerTest extends BaseControllerTestCase {
     $this->assertTrue($client->getResponse()->isOk());
     $this->verifyLoggedInHeader($crawler);
     $this->verifyFormExists($crawler);
+
+    $form = $crawler->selectButton('submit')->form();
+    $crawler = $client->submit($form);
+    $this->assertTrue($client->getResponse()->isOk());
+
     $this->markTestIncomplete(
-      'Test submitting the form.'
+      'Test more than just that we get a 200 response.'
     );
   }
 
