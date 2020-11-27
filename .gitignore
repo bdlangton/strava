@@ -5,6 +5,7 @@
 tags
 .tags
 .env
+.vimrc
 db-backups
 /docroot/config/dev*
 /docroot/config/test*

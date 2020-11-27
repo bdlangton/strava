@@ -72,7 +72,14 @@ abstract class Base {
   /**
    * Constructor.
    */
-  public function __construct(RequestStack $request_stack, Connection $connection, FormFactoryInterface $form_factory, Strava $strava, SessionInterface $session, MessageBusInterface $message_bus) {
+  public function __construct(
+    RequestStack $request_stack,
+    Connection $connection,
+    FormFactoryInterface $form_factory,
+    Strava $strava,
+    SessionInterface $session,
+    MessageBusInterface $message_bus
+  ) {
     $this->requestStack = $request_stack;
     $this->connection = $connection;
     $this->formFactory = $form_factory;
