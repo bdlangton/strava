@@ -46,6 +46,10 @@ class Segments extends Base {
         $sort = 'ORDER BY s.name';
         break;
 
+      case 'location':
+        $sort = 'ORDER BY s.city DESC';
+        break;
+
       case 'distance':
         $sort = 'ORDER BY s.distance DESC';
         break;
@@ -66,7 +70,8 @@ class Segments extends Base {
     ];
 
     // Build the query.
-    $sql = 'SELECT s.id, s.name, s.activity_type, s.distance, ss.starred_date ';
+    $sql = 'SELECT s.id, s.name, s.activity_type, ss.starred_date, ';
+    $sql .= 's.distance, CONCAT(s.city, ", ", s.state) location ';
     $sql .= 'FROM starred_segments ss ';
     $sql .= 'JOIN segments s ON (ss.segment_id = s.id) ';
     $sql .= 'WHERE ss.athlete_id = ? ';
