@@ -47,8 +47,8 @@ class ActivitiesControllerTest extends BaseControllerTestCase {
     $link = $activity->link();
     $crawler = $client->click($link);
     $this->assertTrue($client->getResponse()->isOk());
-    $this->assertCount(1, $crawler->filter('h1:contains("' .  $name . '")'));
-    $this->assertCount(1, $crawler->filter('h2:contains("Segment Efforts")'));
+    $this->assertCount(1, $crawler->filter('h1:contains("' . $name . '")'));
+    $this->assertCount(1, $crawler->filter('h2:contains("Segment Efforts"), p:contains("There are no segment efforts on this activity")'));
   }
 
 }

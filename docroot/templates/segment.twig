@@ -7,7 +7,7 @@
   <p><a href="https://www.strava.com/segments/{{ segment.id }}">Strava Page</a>
   <p>Distance: {{ segment.distance }} {{ format }}</p>
   {% if segment_efforts is not empty %}
-    <table>
+    <table class="segment_efforts">
       <tr>
         <th>Date</th>
         <th>Time</th>
@@ -24,6 +24,6 @@
       {% endfor %}
     </table>
   {% else %}
-    <p>There are no segment efforts on this activity.</p>
+    <p>There are no segment efforts on this segment.</p>
   {% endif %}
 {% endblock %}

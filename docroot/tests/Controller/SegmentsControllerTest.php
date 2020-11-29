@@ -40,8 +40,8 @@ class SegmentsControllerTest extends BaseControllerTestCase {
     $link = $segment->link();
     $crawler = $client->click($link);
     $this->assertTrue($client->getResponse()->isOk());
-    print_r($crawler->filter('h1')->html());
-    $this->assertCount(1, $crawler->filter('h1:contains("Segment Efforts for ' .  $name . '")'));
+    $this->assertCount(1, $crawler->filter('h1:contains("Segment Efforts for ' . $name . '")'));
+    $this->assertCount(1, $crawler->filter('table.segment_efforts, p:contains("There are no segment efforts on this segment.")'));
   }
 
 }
