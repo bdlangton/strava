@@ -35,7 +35,7 @@ class SegmentsControllerTest extends BaseControllerTestCase {
     $this->assertTrue($client->getResponse()->isOk());
 
     // Navigate to a segment page.
-    $segment = $crawler->filter('td.segment a')->first();
+    $segment = $crawler->filter('td.name a')->first();
     $name = $segment->html();
     $link = $segment->link();
     $crawler = $client->click($link);

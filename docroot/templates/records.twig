@@ -4,46 +4,47 @@
 
 {% block content %}
   <h1>KOMs and PRs</h1>
-  <form action="/records" method="get">
+  <form class="records_form" action="/records" method="get">
     {{ form_widget(form) }}
     <input type="submit" name="submit" />
   </form>
   <table>
     <tr>
-      <th>
+      <th class="date">
         <a href="/records?{{ current_params_minus_sort }}&sort=date">Date</a>
       </th>
-      <th>Segment</th>
+      <th class="name">Segment</th>
       {% if type == 'All' %}
-        <th>Type</th>
+        <th class="type">Type</th>
       {% endif %}
-      <th>
+      <th class="distance">
         <a href="/records?{{ current_params_minus_sort }}&sort=distance">Distance ({{ format }})</a>
       </th>
-      <th>Time</th>
-      <th>
+      <th class="time">Time</th>
+      <th class="avg_grade">
         <a href="/records?{{ current_params_minus_sort }}&sort=avg">Avg Grade</a>
       </th>
-      <th>
+      <th class="max_grade">
         <a href="/records?{{ current_params_minus_sort }}&sort=max">Max Grade</a>
       </th>
-      <th>Location</th>
-      <th>PR</th><th>KOM Rank</th>
+      <th class="location">Location</th>
+      <th class="pr">PR</th>
+      <th class="kom">KOM Rank</th>
     </tr>
     {% for effort in efforts %}
       <tr>
-        <td>{{ effort.date }}</td>
-        <td><a href="/segment_efforts/{{ effort.segment_id }}">{{ effort.name }}</a></td>
+        <td class="date">{{ effort.date }}</td>
+        <td class="name"><a href="/segment_efforts/{{ effort.segment_id }}">{{ effort.name }}</a></td>
         {% if type == 'All' %}
-          <td>{{ effort.type }}</td>
+          <td class="type">{{ effort.type }}</td>
         {% endif %}
-        <td>{{ effort.distance }}</td>
-        <td>{{ effort.time }}</td>
-        <td>{{ effort.average_grade }}%</td>
-        <td>{{ effort.maximum_grade }}%</td>
-        <td>{{ effort.city }}, {{ effort.state }}</td>
-        <td>{{ effort.pr_rank }}</td>
-        <td>{{ effort.kom_rank }}</td>
+        <td class="distance">{{ effort.distance }}</td>
+        <td class="time">{{ effort.time }}</td>
+        <td class="avg_grade">{{ effort.average_grade }}%</td>
+        <td class="max_grade">{{ effort.maximum_grade }}%</td>
+        <td class="location">{{ effort.city }}, {{ effort.state }}</td>
+        <td class="pr">{{ effort.pr_rank }}</td>
+        <td class="kom">{{ effort.kom_rank }}</td>
       </tr>
     {% endfor %}
   </table>

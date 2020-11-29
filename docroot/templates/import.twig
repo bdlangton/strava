@@ -5,7 +5,7 @@
 {% block content %}
   <h1>Import Strava Data</h1>
   <p>Select which activities or starred segments that you want to import.</p>
-  <form action="/import" method="get">
+  <form class="import_form" action="/import" method="get">
     {{ form_widget(form) }}
     <input type="submit" name="submit" />
   </form>

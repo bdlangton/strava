@@ -20,18 +20,18 @@
           <input type="checkbox" id="show-menu" class="no-uniform"/>
           <ul id="menu">
             {% if login is not defined or login == false %}
-              <li><a href="/">Home</a></li>
-              <li><a href="/activities">My Activities</a></li>
-              <li><a href="/data">Graphs</a></li>
-              <li><a href="/records">KOMs and PRs</a></li>
-              <li><a href="/segments">Segments</a></li>
-              <li><a href="/big">Biggest Stats</a></li>
-              <li><a href="/column">Column Charts</a></li>
-              <li><a href="/jon">Jon Score</a></li>
-              <li><a href="/user">Settings</a></li>
-              <li><a href="/logout">Logout</a></li>
+              <li class="home"><a href="/">Home</a></li>
+              <li class="activities"><a href="/activities">My Activities</a></li>
+              <li class="graphs"><a href="/data">Graphs</a></li>
+              <li class="records"><a href="/records">KOMs and PRs</a></li>
+              <li class="segments"><a href="/segments">Segments</a></li>
+              <li class="stats"><a href="/big">Biggest Stats</a></li>
+              <li class="charts"><a href="/column">Column Charts</a></li>
+              <li class="jon"><a href="/jon">Jon Score</a></li>
+              <li class="settings"><a href="/user">Settings</a></li>
+              <li class="logout"><a href="/logout">Logout</a></li>
             {% else %}
-              <li><a href="/">Data Analytics</a></li>
+              <li class="home"><a href="/">Data Analytics</a></li>
             {% endif %}
           </ul>
         </nav>

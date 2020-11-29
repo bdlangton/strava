@@ -10,18 +10,18 @@
   </form>
   <table>
     <tr>
-      <th>
+      <th class="date">
         <a href="/activities?{{ current_params_minus_sort }}&sort=date">Date</a>
       </th>
-      <th>Activity</th>
+      <th class="name">Activity</th>
       {% if type == 'All' %}
-        <th>Type</th>
+        <th class="activity_type">Type</th>
       {% endif %}
-      <th>
+      <th class="distance">
         <a href="/activities?{{ current_params_minus_sort }}&sort=distance">Distance ({{ format }})</a>
       </th>
-      <th>Elapsed Time</th>
-      <th>
+      <th class="time">Elapsed Time</th>
+      <th class="elevation_gain">
         <a href="/activities?{{ current_params_minus_sort }}&sort=gain">Elevation Gain ({{ gain_format }})</a>
       </th>
     </tr>

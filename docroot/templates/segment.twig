@@ -9,17 +9,17 @@
   {% if segment_efforts is not empty %}
     <table class="segment_efforts">
       <tr>
-        <th>Date</th>
-        <th>Time</th>
-        <th>PR</th>
-        <th>KOM Rank</th>
+        <th class="date">Date</th>
+        <th class="time">Time</th>
+        <th class="pr">PR</th>
+        <th class="kom">KOM Rank</th>
       </tr>
       {% for effort in segment_efforts %}
       <tr>
         <td class="date">{{ effort.start_date }}</td>
         <td class="time"><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.id }}">{{ effort.elapsed_time }}</a></td>
-        <td class="pr_rank">{{ effort.pr_rank }}</td>
-        <td class="kom_rank">{{ effort.kom_rank }}</td>
+        <td class="pr">{{ effort.pr_rank }}</td>
+        <td class="kom">{{ effort.kom_rank }}</td>
       </tr>
       {% endfor %}
     </table>
