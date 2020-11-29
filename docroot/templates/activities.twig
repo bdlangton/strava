@@ -27,14 +27,14 @@
     </tr>
     {% for activity in activities %}
       <tr>
-        <td>{{ activity.date }}</td>
-        <td><a href="https://www.strava.com/activities/{{ activity.id }}">{{ activity.name }}</a></td>
+        <td class="date">{{ activity.date }}</td>
+        <td class="name"><a href="/activities/{{ activity.id }}">{{ activity.name }}</a></td>
         {% if type == 'All' %}
-          <td>{{ activity.type }}</td>
+          <td class="activity_type">{{ activity.type }}</td>
         {% endif %}
-        <td>{{ activity.distance }}</td>
-        <td>{{ activity.elapsed_time }}</td>
-        <td>{{ activity.total_elevation_gain }}</td>
+        <td class="distance">{{ activity.distance }}</td>
+        <td class="time">{{ activity.elapsed_time }}</td>
+        <td class="elevation_gain">{{ activity.total_elevation_gain }}</td>
       </tr>
     {% endfor %}
   </table>
