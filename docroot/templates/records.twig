@@ -34,7 +34,7 @@
     {% for effort in efforts %}
       <tr>
         <td class="date">{{ effort.date }}</td>
-        <td class="name"><a href="/segment_efforts/{{ effort.segment_id }}">{{ effort.name }}</a></td>
+        <td class="name"><a href="/segments/{{ effort.segment_id }}">{{ effort.name }}</a></td>
         {% if type == 'All' %}
           <td class="type">{{ effort.type }}</td>
         {% endif %}

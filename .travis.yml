@@ -9,11 +9,26 @@ branches:
 
 services:
   - mysql
+  - rabbitmq
+
+env:
+  - MESSENGER_TRANSPORT_DSN='amqp://admin:admin@localhost:5672/%2f/messages'
+
+addons:
+  apt:
+    packages:
+    - rabbitmq-server
+    - librabbitmq-dev
+    - php-pear
 
 before_script:
   - cd docroot
   - composer install --dev
   - ./tests/setup_mysql.php
+  - printf "\n" | pecl install amqp
+  - sudo rabbitmqctl add_user admin admin
+  - sudo rabbitmqctl set_user_tags admin administrator
+  - sudo rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
 
 script:
   - phpunit
