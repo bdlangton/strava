@@ -4,7 +4,7 @@
 
 {% block content %}
   <h1>Segments</h1>
-  <p>List of your starred segments on Strava.</p>
+  <p>List of your starred segments on Strava. Click through to view all efforts on that segment.</p>
   <form action="/segments" method="get">
     {{ form_widget(form) }}
     <input type="submit" name="submit" />
@@ -21,15 +21,15 @@
     </tr>
     {% for segment in segments %}
     <tr>
-      <td>
-        <a href="https://www.strava.com/segments/{{ segment.id }}">{{ segment.name }}</a>
+      <td class="segment">
+        <a href="/segments/{{ segment.id }}">{{ segment.name }}</a>
       </td>
       {% if type == 'All' %}
-        <td>{{ segment.activity_type }}</td>
+        <td class="activity_type">{{ segment.activity_type }}</td>
       {% endif %}
-      <td>{{ segment.location }}</td>
-      <td>{{ segment.distance }}</td>
-      <td>{{ segment.starred_date }}</td>
+      <td class="location">{{ segment.location }}</td>
+      <td class="distance">{{ segment.distance }}</td>
+      <td class="date">{{ segment.starred_date }}</td>
     </tr>
     {% endfor %}
   </table>

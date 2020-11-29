@@ -37,7 +37,7 @@ class Segments extends Base {
   }
 
   /**
-   * Query activities.
+   * Query segments.
    */
   private function query() {
     // Sort.
@@ -86,7 +86,7 @@ class Segments extends Base {
   }
 
   /**
-   * Render the activities.
+   * Render the segments.
    *
    * @return array
    *   Return an array of render data.

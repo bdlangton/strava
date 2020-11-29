@@ -33,7 +33,7 @@
     {% for effort in efforts %}
       <tr>
         <td>{{ effort.date }}</td>
-        <td><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.effort_id }}">{{ effort.name }}</a></td>
+        <td><a href="/segment_efforts/{{ effort.segment_id }}">{{ effort.name }}</a></td>
         {% if type == 'All' %}
           <td>{{ effort.type }}</td>
         {% endif %}

@@ -25,4 +25,23 @@ class SegmentsControllerTest extends BaseControllerTestCase {
     );
   }
 
+  /**
+   * Test the segment efforts page.
+   */
+  public function testSegmentEffortPage() {
+    $client = static::createClient();
+    $this->login($client);
+    $crawler = $client->request('GET', '/segments');
+    $this->assertTrue($client->getResponse()->isOk());
+
+    // Navigate to a segment page.
+    $segment = $crawler->filter('td.segment a')->first();
+    $name = $segment->html();
+    $link = $segment->link();
+    $crawler = $client->click($link);
+    $this->assertTrue($client->getResponse()->isOk());
+    print_r($crawler->filter('h1')->html());
+    $this->assertCount(1, $crawler->filter('h1:contains("Segment Efforts for ' .  $name . '")'));
+  }
+
 }
