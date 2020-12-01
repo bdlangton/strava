@@ -11,7 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Validator\Constraints\Date;
 
 /**
- * Records class.
+ * Records class to show KOMs and PRs.
  */
 class Records extends Base {
 
@@ -27,9 +27,11 @@ class Records extends Base {
       'sort' => $this->request->query->get('sort'),
     ];
 
-    // If begin and end date are blank, assign them values within this year.
+    // If begin and end date are blank, assign them values within the last 20
+    // years. We want to have a non-null value, but include everything by
+    // default.
     if (empty($this->params['begin_date'])) {
-      $this->params['begin_date'] = (new \DateTime('now - 1 year'))->format('Y-m-d');
+      $this->params['begin_date'] = (new \DateTime('now - 20 years'))->format('Y-m-d');
     }
     if (empty($this->params['end_date'])) {
       $this->params['end_date'] = (new \DateTime('now'))->format('Y-m-d');
