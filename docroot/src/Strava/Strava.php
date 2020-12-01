@@ -5,7 +5,7 @@ namespace App\Strava;
 use Doctrine\DBAL\Connection;
 
 /**
- * Strava class.
+ * Base Strava class to interact with the API and other standard functions.
  */
 class Strava {
 
@@ -88,7 +88,7 @@ class Strava {
     'Default' => 0,
     'Race' => 1,
     'Long Run' => 2,
-    'Intervals' => 3,
+    'Workout' => 3,
   ];
 
   /**

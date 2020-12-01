@@ -10,7 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 /**
- * Activities class.
+ * List activities by type and workout type.
  */
 class Activities extends Base {
 
@@ -108,6 +108,34 @@ class Activities extends Base {
       $point['date'] = $this->strava->convertDateFormat($point['start_date_local']);
       $point['elapsed_time'] = $this->strava->convertTimeFormat($point['elapsed_time']);
       $point['total_elevation_gain'] = $this->strava->convertElevationGain($point['total_elevation_gain'], $this->params['format']);
+
+      // Add workout type to activity type if applicable.
+      switch ($point['workout_type']) {
+        case '1':
+          $point['type'] .= ' - Race';
+          break;
+
+        case '2':
+          $point['type'] .= ' - Long Run';
+          break;
+
+        case '3':
+        case '12':
+          $point['type'] .= ' - Workout';
+          break;
+
+        default:
+      }
+
+      if ($point['commute']) {
+        $point['type'] .= ' - Commute';
+      }
+
+      if ($point['type'] == 'Run') {
+        if ($point['trainer']) {
+          $point['type'] .= ' - Treadmill';
+        }
+      }
       $activities[] = $point;
     }
 

@@ -14,7 +14,7 @@
         <a href="/activities?{{ current_params_minus_sort }}&sort=date">Date</a>
       </th>
       <th class="name">Activity</th>
-      {% if type == 'All' %}
+      {% if type == 'All' or type == 'Run' or type == 'Ride' %}
         <th class="activity_type">Type</th>
       {% endif %}
       <th class="distance">
@@ -29,7 +29,7 @@
       <tr>
         <td class="date">{{ activity.date }}</td>
         <td class="name"><a href="/activities/{{ activity.id }}">{{ activity.name }}</a></td>
-        {% if type == 'All' %}
+        {% if type == 'All' or type == 'Run' or type == 'Ride' %}
           <td class="activity_type">{{ activity.type }}</td>
         {% endif %}
         <td class="distance">{{ activity.distance }}</td>
