@@ -70,6 +70,7 @@ class WebhookController extends AbstractController {
     if ($params['aspect_type'] == 'create') {
       $activity = $strava->getActivity($params['object_id'], $access_token);
       $strava->insertActivity($activity);
+      $strava->insertSegmentEfforts($activity, $access_token);
     }
     elseif ($params['aspect_type'] == 'update') {
       // Set the updates to the appropriate field names. Valid updates are
@@ -118,6 +119,10 @@ class WebhookController extends AbstractController {
       $connection->delete(
         'activities',
         ['id' => $params['object_id']]
+      );
+      $connection->delete(
+        'segment_efforts',
+        ['activity_id' => $params['object_id']]
       );
     }
   }
