@@ -11,6 +11,24 @@ class SegmentEfforts extends Base {
    * Query segment efforts.
    */
   private function query(int $segment_id) {
+    $this->params = $this->request->query->all() ?? [];
+    $this->params += [
+      'sort' => '',
+    ];
+    $sort = '';
+
+    // Determine the sort order.
+    switch ($this->params['sort']) {
+      case 'time':
+        $sort = 'ORDER BY elapsed_time ASC';
+        break;
+
+      case 'date':
+      default:
+        $sort = 'ORDER BY start_date DESC';
+        break;
+    }
+
     // Query params and types.
     $query_params = [
       $this->user['id'],
@@ -27,7 +45,7 @@ class SegmentEfforts extends Base {
     $sql .= 'FROM segment_efforts ';
     $sql .= 'WHERE athlete_id = ? ';
     $sql .= 'AND segment_id = ? ';
-    $sql .= "ORDER BY start_date DESC";
+    $sql .= $sort;
     $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types);
   }
 
