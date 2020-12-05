@@ -47,6 +47,17 @@ class SegmentEfforts extends Base {
     $sql .= 'AND segment_id = ? ';
     $sql .= $sort;
     $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types);
+
+    // If there are no segment efforts, try to get the segment info so we can
+    // still display some information on the page.
+    if ($this->datapoints->rowCount() == 0) {
+      $sql = 'SELECT id segment_id, name, "" activity_id, distance, ';
+      $sql .= 'NULL kom_rank, NULL pr_rank, NULL start_date, ';
+      $sql .= 'NULL elapsed_time, NULL id ';
+      $sql .= 'FROM segments ';
+      $sql .= 'WHERE id = ? ';
+      $this->datapoints = $this->connection->executeQuery($sql, [$segment_id], [\PDO::PARAM_STR]);
+    }
   }
 
   /**
@@ -66,13 +77,17 @@ class SegmentEfforts extends Base {
         $segment = [
           'id' => $point['segment_id'],
           'name' => $point['name'],
-          'distance' => $this->strava->convertDistance($point['distance'], $this->user['format']),
+          'distance' => $this->strava->convertDistance($point['distance'] ?? '', $this->user['format']),
           'referer' => $this->request->server->get('HTTP_REFERER'),
         ];
       }
-      $point['start_date'] = $this->strava->convertDateFormat($point['start_date']);
-      $point['elapsed_time'] = $this->strava->convertTimeFormat($point['elapsed_time']);
-      $segment_efforts[] = $point;
+      $point['start_date'] = $this->strava->convertDateFormat($point['start_date'] ?? '');
+      $point['elapsed_time'] = $this->strava->convertTimeFormat($point['elapsed_time'] ?? 0);
+
+      // If no start date, then there isn't really a segment effort.
+      if (!empty($point['start_date'])) {
+        $segment_efforts[] = $point;
+      }
     }
 
     // Render the page.

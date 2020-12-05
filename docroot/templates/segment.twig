@@ -1,36 +1,34 @@
 {% extends "base.html" %}
 
-{% block title %}Segment Efforts for {{ segment.name }}{% endblock %}
+{% block title %}Segment Efforts for {{ segment.name|default('Unknown Segment') }}{% endblock %}
 
 {% block content %}
+  <h1>Segment Efforts for {{ segment.name|default('Unknown Segment') }}</h1>
   {% if segment is not empty %}
-    <h1>Segment Efforts for {{ segment.name }}</h1>
     <p><a href="https://www.strava.com/segments/{{ segment.id }}">Strava Page</a>
     <p>Distance: {{ segment.distance }} {{ format }}</p>
-    {% if segment_efforts is not empty %}
-      <table class="segment_efforts">
-        <tr>
-          <th class="date">
-            <a href="/segments/{{ segment.id }}?sort=date">Date</a>
-          </th>
-          <th class="time">
-            <a href="/segments/{{ segment.id }}?sort=time">Time</a>
-          </th>
-          <th class="pr">PR</th>
-          <th class="kom">KOM Rank</th>
-        </tr>
-        {% for effort in segment_efforts %}
-        <tr>
-          <td class="date">{{ effort.start_date }}</td>
-          <td class="time"><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.id }}">{{ effort.elapsed_time }}</a></td>
-          <td class="pr">{{ effort.pr_rank }}</td>
-          <td class="kom">{{ effort.kom_rank }}</td>
-        </tr>
-        {% endfor %}
-      </table>
-    {% else %}
-      <p>There are no segment efforts on this segment.</p>
-    {% endif %}
+  {% endif %}
+  {% if segment_efforts is not empty %}
+    <table class="segment_efforts">
+      <tr>
+        <th class="date">
+          <a href="/segments/{{ segment.id }}?sort=date">Date</a>
+        </th>
+        <th class="time">
+          <a href="/segments/{{ segment.id }}?sort=time">Time</a>
+        </th>
+        <th class="pr">PR</th>
+        <th class="kom">KOM Rank</th>
+      </tr>
+      {% for effort in segment_efforts %}
+      <tr>
+        <td class="date">{{ effort.start_date }}</td>
+        <td class="time"><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.id }}">{{ effort.elapsed_time }}</a></td>
+        <td class="pr">{{ effort.pr_rank }}</td>
+        <td class="kom">{{ effort.kom_rank }}</td>
+      </tr>
+      {% endfor %}
+    </table>
   {% else %}
     <p>There are no segment efforts on this segment.</p>
   {% endif %}

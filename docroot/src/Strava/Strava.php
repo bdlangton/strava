@@ -159,7 +159,7 @@ class Strava {
    *   Returns the time formatted.
    */
   public function convertTimeFormat(int $time, string $format = 'H:i:s') : string {
-    return gmdate($format, $time);
+    return $time ? gmdate($format, $time) : '';
   }
 
   /**
@@ -174,8 +174,10 @@ class Strava {
    *   Returns the date in string format.
    */
   public function convertDateFormat(string $date, string $format = 'M d, Y') : string {
-    $datetime = new \DateTime($date);
-    return $datetime->format($format);
+    if (!empty($date)) {
+      $datetime = new \DateTime($date);
+    }
+    return $date ? $datetime->format($format) : '';
   }
 
   /**
