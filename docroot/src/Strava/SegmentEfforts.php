@@ -42,7 +42,8 @@ class SegmentEfforts extends Base {
     // Build the query.
     $sql = 'SELECT se.id, s.name, se.activity_id, se.distance, se.kom_rank, ';
     $sql .= 'se.pr_rank, se.start_date, se.elapsed_time, se.segment_id, ';
-    $sql .= 's.activity_type ';
+    $sql .= 's.activity_type, se.distance, se.average_cadence, ';
+    $sql .= 'se.average_watts, se.average_heartrate, se.max_heartrate ';
     $sql .= 'FROM segments s ';
     $sql .= 'JOIN segment_efforts se ON (s.id = se.segment_id)';
     $sql .= 'WHERE se.athlete_id = ? ';

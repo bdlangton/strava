@@ -12,6 +12,12 @@
       <tr>
         <th class="name">Name</th>
         <th class="time">Time</th>
+        <th class="cadence">Avg Cadence</th>
+        {% if activity.type in ['Ride', 'VirtualRide'] %}
+          <th class="watts">Avg Watts</th>
+        {% endif %}
+        <th class="hr">Avg HR</th>
+        <th class="max_hr">Max HR</th>
         <th class="pr">PR</th>
         <th class="kom">KOM Rank</th>
       </tr>
@@ -19,6 +25,12 @@
       <tr>
         <td class="name"><a href="/segments/{{ effort.segment_id }}">{{ effort.effort_name }}</a></td>
         <td class="time"><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.effort_id }}">{{ effort.elapsed_time }}</a></td>
+        <td class="cadence">{{ effort.average_cadence }}</th>
+        {% if effort.activity_type in ['Ride', 'VirtualRide'] %}
+          <td class="watts">{{ effort.average_watts }}</th>
+        {% endif %}
+        <td class="hr">{{ effort.average_heartrate }}</th>
+        <td class="max_hr">{{ effort.max_heartrate }}</th>
         <td class="pr">{{ effort.pr_rank }}</td>
         <td class="kom">{{ effort.kom_rank }}</td>
       </tr>
