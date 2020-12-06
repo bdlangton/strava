@@ -26,7 +26,8 @@ class Activity extends Base {
     $sql .= 'se.pr_rank, a.start_date, se.elapsed_time, se.segment_id, ';
     $sql .= 'a.elapsed_time activity_time, se.id effort_id, ';
     $sql .= 'se.name effort_name, se.average_cadence, se.average_heartrate, ';
-    $sql .= 'se.max_heartrate, se.average_watts, a.type activity_type ';
+    $sql .= 'se.max_heartrate, se.average_watts, a.type activity_type, ';
+    $sql .= 'se.distance segment_distance ';
     $sql .= 'FROM activities a ';
     $sql .= 'LEFT JOIN segment_efforts se ON (se.activity_id = a.id)';
     $sql .= 'WHERE a.athlete_id = ? ';
@@ -60,6 +61,7 @@ class Activity extends Base {
         ];
       }
       if (!empty($point['elapsed_time'])) {
+        $point['distance'] = $this->strava->convertDistance($point['segment_distance'], $this->user['format']);
         $point['elapsed_time'] = $this->strava->convertTimeFormat($point['elapsed_time']);
         $segment_efforts[] = $point;
       }
