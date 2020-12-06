@@ -6,6 +6,7 @@
   <h1>Segment Efforts for {{ segment.name|default('Unknown Segment') }}</h1>
   {% if segment is not empty %}
     <p><a href="https://www.strava.com/segments/{{ segment.id }}">Strava Page</a>
+    <p>Activity Type: {{ segment.activity_type }}</p>
     <p>Distance: {{ segment.distance }} {{ format }}</p>
   {% endif %}
   {% if segment_efforts is not empty %}

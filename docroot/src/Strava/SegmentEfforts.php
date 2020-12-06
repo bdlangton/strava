@@ -40,11 +40,13 @@ class SegmentEfforts extends Base {
     ];
 
     // Build the query.
-    $sql = 'SELECT id, name, activity_id, distance, kom_rank, pr_rank, ';
-    $sql .= 'start_date, elapsed_time, segment_id ';
-    $sql .= 'FROM segment_efforts ';
-    $sql .= 'WHERE athlete_id = ? ';
-    $sql .= 'AND segment_id = ? ';
+    $sql = 'SELECT se.id, s.name, se.activity_id, se.distance, se.kom_rank, ';
+    $sql .= 'se.pr_rank, se.start_date, se.elapsed_time, se.segment_id, ';
+    $sql .= 's.activity_type ';
+    $sql .= 'FROM segments s ';
+    $sql .= 'JOIN segment_efforts se ON (s.id = se.segment_id)';
+    $sql .= 'WHERE se.athlete_id = ? ';
+    $sql .= 'AND se.segment_id = ? ';
     $sql .= $sort;
     $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types);
 
@@ -52,7 +54,7 @@ class SegmentEfforts extends Base {
     // still display some information on the page.
     if ($this->datapoints->rowCount() == 0) {
       $sql = 'SELECT id segment_id, name, "" activity_id, distance, ';
-      $sql .= 'NULL kom_rank, NULL pr_rank, NULL start_date, ';
+      $sql .= 'NULL kom_rank, NULL pr_rank, NULL start_date, activity_type, ';
       $sql .= 'NULL elapsed_time, NULL id ';
       $sql .= 'FROM segments ';
       $sql .= 'WHERE id = ? ';
@@ -77,6 +79,7 @@ class SegmentEfforts extends Base {
         $segment = [
           'id' => $point['segment_id'],
           'name' => $point['name'],
+          'activity_type' => $point['activity_type'],
           'distance' => $this->strava->convertDistance($point['distance'] ?? '', $this->user['format']),
           'referer' => $this->request->server->get('HTTP_REFERER'),
         ];
