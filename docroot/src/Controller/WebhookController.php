@@ -85,9 +85,6 @@ class WebhookController extends AbstractController {
         elseif ($key == 'type') {
           $updates[$key] = $update;
         }
-        elseif ($key == 'private') {
-          $update_segment_efforts = TRUE;
-        }
       }
 
       // If there are any updates to the activity: changing title or type.
@@ -107,13 +104,11 @@ class WebhookController extends AbstractController {
         }
       }
 
-      // Insert segment efforts if this activity was changed to public.
-      if ($update_segment_efforts) {
-        if (empty($activity)) {
-          $activity = $strava->getActivity($params['object_id'], $access_token);
-        }
-        $strava->insertSegmentEfforts($activity, $access_token);
+      // Insert/update segment efforts.
+      if (empty($activity)) {
+        $activity = $strava->getActivity($params['object_id'], $access_token);
       }
+      $strava->insertSegmentEfforts($activity, $access_token);
     }
     elseif ($params['aspect_type'] == 'delete') {
       $connection->delete(
