@@ -83,8 +83,8 @@ class AuthController extends AbstractController {
     catch (Exception $e) {
     }
 
-    // Return the user to the homepage.
-    return $this->redirectToRoute('home');
+    // Return the user to their activities page.
+    return $this->redirectToRoute('activities');
   }
 
 }
