@@ -5,9 +5,11 @@
 {% block content %}
   <h1>{{ activity.name }}</h1>
   <p><a href="https://www.strava.com/activities/{{ activity.id }}">Strava Page</a>
+  <p>Activity Type: {{ activity.type }}</p>
   <p>Distance: {{ activity.distance }} {{ format }}</p>
   {% if segment_efforts is not empty %}
     <h2>Segment Efforts</h2>
+    <p><a href="/activities/{{ activity.id }}/refresh">Refresh Segments</a></p>
     <table>
       <tr>
         <th class="name">Name</th>

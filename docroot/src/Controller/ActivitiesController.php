@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Strava\Activities;
 use App\Strava\Activity;
+use App\Strava\Strava;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -39,6 +40,26 @@ class ActivitiesController extends AbstractController {
 
     // Render the page.
     return $this->render('activity.twig', $activity->render($activity_id));
+  }
+
+  /**
+   * @Route("/activities/{activity_id}/refresh", name="activity-refresh")
+   */
+  public function refresh(SessionInterface $session, Activity $activity, Strava $strava, int $activity_id) {
+    // Check the session.
+    $user = $session->get('user');
+    if (empty($user)) {
+      return $this->redirectToRoute('home');
+    }
+
+    // Insert/update segment efforts.
+    $access_token = $strava->getAccessToken($user['id']);
+    $activity = $strava->getActivity($activity_id, $access_token);
+    $strava->insertSegmentEfforts($activity, $access_token);
+    $session->getFlashBag()->add('strava', 'Segments were refreshed.');
+
+    // Redirect back to activity page.
+    return $this->redirectToRoute('activity', ['activity_id' => $activity_id]);
   }
 
 }
