@@ -41,6 +41,6 @@
       {% endfor %}
     </table>
   {% else %}
-    <p class="no_data">There are no segment efforts on this activity.</p>
+    <p class="no_data">There are no segment efforts on this activity. If you think there should be then you can <a href="/activities/{{ activity.id }}/refresh">refresh segment efforts</a>.</p>
   {% endif %}
 {% endblock %}
