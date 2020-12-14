@@ -53,6 +53,7 @@ class Activity extends Base {
         'distance' => $this->strava->convertDistance($point['distance'], $this->user['format']),
         'start_date' => $this->strava->convertDateFormat($point['start_date']),
         'elapsed_time' => $this->strava->convertTimeFormat($point['elapsed_time']),
+        'total_elevation_gain' => $this->strava->convertElevationGain($point['total_elevation_gain'], $this->user['format']),
         'referer' => $this->request->server->get('HTTP_REFERER'),
       ];
       $activity += $point;
@@ -73,6 +74,7 @@ class Activity extends Base {
       'activity' => $activity,
       'segment_efforts' => $segment_efforts,
       'format' => $this->user['format'] == 'imperial' ? 'mi' : 'km',
+      'elevation_gain_format' => $this->user['format'] == 'imperial' ? 'ft' : 'm',
     ];
   }
 

@@ -8,6 +8,7 @@
   <p>Activity Type: {{ activity.type }}</p>
   <p>Date: {{ activity.start_date }}</p>
   <p>Distance: {{ activity.distance }} {{ format }}</p>
+  <p>Elevation Gain: {{ activity.total_elevation_gain }} {{ elevation_gain_format }}</p>
   {% if activity.average_heartrate is not empty %}
     <p>Heart Rate: {{ activity.average_heartrate }} / {{ activity.max_heartrate }}</p>
   {% endif %}
