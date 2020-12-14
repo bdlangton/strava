@@ -87,24 +87,37 @@ class StravaTest extends TestCase {
 
     $activity = [
       'type' => 'Run',
-      'workout_type' => 1,
     ];
     $result = $strava->convertActivityType($activity);
-    $this->assertEquals($result, 'Run - Race');
+    $this->assertEquals($result, 'Running');
+    $activity['workout_type'] = 1;
+    $result = $strava->convertActivityType($activity);
+    $this->assertEquals($result, 'Running - Race');
     $activity['workout_type'] = 2;
     $result = $strava->convertActivityType($activity);
-    $this->assertEquals($result, 'Run - Long Run');
+    $this->assertEquals($result, 'Running - Long Run');
     $activity['workout_type'] = 3;
     $result = $strava->convertActivityType($activity);
-    $this->assertEquals($result, 'Run - Workout');
+    $this->assertEquals($result, 'Running - Workout');
     $activity['workout_type'] = NULL;
     $activity['commute'] = 1;
     $result = $strava->convertActivityType($activity);
-    $this->assertEquals($result, 'Run - Commute');
+    $this->assertEquals($result, 'Running - Commute');
     $activity['commute'] = 0;
     $activity['trainer'] = 1;
     $result = $strava->convertActivityType($activity);
-    $this->assertEquals($result, 'Run - Treadmill');
+    $this->assertEquals($result, 'Running - Treadmill');
+
+    $activity = [
+      'type' => 'Ride',
+      'workout_type' => 12,
+    ];
+    $result = $strava->convertActivityType($activity);
+    $this->assertEquals($result, 'Cycling - Workout');
+    $activity['workout_type'] = NULL;
+    $activity['commute'] = 1;
+    $result = $strava->convertActivityType($activity);
+    $this->assertEquals($result, 'Cycling - Commute');
   }
 
 }
