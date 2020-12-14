@@ -22,18 +22,19 @@ class Activity extends Base {
     ];
 
     // Build the query.
-    $sql = 'SELECT a.id activity_id, a.name, a.distance, se.kom_rank, ';
-    $sql .= 'se.pr_rank, a.start_date, se.elapsed_time, se.segment_id, ';
-    $sql .= 'a.elapsed_time activity_time, se.id effort_id, ';
-    $sql .= 'se.name effort_name, se.average_cadence, se.average_heartrate, ';
-    $sql .= 'se.max_heartrate, se.average_watts, a.type activity_type, ';
-    $sql .= 'se.distance segment_distance ';
-    $sql .= 'FROM activities a ';
-    $sql .= 'LEFT JOIN segment_efforts se ON (se.activity_id = a.id)';
-    $sql .= 'WHERE a.athlete_id = ? ';
-    $sql .= 'AND a.id = ? ';
+    $sql = 'SELECT * ';
+    $sql .= 'FROM activities ';
+    $sql .= 'WHERE athlete_id = ? ';
+    $sql .= 'AND id = ?';
+    $this->activity = $this->connection->executeQuery($sql, $query_params, $query_types);
+
+    // Build the query.
+    $sql = 'SELECT * ';
+    $sql .= 'FROM segment_efforts ';
+    $sql .= 'WHERE athlete_id = ? ';
+    $sql .= 'AND activity_id = ? ';
     $sql .= "ORDER BY start_date DESC";
-    $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types);
+    $this->segment_efforts = $this->connection->executeQuery($sql, $query_params, $query_types);
   }
 
   /**
@@ -45,23 +46,23 @@ class Activity extends Base {
   public function render(int $activity_id) {
     $this->query($activity_id);
 
-    // Get the segment effort data.
     $activity = [];
+    foreach ($this->activity as $point) {
+      $activity = [
+        'type' => $this->strava->convertActivityType($point),
+        'distance' => $this->strava->convertDistance($point['distance'], $this->user['format']),
+        'start_date' => $this->strava->convertDateFormat($point['start_date']),
+        'elapsed_time' => $this->strava->convertTimeFormat($point['elapsed_time']),
+        'referer' => $this->request->server->get('HTTP_REFERER'),
+      ];
+      $activity += $point;
+    }
+
+    // Get the segment effort data.
     $segment_efforts = [];
-    foreach ($this->datapoints as $point) {
-      if (empty($activity)) {
-        $activity = [
-          'id' => $point['activity_id'],
-          'name' => $point['name'],
-          'type' => $point['activity_type'],
-          'distance' => $this->strava->convertDistance($point['distance'], $this->user['format']),
-          'start_date' => $this->strava->convertDateFormat($point['start_date']),
-          'elapsed_time' => $this->strava->convertTimeFormat($point['activity_time']),
-          'referer' => $this->request->server->get('HTTP_REFERER'),
-        ];
-      }
+    foreach ($this->segment_efforts as $point) {
       if (!empty($point['elapsed_time'])) {
-        $point['distance'] = $this->strava->convertDistance($point['segment_distance'], $this->user['format']);
+        $point['distance'] = $this->strava->convertDistance($point['distance'], $this->user['format']);
         $point['elapsed_time'] = $this->strava->convertTimeFormat($point['elapsed_time']);
         $segment_efforts[] = $point;
       }

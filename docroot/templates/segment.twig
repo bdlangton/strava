@@ -5,7 +5,7 @@
 {% block content %}
   <h1>Segment Efforts for {{ segment.name|default('Unknown Segment') }}</h1>
   {% if segment is not empty %}
-    <p><a href="https://www.strava.com/segments/{{ segment.id }}">Strava Page</a>
+    <p><a href="https://www.strava.com/segments/{{ segment.id }}" target="_blank">Strava Page</a>
     <p>Activity Type: {{ segment.activity_type }}</p>
     <p>Distance: {{ segment.distance }} {{ format }}</p>
   {% endif %}
@@ -30,7 +30,7 @@
       {% for effort in segment_efforts %}
       <tr>
         <td class="date">{{ effort.start_date }}</td>
-        <td class="time"><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.id }}">{{ effort.elapsed_time }}</a></td>
+        <td class="time"><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.id }}" target="_blank">{{ effort.elapsed_time }}</a></td>
         <td class="cadence">{{ effort.average_cadence }}</th>
         {% if effort.activity_type in ['Ride', 'VirtualRide'] %}
           <td class="watts">{{ effort.average_watts }}</th>
