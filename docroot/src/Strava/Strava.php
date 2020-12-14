@@ -190,7 +190,7 @@ class Strava {
    *   Returns the updated activity type.
    */
   public function convertActivityType(array $activity) : string {
-    $activity_type = $activity['type'];
+    $activity_type = array_search($activity['type'], $this->activityTypeChoices);
 
     // Add workout type to activity type if applicable.
     if (!empty($activity['workout_type'])) {
