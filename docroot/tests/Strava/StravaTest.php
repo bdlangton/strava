@@ -77,4 +77,34 @@ class StravaTest extends TestCase {
     $this->assertEquals($result, '2019-09-22');
   }
 
+  /**
+   * Test convertActivityType.
+   */
+  public function testConvertActivityType() {
+    $connection = $this->createMock(Connection::class);
+    $logger = $this->createMock(LoggerInterface::class);
+    $strava = new Strava($connection, $logger);
+
+    $activity = [
+      'type' => 'Run',
+      'workout_type' => 1,
+    ];
+    $result = $strava->convertActivityType($activity);
+    $this->assertEquals($result, 'Run - Race');
+    $activity['workout_type'] = 2;
+    $result = $strava->convertActivityType($activity);
+    $this->assertEquals($result, 'Run - Long Run');
+    $activity['workout_type'] = 3;
+    $result = $strava->convertActivityType($activity);
+    $this->assertEquals($result, 'Run - Workout');
+    $activity['workout_type'] = NULL;
+    $activity['commute'] = 1;
+    $result = $strava->convertActivityType($activity);
+    $this->assertEquals($result, 'Run - Commute');
+    $activity['commute'] = 0;
+    $activity['trainer'] = 1;
+    $result = $strava->convertActivityType($activity);
+    $this->assertEquals($result, 'Run - Treadmill');
+  }
+
 }

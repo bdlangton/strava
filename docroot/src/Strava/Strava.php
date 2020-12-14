@@ -181,6 +181,51 @@ class Strava {
   }
 
   /**
+   * Converts an activity type by adding detailed info to it.
+   *
+   * @param array $activity
+   *   The activity data in an array.
+   *
+   * @return string
+   *   Returns the updated activity type.
+   */
+  public function convertActivityType(array $activity) : string {
+    $activity_type = $activity['type'];
+
+    // Add workout type to activity type if applicable.
+    if (!empty($activity['workout_type'])) {
+      switch ($activity['workout_type']) {
+        case '1':
+          $activity_type .= ' - Race';
+          break;
+
+        case '2':
+          $activity_type .= ' - Long Run';
+          break;
+
+        case '3':
+        case '12':
+          $activity_type .= ' - Workout';
+          break;
+
+        default:
+      }
+    }
+
+    if (!empty($activity['commute'])) {
+      $activity_type .= ' - Commute';
+    }
+
+    if ($activity['type'] == 'Run') {
+      if (!empty($activity['trainer'])) {
+        $activity_type .= ' - Treadmill';
+      }
+    }
+
+    return $activity_type;
+  }
+
+  /**
    * Gets activity type choices.
    *
    * @param bool $include_all
