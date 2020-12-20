@@ -12,6 +12,7 @@
   {% if segment_efforts is not empty %}
     <table class="segment_efforts">
       <tr>
+        <th class="activity_name">Activity Name</th>
         <th class="date">
           <a href="/segments/{{ segment.id }}?sort=date">Date</a>
         </th>
@@ -29,6 +30,7 @@
       </tr>
       {% for effort in segment_efforts %}
       <tr>
+        <td class="activity_name"><a href="/activities/{{ effort.activity_id }}">{{ effort.activity_name }}</a></td>
         <td class="date">{{ effort.start_date }}</td>
         <td class="time"><a href="https://www.strava.com/activities/{{ effort.activity_id }}/segments/{{ effort.id }}" target="_blank">{{ effort.elapsed_time }}</a></td>
         <td class="cadence">{{ effort.average_cadence }}</th>
