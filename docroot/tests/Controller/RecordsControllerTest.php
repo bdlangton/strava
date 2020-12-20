@@ -44,5 +44,4 @@ class RecordsControllerTest extends BaseControllerTestCase {
     $this->assertCount(1, $crawler->filter('li:contains("This value should be after the begin date.")'));
   }
 
-
 }

@@ -52,11 +52,12 @@ class ActivitiesController extends AbstractController {
       return $this->redirectToRoute('home');
     }
 
-    // Insert/update segment efforts.
+    // Update the activity and insert/update segment efforts.
     $access_token = $strava->getAccessToken($user['id']);
     $activity = $strava->getActivity($activity_id, $access_token);
+    $strava->updateActivity($activity);
     $strava->insertSegmentEfforts($activity, $access_token);
-    $session->getFlashBag()->add('strava', 'Segments were refreshed.');
+    $session->getFlashBag()->add('strava', 'The activity and segments were refreshed.');
 
     // Redirect back to activity page.
     return $this->redirectToRoute('activity', ['activity_id' => $activity_id]);
