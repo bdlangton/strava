@@ -26,7 +26,7 @@ class Activity extends Base {
     $sql .= 'FROM activities ';
     $sql .= 'WHERE athlete_id = ? ';
     $sql .= 'AND id = ?';
-    $this->activity = $this->connection->executeQuery($sql, $query_params, $query_types);
+    $this->activity = $this->connection->executeQuery($sql, $query_params, $query_types)->fetchAll();
 
     // Build the query.
     $sql = 'SELECT * ';
@@ -34,7 +34,7 @@ class Activity extends Base {
     $sql .= 'WHERE athlete_id = ? ';
     $sql .= 'AND activity_id = ? ';
     $sql .= "ORDER BY start_date DESC";
-    $this->segment_efforts = $this->connection->executeQuery($sql, $query_params, $query_types);
+    $this->segment_efforts = $this->connection->executeQuery($sql, $query_params, $query_types)->fetchAll();
   }
 
   /**

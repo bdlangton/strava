@@ -82,7 +82,7 @@ class Segments extends Base {
       $query_types[] = \PDO::PARAM_STR;
     }
     $sql .= $sort;
-    $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types);
+    $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types)->fetchAll();
   }
 
   /**

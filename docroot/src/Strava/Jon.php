@@ -69,7 +69,7 @@ class Jon extends Base {
       \PDO::PARAM_INT,
       \PDO::PARAM_STR,
       \PDO::PARAM_STR,
-    ]);
+    ])->fetchAll();
   }
 
   /**

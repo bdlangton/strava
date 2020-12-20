@@ -49,17 +49,17 @@ class SegmentEfforts extends Base {
     $sql .= 'WHERE se.athlete_id = ? ';
     $sql .= 'AND se.segment_id = ? ';
     $sql .= $sort;
-    $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types);
+    $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types)->fetchAll();
 
     // If there are no segment efforts, try to get the segment info so we can
     // still display some information on the page.
-    if ($this->datapoints->rowCount() == 0) {
+    if (count($this->datapoints) == 0) {
       $sql = 'SELECT id segment_id, name, "" activity_id, distance, ';
       $sql .= 'NULL kom_rank, NULL pr_rank, NULL start_date, activity_type, ';
       $sql .= 'NULL elapsed_time, NULL id ';
       $sql .= 'FROM segments ';
       $sql .= 'WHERE id = ? ';
-      $this->datapoints = $this->connection->executeQuery($sql, [$segment_id], [\PDO::PARAM_STR]);
+      $this->datapoints = $this->connection->executeQuery($sql, [$segment_id], [\PDO::PARAM_STR])->fetchAll();
     }
   }
 

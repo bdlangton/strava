@@ -102,7 +102,7 @@ class Charts extends Base {
       $this->user['id'],
       $this->params['begin_date'],
       $this->params['end_date'],
-    ]);
+    ])->fetchAll();
   }
 
   /**
@@ -122,7 +122,7 @@ class Charts extends Base {
       $this->user['id'],
       $this->params['begin_date'],
       $this->params['end_date'],
-    ]);
+    ])->fetchAll();
   }
 
   /**
@@ -142,7 +142,7 @@ class Charts extends Base {
       $this->user['id'],
       $this->params['begin_date'],
       $this->params['end_date'],
-    ]);
+    ])->fetchAll();
   }
 
   /**
@@ -161,7 +161,7 @@ class Charts extends Base {
       $this->user['id'],
       $this->params['begin_date'],
       $this->params['end_date'],
-    ]);
+    ])->fetchAll();
   }
 
   /**
@@ -181,7 +181,7 @@ class Charts extends Base {
       $this->user['id'],
       $this->params['begin_date'],
       $this->params['end_date'],
-    ]);
+    ])->fetchAll();
   }
 
   /**

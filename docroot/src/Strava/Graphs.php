@@ -124,7 +124,7 @@ class Graphs extends Base {
     }
     $sql .= 'GROUP BY ' . $group . ', ' . $order_by_group . ' ';
     $sql .= 'ORDER BY ' . $order_by_group;
-    $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types);
+    $this->datapoints = $this->connection->executeQuery($sql, $query_params, $query_types)->fetchAll();
   }
 
   /**
@@ -171,7 +171,7 @@ class Graphs extends Base {
     ];
     $this->chart->plotOptions->area->marker->enabled = FALSE;
     $this->chart->plotOptions->area->lineWidth = 1;
-    $this->chart->plotOptions->area->dataLabels->enabled = ($this->datapoints->rowCount() <= 50 ? TRUE : FALSE);
+    $this->chart->plotOptions->area->dataLabels->enabled = (count($this->datapoints) <= 50 ? TRUE : FALSE);
     $this->chart->plotOptions->area->states->hover->lineWidth = 1;
     $this->chart->tooltip->formatter = new HighchartJsExpr("function() { return '<b>' + this.series.name + '</b><br/>' + this.x + ': ' + this.y; }");
     $this->chart->series[] = [
