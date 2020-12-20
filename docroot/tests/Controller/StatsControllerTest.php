@@ -31,7 +31,7 @@ class StatsControllerTest extends BaseControllerTestCase {
     // Create an expected row array and a column array to specify what each
     // entry corresponds to.
     $expected_row = [
-      'Run',
+      'Running',
       'Distance',
       '',
       '22 days',

@@ -72,6 +72,7 @@ class Records extends Base {
       ]);
 
     $this->form = $form->getForm();
+    $this->form->submit($this->request->query->get('form'));
   }
 
   /**
