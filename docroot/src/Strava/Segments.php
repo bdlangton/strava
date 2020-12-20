@@ -9,7 +9,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 /**
- * Segments class.
+ * Show information about segments.
  */
 class Segments extends Base {
 
@@ -19,7 +19,7 @@ class Segments extends Base {
   private function buildForm() {
     $this->params = $this->request->query->get('form') ?? [];
     $this->params += [
-      'type' => $this->user['activity_type'] ?: 'All',
+      'type' => 'All',
       'name' => '',
       'format' => $this->user['format'] ?: 'imperial',
       'sort' => $this->request->query->get('sort'),
@@ -100,6 +100,7 @@ class Segments extends Base {
     foreach ($this->datapoints as $point) {
       $point['distance'] = $this->strava->convertDistance($point['distance'], $this->user['format']);
       $point['starred_date'] = $this->strava->convertDateFormat($point['starred_date']);
+      $point['activity_type'] = $this->strava->convertActivityType($point, $point['activity_type']);
       $segments[] = $point;
     }
 

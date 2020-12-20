@@ -80,7 +80,7 @@ class SegmentEfforts extends Base {
         $segment = [
           'id' => $point['segment_id'],
           'name' => $point['name'],
-          'activity_type' => $point['activity_type'],
+          'activity_type' => $this->strava->convertActivityType($point, $point['activity_type']),
           'distance' => $this->strava->convertDistance($point['distance'] ?? '', $this->user['format']),
           'referer' => $this->request->server->get('HTTP_REFERER'),
         ];

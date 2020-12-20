@@ -8,7 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Stats class.
+ * Show and generate user defined stats.
  */
 class Stats extends Base {
 
@@ -49,6 +49,9 @@ class Stats extends Base {
     $this->form = $form->getForm();
   }
 
+  /**
+   * Generate stats based on what the user supplied in the form.
+   */
   private function generateStat() {
     // Build the query.
     $sql = 'SELECT DATEDIFF(start_date_local, "2000-01-01") day, SUM(' . $this->params['stat_type'] . ') stat ';
@@ -136,6 +139,9 @@ class Stats extends Base {
     }
   }
 
+  /**
+   * Query the user's generated stats.
+   */
   private function query() {
     // Query all stats from this user.
     $sql = 'SELECT * ';
@@ -244,6 +250,7 @@ class Stats extends Base {
         }
         $stat['stat'] = $hours . ' hours, ' . $minutes . ' minutes';
       }
+      $stat['activity_type'] = $this->strava->convertActivityType($stat, $stat['activity_type']);
       $stat['excluding_races'] = empty($stat['excluding_races']) ? '' : 'Yes';
       $stat['start_date'] = $this->strava->convertDateFormat($stat['start_date']);
       $stat['end_date'] = $this->strava->convertDateFormat($stat['end_date']);

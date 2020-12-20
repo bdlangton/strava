@@ -185,12 +185,15 @@ class Strava {
    *
    * @param array $activity
    *   The activity data in an array.
+   * @param string $type
+   *   (Optional) The activity type if not provided in the activity array.
    *
    * @return string
    *   Returns the updated activity type.
    */
-  public function convertActivityType(array $activity) : string {
-    $activity_type = array_search($activity['type'], $this->activityTypeChoices);
+  public function convertActivityType(array $activity, string $type = NULL) : string {
+    $type ??= $activity['type'];
+    $activity_type = array_search($type, $this->activityTypeChoices);
 
     // Add workout type to activity type if applicable.
     if (!empty($activity['workout_type'])) {
@@ -216,7 +219,7 @@ class Strava {
       $activity_type .= ' - Commute';
     }
 
-    if ($activity['type'] == 'Run') {
+    if ($type == 'Run') {
       if (!empty($activity['trainer'])) {
         $activity_type .= ' - Treadmill';
       }

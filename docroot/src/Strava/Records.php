@@ -21,7 +21,7 @@ class Records extends Base {
   private function buildForm() {
     $this->params = $this->request->query->get('form') ?? [];
     $this->params += [
-      'type' => $this->user['activity_type'] ?: 'All',
+      'type' => 'All',
       'format' => $this->user['format'],
       'record' => NULL,
       'sort' => $this->request->query->get('sort'),
@@ -39,11 +39,7 @@ class Records extends Base {
 
     $form = $this->formFactory->createBuilder(FormType::class, $this->params)
       ->add('type', ChoiceType::class, [
-        'choices' => [
-          'All' => 'All',
-          'Running' => 'Run',
-          'Cycling' => 'Ride',
-        ],
+        'choices' => $this->strava->getActivityTypes(),
         'label' => FALSE,
       ])
       ->add('record', ChoiceType::class, [
@@ -76,7 +72,6 @@ class Records extends Base {
       ]);
 
     $this->form = $form->getForm();
-    $this->form->submit($this->request->query->get('form'));
   }
 
   /**
@@ -136,8 +131,9 @@ class Records extends Base {
 
     // Build the query.
     $sql = 'SELECT s.name, se.id effort_id, se.segment_id, se.activity_id, ';
-    $sql .= 's.distance, se.elapsed_time time, s.average_grade, s.maximum_grade, ';
-    $sql .= 'se.pr_rank, se.kom_rank, s.city, s.state, a.start_date_local date, a.type ';
+    $sql .= 's.distance, se.elapsed_time time, s.average_grade, ';
+    $sql .= 's.maximum_grade, se.pr_rank, se.kom_rank, s.city, s.state, ';
+    $sql .= 'a.start_date_local date, a.type ';
     $sql .= 'FROM activities a ';
     $sql .= 'JOIN segment_efforts se ON (a.athlete_id = se.athlete_id AND a.id = se.activity_id) ';
     $sql .= 'JOIN segments s ON (s.id = se.segment_id) ';
@@ -164,6 +160,7 @@ class Records extends Base {
     // Add the segments to the array.
     $efforts = [];
     foreach ($this->datapoints as $point) {
+      $point['type'] = $this->strava->convertActivityType($point);
       $point['distance'] = $this->strava->convertDistance($point['distance'], $this->params['format']);
       $point['time'] = $this->strava->convertTimeFormat($point['time']);
       $point['date'] = $this->strava->convertDateFormat($point['date']);
