@@ -23,7 +23,7 @@ addons:
 
 before_script:
   - cd docroot
-  - composer install --dev
+  - composer install
   - ./tests/setup_mysql.php
   - printf "\n" | pecl install amqp
   - sudo rabbitmqctl add_user admin admin
