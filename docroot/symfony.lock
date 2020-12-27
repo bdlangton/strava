@@ -1,4 +1,7 @@
 {
+    "babdev/pagerfanta-bundle": {
+        "version": "v2.8.0"
+    },
     "behat/behat": {
         "version": "v3.5.0"
     },
@@ -450,9 +453,6 @@
     },
     "webmozart/assert": {
         "version": "1.4.0"
-    },
-    "white-october/pagerfanta-bundle": {
-        "version": "v1.2.4"
     },
     "zendframework/zend-code": {
         "version": "3.3.1"
