@@ -60,7 +60,7 @@ services:
     restart: always
     mem_limit: 1g
     cpu_percent: 50
-    pids_limit: 100
+    pids_limit: 200
     volumes:
       - ./rabbitmq-persistence:/bitnami
     ports:
