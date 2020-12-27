@@ -55,7 +55,7 @@ services:
       - ./cron:/var/spool/cron/crontabs
 
   rabbitmq:
-    image: bitnami/rabbitmq:latest
+    image: bitnami/rabbitmq:3.8.5
     container_name: strava-rabbitmq
     restart: always
     mem_limit: 1g
