@@ -54,13 +54,12 @@ services:
     mem_limit: 1g
     cpu_percent: 50
     cpu_shares: 1024
-    pids_limit: 50
+    pids_limit: 200
     environment:
       - APP_ENV=${APP_ENV}
     volumes:
       - ./docroot:/application:cached
-      - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
-      - ./cron:/var/spool/cron/crontabs
+      - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
     healthcheck:
       test: [ "CMD", "php", "--version" ]
       timeout: 5s
