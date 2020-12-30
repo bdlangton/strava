@@ -90,6 +90,12 @@ jobs:
             mysql -h 127.0.0.1 -u db -pdb strava < docroot/tests/schema.sql
 
       - run:
+          name: Validate the composer file
+          command: |
+            cd docroot
+            composer validate --no-check-all --ansi
+
+      - run:
           name: Composer Install
           command: composer install -d docroot
 
