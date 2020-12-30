@@ -100,8 +100,16 @@ jobs:
           command: composer install -d docroot
 
       - run:
+          name: Set up code climate test reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./docroot/cc-test-reporter
+            chmod +x ./docroot/cc-test-reporter
+
+      - run:
           name: Run tests
           command: |
             cd docroot
-            APP_ENV=test ./vendor/bin/phpunit
-            APP_ENV=test ./vendor/bin/behat
+            ./cc-test-reporter before-build
+            ./vendor/bin/phpunit --coverage-clover clover.xml
+            ./cc-test-reporter after-build -t clover --exit-code $?
+            ./vendor/bin/behat
