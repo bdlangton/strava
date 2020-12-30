@@ -1,0 +1,101 @@
+# PHP CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-php/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/php:7.4.9-fpm-buster
+        environment:
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_DB: strava
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_USER: db
+          MYSQL_PASSWORD: db
+          APP_ENV: 'test'
+          MESSENGER_TRANSPORT_DSN: 'amqp://user:bitnami@127.0.0.1:5672/%2f/messages'
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # Using the RAM variation mitigates I/O contention
+      # for database intensive operations.
+      - image: circleci/mysql:5.7
+        auth:
+          username: bdlangton
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+        environment:
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_DATABASE: strava
+          MYSQL_USER: db
+          MYSQL_PASSWORD: db
+      - image: bitnami/rabbitmq:3.8.5
+
+    steps:
+      - checkout
+
+      - run:
+          name: Apt update and install
+          command: |
+            sudo apt update
+            sudo apt install rabbitmq-server librabbitmq-dev
+
+      - run:
+          name: Install AMQP
+          command: |
+            curl -L -o /tmp/amqp.tar.gz https://pecl.php.net/get/amqp-1.10.2.tgz
+            tar xfz /tmp/amqp.tar.gz
+            rm -r /tmp/amqp.tar.gz
+            sudo mkdir -p /usr/src/php/ext/amqp
+            sudo mv amqp-1.10.2 /usr/src/php/ext/amqp
+            cd /usr/src/php/ext/amqp/amqp-1.10.2
+            sudo phpize && sudo ./configure --with-amqp
+            sudo make
+            sudo make install
+            sudo cp -a /usr/src/php/ext/amqp/amqp-1.10.2/. /usr/src/php/ext/amqp/
+            sudo docker-php-ext-install amqp
+
+      - run:
+          name: Install PHP exts
+          command: |
+            sudo docker-php-ext-install zip pdo_mysql
+            sudo docker-php-ext-enable zip pdo_mysql
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "docroot/composer.lock" }}
+            - v1-dependencies-
+
+      - save_cache:
+          key: v1-dependencies-{{ checksum "docroot/composer.lock" }}
+          paths:
+            - ./docroot/vendor
+
+      - run:
+          name: Waiting for MySQL to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z 127.0.0.1 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+
+      - run:
+          name: Install MySQL CLI and import dummy data
+          command: |
+            sudo apt-get install default-mysql-client
+            mysql -h 127.0.0.1 -u db -pdb strava < docroot/tests/schema.sql
+
+      - run:
+          name: Composer Install
+          command: composer install -d docroot
+
+      - run:
+          name: Run tests
+          command: |
+            cd docroot
+            APP_ENV=test ./vendor/bin/phpunit
+            APP_ENV=test ./vendor/bin/behat
