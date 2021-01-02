@@ -131,13 +131,13 @@ class Records extends Base {
     }
 
     // Build the query.
-    $sql = 'SELECT s.name, se.id effort_id, se.segment_id, se.activity_id, ';
-    $sql .= 's.distance, se.elapsed_time time, s.average_grade, ';
+    $sql = 'SELECT se.name, se.id effort_id, se.segment_id, se.activity_id, ';
+    $sql .= 'se.distance, se.elapsed_time time, s.average_grade, ';
     $sql .= 's.maximum_grade, se.pr_rank, se.kom_rank, s.city, s.state, ';
     $sql .= 'a.start_date_local date, a.type ';
     $sql .= 'FROM activities a ';
     $sql .= 'JOIN segment_efforts se ON (a.athlete_id = se.athlete_id AND a.id = se.activity_id) ';
-    $sql .= 'JOIN segments s ON (s.id = se.segment_id) ';
+    $sql .= 'LEFT JOIN segments s ON (s.id = se.segment_id) ';
     $sql .= 'WHERE (' . $record_query . ') AND a.athlete_id = ? ' . $date_sql;
     if ($this->params['type'] != 'All') {
       $sql .= 'AND a.type = ? ';
@@ -166,6 +166,15 @@ class Records extends Base {
       $point['time'] = $this->strava->convertTimeFormat($point['time']);
       $point['date'] = $this->strava->convertDateFormat($point['date']);
       $point['pr_rank'] = !empty($point['pr_rank']) ? 'Yes' : 'No';
+      $point['average_grade'] = !empty($point['average_grade']) ? $point['average_grade'] . '%' : '';
+      $point['maximum_grade'] = !empty($point['maximum_grade']) ? $point['maximum_grade'] . '%' : '';
+      $point['location'] = '';
+      if (!empty($point['city'])) {
+        $point['location'] = $point['city'];
+      }
+      if (!empty($point['state'])) {
+        $point['location'] .= ', ' . $point['state'];
+      }
       $efforts[] = $point;
     }
 

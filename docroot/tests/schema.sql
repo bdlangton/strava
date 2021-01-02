@@ -43,11 +43,14 @@ LOCK TABLES `activities` WRITE;
 INSERT INTO `activities` (`id`, `athlete_id`, `name`, `description`, `distance`, `moving_time`, `elapsed_time`, `total_elevation_gain`, `type`, `start_date`, `start_date_local`, `timezone`, `location_city`, `location_state`, `location_country`, `trainer`, `commute`, `manual`, `private`, `workout_type`, `average_speed`, `max_speed`, `calories`, `average_cadence`, `average_watts`, `average_heartrate`, `max_heartrate`)
 VALUES
 	(6713696,391930,'09/24/2011 Amarillo, TX',NULL,25743.2,8731,8753,98.4,'Run','2011-09-24','2011-09-24','(GMT-06:00) America/Chicago','Amarillo','TX','United States',NULL,NULL,0,0,0,2.948,3.44,NULL,NULL,NULL,156.9,169),
+	(7010748,391930,'Palo Duro Canyon',NULL,19673.6,6999,6999,143.8,'Run','2012-03-03','2012-03-03','(GMT-06:00) America/Chicago','Canyon','TX','United States',NULL,NULL,0,0,0,2.811,3.806,NULL,NULL,NULL,NULL,NULL),
 	(6682959,391930,'Palo Duro Canyon',NULL,19915.6,7612,7612,162.7,'Run','2012-03-31','2012-03-31','(GMT-06:00) America/Chicago','Canyon','TX','United States',NULL,NULL,0,0,0,2.616,3.679,NULL,NULL,NULL,NULL,NULL),
 	(6981313,391930,'White Rock Marathon - Dallas, TX',NULL,42443.1,16662,16822,125.8,'Run','2010-12-05','2010-12-05','(GMT-06:00) America/Chicago','Dallas','TX','United States',0,0,0,0,1,2.523,4.152,NULL,NULL,NULL,NULL,NULL),
 	(260346766,391930,'Treadmill incline workout',NULL,7023.4,2700,2700,0,'Run','2015-02-27','2015-02-26','(GMT-07:00) America/Denver',NULL,NULL,'United States',1,NULL,0,0,3,2.601,2.9,NULL,81.4,NULL,NULL,NULL),
 	(264613438,391930,'Commuting',NULL,5954.6,1080,1080,0,'Ride','2015-03-08','2015-03-07','(GMT-07:00) America/Denver',NULL,NULL,'United States',NULL,NULL,1,1,0,5.513,0,NULL,NULL,NULL,NULL,NULL),
-	(266239562,391930,'Long route',NULL,8387.6,1412,33381,34,'Ride','2015-03-10','2015-03-10','(GMT-07:00) America/Denver','Denver','Colorado','United States',NULL,1,0,0,0,5.94,11.8,NULL,NULL,82,NULL,NULL);
+	(266239562,391930,'Long route',NULL,8387.6,1412,33381,34,'Ride','2015-03-10','2015-03-10','(GMT-07:00) America/Denver','Denver','Colorado','United States',NULL,1,0,0,0,5.94,11.8,NULL,NULL,82,NULL,NULL),
+	(3525439005,391930,'Home track',NULL,13446.7,5617,5661,471,'Run','2020-05-28','2020-05-28','(GMT-07:00) America/Denver',NULL,NULL,NULL,NULL,NULL,0,0,0,2.394,5.6,NULL,75.9,NULL,124.8,148),
+	(3476605765,391930,'Morning Run',NULL,11902,5000,5073,443,'Run','2020-05-19','2020-05-19','(GMT-07:00) America/Denver',NULL,NULL,NULL,NULL,NULL,0,0,0,2.38,5.4,NULL,75.2,NULL,126.9,160);
 
 /*!40000 ALTER TABLE `activities` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -110,6 +113,7 @@ LOCK TABLES `segment_efforts` WRITE;
 
 INSERT INTO `segment_efforts` (`id`, `segment_id`, `name`, `activity_id`, `athlete_id`, `elapsed_time`, `moving_time`, `start_date`, `start_date_local`, `distance`, `average_cadence`, `average_watts`, `average_heartrate`, `max_heartrate`, `kom_rank`, `pr_rank`)
 VALUES
+	(131758929,1229405,'GSL (Lighthouse to Tralihead)',7010748,391930,1803,1803,'2012-03-03','2012-03-03',4926.6,NULL,NULL,NULL,NULL,1,1),
 	(133586263,1262478,'Juniper Cliffside',6682959,391930,1672,1672,'2012-03-31','2012-03-31',4268.37,NULL,NULL,NULL,NULL,NULL,NULL),
 	(133840859,1262454,'Sunflower',6682959,391930,419,419,'2012-03-31','2012-03-31',1208.11,NULL,NULL,NULL,NULL,NULL,NULL),
 	(146920085,1333737,'Juniper Riverside',6682959,391930,319,319,'2012-03-31','2012-03-31',945.927,NULL,NULL,NULL,NULL,NULL,NULL),
@@ -129,7 +133,10 @@ VALUES
 	(1514989705,5185380,'WR WOODBRIDGE',6981313,391930,54,54,'2010-12-05','2010-12-05',159.699,NULL,NULL,NULL,NULL,NULL,NULL),
 	(1732200013,5584414,'Exall Lake North (via Trail/Lakeside Dr)',6981313,391930,520,520,'2010-12-05','2010-12-05',1660,NULL,NULL,NULL,NULL,NULL,NULL),
 	(1732242599,5584462,'Turtle Creek (R E Lee to Avondale)',6981313,391930,359,359,'2010-12-05','2010-12-05',1163.1,NULL,NULL,NULL,NULL,NULL,NULL),
-	(1778357922,5657354,'White Rock Lake (DM 2011)',6981313,391930,5647,5647,'2010-12-05','2010-12-05',14421.6,NULL,NULL,NULL,NULL,NULL,NULL);
+	(1778357922,5657354,'White Rock Lake (DM 2011)',6981313,391930,5647,5647,'2010-12-05','2010-12-05',14421.6,NULL,NULL,NULL,NULL,NULL,NULL),
+	(2701089595412198623,24228859,'Climb for Independence',3525439005,391930,2740,2737,'2020-05-28','2020-05-28',5091.4,64.7,NULL,129.1,141,NULL,1),
+	(2701089787338454959,24228871,'Climb for Independence RT',3525439005,391930,4620,4576,'2020-05-28','2020-05-28',10186.5,73.5,NULL,124.5,141,1,NULL),
+	(2701089833573673098,24228859,'Climb for Independence',3476605765,391930,2758,2672,'2020-05-19','2020-05-19',5091.4,64.2,NULL,118.9,160,NULL,1);
 
 /*!40000 ALTER TABLE `segment_efforts` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -166,7 +173,9 @@ LOCK TABLES `segments` WRITE;
 
 INSERT INTO `segments` (`id`, `name`, `activity_type`, `distance`, `average_grade`, `maximum_grade`, `elevation_high`, `elevation_low`, `city`, `state`, `country`, `climb_category`, `private`, `total_elevation_gain`, `effort_count`, `athlete_count`, `hazardous`)
 VALUES
-	(1552604,'Winfrey Point to Garland','Run',1958.76,0,2,141.3,141.3,'Dallas','TX','United States',0,0,NULL,NULL,NULL,0);
+	(1552604,'Winfrey Point to Garland','Run',1958.76,0,2,141.3,141.3,'Dallas','TX','United States',0,0,NULL,NULL,NULL,0),
+	(24228859,'Climb for Independence','Run',5091.4,8.4,47.4,2515.8,2087.6,'Kittredge','Colorado','United States',3,0,NULL,NULL,NULL,0),
+	(24228871,'Climb for Independence RT','Run',10186.5,0.1,47.4,2517,2087.4,'Kittredge','Colorado','United States',0,0,NULL,NULL,NULL,0);
 
 /*!40000 ALTER TABLE `segments` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -191,7 +200,8 @@ LOCK TABLES `starred_segments` WRITE;
 
 INSERT INTO `starred_segments` (`id`, `segment_id`, `athlete_id`, `starred_date`)
 VALUES
-	(1,1552604,391930,'2013-10-07');
+	(1,1552604,391930,'2013-10-07'),
+	(2,24228859,391930,'2020-05-05');
 
 /*!40000 ALTER TABLE `starred_segments` ENABLE KEYS */;
 UNLOCK TABLES;
