@@ -30,6 +30,17 @@ class ActivitiesControllerTest extends BaseControllerTestCase {
     $form['form[type]'] = 'Ride';
     $crawler = $client->submit($form);
     $this->assertCount(0, $crawler->filter('input[name="workout[]"]'));
+
+    // Test sorting.
+    $distance = $crawler->filter('th.distance a')->first();
+    $crawler = $client->click($distance->link());
+    $this->assertEquals($crawler->filter('td.distance')->first()->html(), '26.4');
+    $gain = $crawler->filter('th.elevation_gain a')->first();
+    $crawler = $client->click($gain->link());
+    $this->assertEquals($crawler->filter('td.elevation_gain')->first()->html(), '534');
+    $date = $crawler->filter('th.date a')->first();
+    $crawler = $client->click($date->link());
+    $this->assertEquals($crawler->filter('td.date')->first()->html(), 'Feb 26, 2015');
   }
 
   /**
