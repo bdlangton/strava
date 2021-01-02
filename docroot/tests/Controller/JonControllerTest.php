@@ -30,7 +30,7 @@ class JonControllerTest extends BaseControllerTestCase {
 
     // Test the form.
     $form = $crawler->selectButton('submit')->form();
-    $form['form[begin_date]'] = '2019-01-01';
+    $form['form[begin_date]'] = '2010-01-01';
     $form['form[end_date]'] = '2019-03-01';
     $crawler = $client->submit($form);
     $this->assertCount(1, $crawler->filter('div#chart1'));

@@ -93,6 +93,30 @@ class Activities extends Base {
   }
 
   /**
+   * Query segment efforts by activities.
+   */
+  private function querySegmentEfforts() {
+    // Query params and types.
+    $query_params = [
+      $this->user['id'],
+    ];
+    $query_types = [
+      \PDO::PARAM_STR,
+    ];
+
+    // Build the query.
+    $sql = 'SELECT activity_id, count(*) efforts ';
+    $sql .= 'FROM segment_efforts ';
+    $sql .= 'WHERE athlete_id = ? ';
+    $sql .= 'GROUP BY activity_id';
+    $results = $this->connection->fetchAll($sql, $query_params, $query_types);
+    $this->segment_efforts = [];
+    foreach ($results as $result) {
+      $this->segment_efforts[$result['activity_id']] = $result['efforts'];
+    }
+  }
+
+  /**
    * Render the activities.
    *
    * @return array
@@ -101,6 +125,7 @@ class Activities extends Base {
   public function render() {
     $this->buildForm();
     $this->query();
+    $this->querySegmentEfforts();
 
     $activities = [];
     foreach ($this->datapoints as $point) {
@@ -109,6 +134,7 @@ class Activities extends Base {
       $point['elapsed_time'] = $this->strava->convertTimeFormat($point['elapsed_time']);
       $point['total_elevation_gain'] = $this->strava->convertElevationGain($point['total_elevation_gain'], $this->params['format']);
       $point['type'] = $this->strava->convertActivityType($point);
+      $point['segment_efforts'] = $this->segment_efforts[$point['id']] ?? 0;
 
       $activities[] = $point;
     }

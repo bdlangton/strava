@@ -8,7 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 
 /**
- * Import.
+ * Handle importing new activities or activities by year.
  */
 class Import extends Base {
 
@@ -28,6 +28,7 @@ class Import extends Base {
         'choices' => [
           'None' => '',
           'New Activities' => 'new',
+          '2021 Activities' => '2021',
           '2020 Activities' => '2020',
           '2019 Activities' => '2019',
           '2018 Activities' => '2018',

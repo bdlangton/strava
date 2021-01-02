@@ -28,6 +28,29 @@ class StatsControllerTest extends BaseControllerTestCase {
     $form['form[duration]'] = '22';
     $crawler = $client->submit($form);
 
+    // Create the same entry but excluding races.
+    $form = $crawler->selectButton('submit')->form();
+    $form['form[type]'] = 'Run';
+    $form['form[stat_type]'] = 'distance';
+    $form['form[duration]'] = '22';
+    $form['form[excluding_races]'] = ['excluding_races'];
+    $crawler = $client->submit($form);
+
+    // Create an entry by elevation gain.
+    $form = $crawler->selectButton('submit')->form();
+    $form['form[type]'] = 'Run';
+    $form['form[stat_type]'] = 'total_elevation_gain';
+    $form['form[duration]'] = '22';
+    $form['form[excluding_races]'] = ['excluding_races'];
+    $crawler = $client->submit($form);
+
+    // Create an entry by elapsed time.
+    $form = $crawler->selectButton('submit')->form();
+    $form['form[type]'] = 'Run';
+    $form['form[stat_type]'] = 'elapsed_time';
+    $form['form[duration]'] = '22';
+    $crawler = $client->submit($form);
+
     // Create an expected row array and a column array to specify what each
     // entry corresponds to.
     $expected_row = [

@@ -11,6 +11,10 @@ a, a:visited {
   color: #fc4c02;
 }
 
+a[href*="strava.com"] {
+  font-style: italic;
+}
+
 div.message {
   padding: 10px;
 }

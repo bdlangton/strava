@@ -26,6 +26,7 @@
       <th class="elevation_gain">
         <a href="/activities?{{ current_params_minus_sort }}&sort=gain">Elevation Gain ({{ gain_format }})</a>
       </th>
+      <th class="segment_efforts">Segment Efforts</th>
     </tr>
     {% for activity in activities %}
       <tr>
@@ -37,6 +38,7 @@
         <td class="distance">{{ activity.distance }}</td>
         <td class="time">{{ activity.elapsed_time }}</td>
         <td class="elevation_gain">{{ activity.total_elevation_gain }}</td>
+        <td class="segment_efforts">{{ activity.segment_efforts }}</td>
       </tr>
     {% endfor %}
   </table>
