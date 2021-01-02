@@ -37,10 +37,10 @@ class ActivitiesControllerTest extends BaseControllerTestCase {
     $this->assertEquals($crawler->filter('td.distance')->first()->html(), '26.4');
     $gain = $crawler->filter('th.elevation_gain a')->first();
     $crawler = $client->click($gain->link());
-    $this->assertEquals($crawler->filter('td.elevation_gain')->first()->html(), '534');
+    $this->assertEquals($crawler->filter('td.elevation_gain')->first()->html(), '1,545');
     $date = $crawler->filter('th.date a')->first();
     $crawler = $client->click($date->link());
-    $this->assertEquals($crawler->filter('td.date')->first()->html(), 'Feb 26, 2015');
+    $this->assertEquals($crawler->filter('td.date')->first()->html(), 'May 28, 2020');
   }
 
   /**
