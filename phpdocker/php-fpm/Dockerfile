@@ -12,6 +12,11 @@ RUN apt-get update \
     && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* \
     && pecl install amqp
 
+# Add amqp extension.
+echo extension=amqp.so > /etc/php/7.4/fpm/conf.d/amqp.ini
+echo extension=amqp.so > /etc/php/7.4/cli/conf.d/amqp.ini
+service restart php7.4-fpm
+
 # Install git
 RUN apt-get update \
     && apt-get -y install git \
