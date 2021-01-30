@@ -74,10 +74,8 @@ class WebhookController extends AbstractController {
     }
     elseif ($params['aspect_type'] == 'update') {
       // Set the updates to the appropriate field names. Valid updates are
-      // title, type, and privacy. If the privacy is changed at all, then we
-      // want to insert segment efforts if not already inserted.
+      // title, type, and privacy.
       $updates = [];
-      $update_segment_efforts = FALSE;
       foreach ($params['updates'] as $key => $update) {
         if ($key == 'title') {
           $updates['name'] = $update;
@@ -87,27 +85,19 @@ class WebhookController extends AbstractController {
         }
       }
 
+      $activity = $strava->getActivity($params['object_id'], $access_token);
+
       // If there are any updates to the activity: changing title or type.
       if (!empty($updates)) {
-        // Update the existing activity.
         if ($strava->activityExists($params['object_id'])) {
-          $connection->update('activities',
-            $updates,
-            ['id' => $params['object_id']]
-          );
+          $strava->updateActivity($activity);
         }
         else {
-          // Even though it's an update, we don't have the activity so we have
-          // to create it.
-          $activity = $strava->getActivity($params['object_id'], $access_token);
           $strava->insertActivity($activity);
         }
       }
 
       // Insert/update segment efforts.
-      if (empty($activity)) {
-        $activity = $strava->getActivity($params['object_id'], $access_token);
-      }
       $strava->insertSegmentEfforts($activity, $access_token);
     }
     elseif ($params['aspect_type'] == 'delete') {
