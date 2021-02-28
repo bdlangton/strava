@@ -88,8 +88,10 @@ class Graphs extends Base {
       $order_by_group = 'DATE_FORMAT(start_date_local, "%Y%m")';
     }
     elseif ($this->params['group'] == 'week') {
-      $group = 'CONCAT("Week ", WEEK(start_date_local), " ", YEAR(start_date_local))';
-      $order_by_group = 'CONCAT("Week ", YEARWEEK(start_date_local))';
+      // Set weeks to start on Monday and the week counts as part of the year
+      // that the Monday falls on.
+      $group = 'CONCAT("Week ", WEEK(start_date_local, 5), " ", YEAR(start_date_local))';
+      $order_by_group = 'CONCAT("Week ", YEARWEEK(start_date_local, 5))';
     }
     else {
       $group = $order_by_group = 'YEAR(start_date_local)';

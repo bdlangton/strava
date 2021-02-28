@@ -72,8 +72,10 @@ class Charts extends Base {
       $this->order_by_group = 'DATE_FORMAT(start_date_local, "%Y%m")';
     }
     elseif ($this->params['group'] == 'week') {
-      $this->group = 'CONCAT("Week ", WEEK(start_date_local), " ", YEAR(start_date_local))';
-      $this->order_by_group = 'CONCAT("Week ", YEARWEEK(start_date_local))';
+      // Set weeks to start on Monday and the week counts as part of the year
+      // that the Monday falls on.
+      $this->group = 'CONCAT("Week ", WEEK(start_date_local, 5), " ", YEAR(start_date_local))';
+      $this->order_by_group = 'CONCAT("Week ", YEARWEEK(start_date_local, 5))';
     }
     else {
       $this->group = $this->order_by_group = 'YEAR(start_date_local)';
