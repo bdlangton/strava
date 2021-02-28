@@ -293,7 +293,7 @@ class Strava {
       $dates['begin_date'] = (new \DateTime('first day of this month - 1 year'))->format('Y-m-d');
     }
     elseif ($group == 'year') {
-      $dates['begin_date'] = (new \DateTime('first day of this year - 5 years'))->format('Y-m-d');
+      $dates['begin_date'] = (new \DateTime('first day of January ' . date('Y') . ' - 5 years'))->format('Y-m-d');
     }
     return $dates;
   }
